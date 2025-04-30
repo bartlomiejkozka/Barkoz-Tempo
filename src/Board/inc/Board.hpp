@@ -52,13 +52,17 @@ struct Board
     //==================================
 
     static constexpr size_t bitboardCount = 14;
+    static constexpr size_t enPassantCount = 2; // for white and black pawns
+    static constexpr size_t castlingCount = 4; // for white and black kings and rooks
     
 
     //==================================
     //===========Board Attibutes========
     //==================================
 
-    std::array<uint64_t, 14> bitboards = {}; //indexed by PiceDescriptor enum
+    std::array<uint64_t, bitboardCount> bitboards = {}; //indexed by PiceDescriptor enum
+    std::array<uint64_t, castlingCount> castlingBitboards = {};
+    std::array<uint64_t, enPassantCount> enPassantBitboards = {};
 };
 
 
