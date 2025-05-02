@@ -4,13 +4,16 @@
 #include <array>
 #include <cstddef>
 #include <cstdint>
+#include <unordered_map>
+
+#include "BitOperation.hpp"
 
 
 /******************************************************************************
  * Every single bitbaord desciptor
  * 6 piece types * 2(white/black) + 2(any pieces by color)
  *******************************************************************************/
-enum class PiceDescriptor : size_t
+enum class PieceDescriptor : size_t
 {
     nWhite,
     nBlack,
@@ -28,6 +31,14 @@ enum class PiceDescriptor : size_t
     bKing
 };
 
+
+// TODO:
+// - add starting biboards piece positions
+// - add castling bitboards
+// - add en passant bitboards
+// - add zobrist hash tables in other class with method implementation
+// - implement stack of prevMoves to undo moves
+// - then could be implemented the useful bit opertaions in signle class
 
 
 /******************************************************************************
@@ -54,17 +65,38 @@ struct Board
     static constexpr size_t bitboardCount = 14;
     static constexpr size_t enPassantCount = 2; // for white and black pawns
     static constexpr size_t castlingCount = 4; // for white and black kings and rooks
+
+    //==================================
+    //======Deafult starting bitboards==
+    //==================================
+
+    std::array<uint64_t, 2> defaultKingBitboards = {
+        youngestBitSet << 4, oldestBitSet >> 3
+    };
+    std::array<uint64_t, 2> defaultRookBitboards = {
+        
+    };
+
     
 
     //==================================
     //===========Board Attibutes========
     //==================================
 
-    std::array<uint64_t, bitboardCount> bitboards = {}; //indexed by PiceDescriptor enum
+    std::array<uint64_t, bitboardCount> bitboards = {}; //indexed by PieceDescriptor enum
     std::array<uint64_t, castlingCount> castlingBitboards = {};
     std::array<uint64_t, enPassantCount> enPassantBitboards = {};
-};
 
+    std::unordered_map<uint64_t, uint8_t> repetitions = {}; // hash -> count
+    uint64_t zobristHash = 0;
+
+    uint8_t halfMoveClock = 0;
+    uint8_t fullMoveNumber = 1;
+    uint8_t whiteToMove = static_cast<uint8_t>(PieceDescriptor::nWhite);
+
+    // have to implement undo move stack struct
+    UndoMove undoMoveStack = {};
+};
 
 
 
