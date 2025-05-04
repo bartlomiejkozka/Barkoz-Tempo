@@ -5,11 +5,14 @@
 
 
 //BitOperation constants
-constexpr uint64_t youngestBitSet = static_cast<uint64_t>(1);
-constexpr uint64_t oldestBitSet = static_cast<uint64_t>(1) << 63;
+constexpr uint64_t minBitSet = static_cast<uint64_t>(1);
+constexpr uint64_t maxBitSet = static_cast<uint64_t>(1) << 63;
 
-struct BitOperation
+//BitOperation functions
+inline uint64_t convertFromMinBitSetToMaxBitSet(uint64_t bitSet)
 {
-};
+    return bitSet ^ 63;
+}
+
 
 #endif // BITOPERATION_HPP

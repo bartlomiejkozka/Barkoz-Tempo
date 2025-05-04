@@ -71,12 +71,26 @@ struct Board
     //==================================
 
     std::array<uint64_t, 2> defaultKingBitboards = {
-        youngestBitSet << 4, oldestBitSet >> 3
+        minBitSet << 4, maxBitSet >> 3
+    };
+    std::array<uint64_t, 2> defaultQueenBitboards = {
+        minBitSet << 3, maxBitSet >> 4
     };
     std::array<uint64_t, 2> defaultRookBitboards = {
-        
+        minBitSet << 7 | minBitSet,
+        maxBitSet >> 7 | maxBitSet
     };
-
+    std::array<uint64_t, 2> defaultBishopBitboards = {
+        minBitSet << 5 | minBitSet << 2,
+        maxBitSet >> 5 | maxBitSet >> 2
+    };
+    std::array<uint64_t, 2> defaultKnightBitboards = {
+        minBitSet << 6 | minBitSet << 1,
+        maxBitSet >> 6 | maxBitSet >> 1
+    };
+    std::array<uint64_t, 2> defaultPawnBitboards = {
+        0xFFUL << 8, 0xFFUL << convertFromMinBitSetToMaxBitSet(16)
+    };
     
 
     //==================================
