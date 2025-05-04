@@ -32,6 +32,10 @@ enum class PieceDescriptor : size_t
 };
 
 
+struct UndoMove
+{
+};
+
 // TODO:
 // - add starting biboards piece positions
 // - add castling bitboards
@@ -92,26 +96,22 @@ struct Board
         0xFFUL << 8, 0xFFUL << convertFromMinBitSetToMaxBitSet(16)
     };
     
-
     //==================================
     //===========Board Attibutes========
     //==================================
 
     std::array<uint64_t, bitboardCount> bitboards = {}; //indexed by PieceDescriptor enum
-    std::array<uint64_t, castlingCount> castlingBitboards = {};
-    std::array<uint64_t, enPassantCount> enPassantBitboards = {};
+    uint64_t zobristHash = 0;
+    uint8_t sideToMove = static_cast<uint8_t>(PieceDescriptor::nWhite);
 
     std::unordered_map<uint64_t, uint8_t> repetitions = {}; // hash -> count
-    uint64_t zobristHash = 0;
-
     uint8_t halfMoveClock = 0;
-    uint8_t fullMoveNumber = 1;
-    uint8_t whiteToMove = static_cast<uint8_t>(PieceDescriptor::nWhite);
+    uint8_t enPassant = 0; // 0 - no en passant, 1 - white, 2 - black
+    uint8_t castlingRights = 0x0F; // 0b00001(white kingsite)1(white queensite)1(black kingsite)1(balck queensite)
 
     // have to implement undo move stack struct
     UndoMove undoMoveStack = {};
 };
-
 
 
 #endif
