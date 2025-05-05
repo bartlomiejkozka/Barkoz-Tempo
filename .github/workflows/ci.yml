@@ -1,0 +1,20 @@
+name: CI - Build
+run-name: Triggered by ${{ github.actor }} on ${{ github.event_name }}
+on: [push, workflow_dispatch]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Create build directory
+        run: mkdir build
+
+      - name: CMake configuration
+        run: cmake ..
+        working-directory: build
+
+      - name: Build
+        run: make
+        working-directory: build
