@@ -66,6 +66,7 @@ struct Board
     //==========Board Predefinitions====
     //==================================
 
+    static constexpr size_t boardSize = 64;
     static constexpr size_t bitboardCount = 14;
     static constexpr size_t enPassantCount = 2; // for white and black pawns
     static constexpr size_t castlingCount = 4; // for white and black kings and rooks
@@ -100,6 +101,11 @@ struct Board
     //===========Board Attibutes========
     //==================================
 
+    /*
+        Bit boards are represented by little endian convenction.
+        That means the bottom left corner of board is 0th bit so the least siginificant bit.
+        It is also the LSF (Least siginificant file) representation thus the first iteration of bitboard bits is by ranks in these ranks by files.
+    */
     std::array<uint64_t, bitboardCount> bitboards = {}; //indexed by PieceDescriptor enum
     uint64_t zobristHash = 0;
     uint8_t sideToMove = static_cast<uint8_t>(PieceDescriptor::nWhite);
