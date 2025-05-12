@@ -10,6 +10,7 @@ add_subdirectory(src/BitOperation)
 add_subdirectory(src/Board)
 add_subdirectory(src/BoardUtils)
 add_subdirectory(src/PieceMap)
+add_subdirectory(src/StateInfo)
 
 add_executable(Barkoz-Tempo src/main.cpp)
 

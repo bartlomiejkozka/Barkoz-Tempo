@@ -32,15 +32,9 @@ enum class PieceDescriptor : size_t
 };
 
 
-struct UndoMove
-{
-};
-
 // TODO:
-// - add starting biboards piece positions
 // - add castling bitboards
 // - add en passant bitboards
-// - add zobrist hash tables in other class with method implementation
 // - implement stack of prevMoves to undo moves
 // - then could be implemented the useful bit opertaions in signle class
 
@@ -114,9 +108,6 @@ struct Board
     uint8_t halfMoveClock = 0;
     uint8_t enPassant = 0; // 0 - no en passant, 1 - white, 2 - black
     uint8_t castlingRights = 0x0F; // 0b00001(white kingsite)1(white queensite)1(black kingsite)1(balck queensite)
-
-    // have to implement undo move stack struct
-    UndoMove undoMoveStack = {};
 };
 
 

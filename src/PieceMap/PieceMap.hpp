@@ -1,3 +1,6 @@
+#ifndef ZOBRIST_HASH_HPP
+#define ZOBRIST_HASH_HPP
+
 #include "Board.hpp"
 
 #include <stdint.h>
@@ -64,3 +67,5 @@ struct PieceMap
         return posHash;
     }
 };
+
+#endif
