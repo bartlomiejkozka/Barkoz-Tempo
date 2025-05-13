@@ -1,9 +1,13 @@
+#ifndef ZOBRIST_HASH_HPP
+#define ZOBRIST_HASH_HPP
+
 #include "Board.hpp"
 
 #include <stdint.h>
 #include <array>
 #include <unordered_set>
 #include <random>
+#include <bit>
 
 // For now only stores initial hashes for pieces
 // Then check the transposition table as related !!!
@@ -46,5 +50,22 @@ struct PieceMap
     PieceMap& operator=(const PieceMap&) = default;
 
     //------------Methods-----------------
-    const uint64_t generatePosHash(const uint64_t& bitBoards) {}
+    const uint64_t generatePosHash(const std::array<uint64_t, Board::boardSize>& bitBoards)
+    {
+        uint64_t posHash = 0;
+        for (size_t i = 2; i < Board::bitboardCount; ++i)
+        {
+            uint64_t board = bitBoards[i];
+            while (board)   // till any bit is set
+            {
+                uint8_t idx = std::countr_zero(board);
+                posHash ^= pieceMap[i][idx];
+                board &= (board - 1);
+            }
+        }
+
+        return posHash;
+    }
 };
+
+#endif
