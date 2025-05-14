@@ -5,7 +5,7 @@ target_include_directories(PieceMap
         ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
-target_link_libraries(Board
-    PUBLIC 
+target_link_libraries(PieceMap
+    INTERFACE
     Board
 )
