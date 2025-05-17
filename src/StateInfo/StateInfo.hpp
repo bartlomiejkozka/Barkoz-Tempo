@@ -2,11 +2,11 @@
 #define STATE_INFO_HPP
 
 #include <cstdint>
-#include <stack>
+#include <array>
 #include <stdexcept>
 
 
-struct posInfo {
+struct StateInfo_t {
     // stockFish also use pawnKey hash, materialKey hash pliesFromNull
     uint64_t hash;
     uint64_t from;
@@ -17,32 +17,27 @@ struct posInfo {
     uint8_t capturedPiece;
 };
 
-
-class StateInfo
+/*
+The postion info is stored in fixed size array of depth search.
+Having pointers to prev el. like in backword list, which is stored in array to avoid dynamic allocation.
+*/
+class Position
 {
 private:
-    std::stack<posInfo> stateStack;
+    std::array<StateInfo_t, 256> PositionStack; // assumes for now depth sieze = 256
 
 public:
     //--------Contructors-----------
-    StateInfo() = default;
-    ~StateInfo() = default;
-    StateInfo(StateInfo &other) = default;
-    StateInfo& operator=(const StateInfo& other) = default;
+    Position() = default;
+    ~Position() = default;
+    Position(Position &other) = default;
+    Position& operator=(const Position& other) = default;
 
     //---------Methods---------------
-    void addPos(const posInfo &positionInfo) { stateStack.push(positionInfo); }
-    
-    posInfo getPos() 
-    { 
-        posInfo tempPos;
-        if (!stateStack.empty())
-        { 
-            tempPos = stateStack.top();
-            stateStack.pop();
-        }
-        return tempPos;
-    }
+
+    /*
+    Puhs method which have to get move type var and opptional Board attribs
+    */
 
 };
 
