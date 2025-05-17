@@ -34,6 +34,7 @@ public:
     Position& operator=(const Position& other) = default;
 
     //---------Methods---------------
+
     /*
     Puhs method which have to get move type var and opptional Board attribs
     */

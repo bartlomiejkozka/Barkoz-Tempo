@@ -18,4 +18,6 @@ target_link_libraries(Barkoz-Tempo
     PRIVATE
         BitOperation
         Board
+        StateInfo
+        PieceMap
 )
