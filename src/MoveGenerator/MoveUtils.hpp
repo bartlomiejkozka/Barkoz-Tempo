@@ -3,6 +3,7 @@
 
 #include <array>
 #include <cstdint>
+#include <cmath>
 
 #include "Board.hpp"
 
@@ -20,9 +21,15 @@ static const std::array<std::array<uint64_t, Board::boardSize>, Board::boardSize
     {
         for(int j = 0; j < Board::boardSize; ++j)
         {
-            if (i / 8 == j / 8 || i % 8 == j % 8)
+            if (i / 8 == j / 8)
             {
-                tab[i][j] = static_cast<uint64_t>(2 ^ (j - i) - 1) << i;
+                tab[i][j] = static_cast<uint64_t>(1ULL << abs(i - j) - 1) << (i < j ? i : j);
+            }
+            else if (i % 8 == j % 8)
+            {
+                int dif = abs(i/8 - j/8);
+                for (int it = 1; it <= dif; ++it)
+                tab[i][j] |= static_cast<uint64_t>(1) << ((i % 8) * it*8); 
             }
             else if (abs(i/8 - j/8) == abs(i%8 - j%8))
             {
