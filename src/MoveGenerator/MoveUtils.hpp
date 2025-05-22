@@ -7,35 +7,48 @@
 
 #include "Board.hpp"
 
+/* 
+* Usage of inline static varaible is neccessary to avoid the linkage error.
+* Up to c++17 is possiblity to attach the same static var to different TU across program.
+* Before it was not possible due to linker err.
+*/
 
+struct MoveUtils {
+
+
+//------------------
+// Attrib utils
+//------------------
 /*
 2D Array containing hard-coded bitbards with bits set that are between (vertical, horizoontal, diagonal) from-to indicies
 
 * For the not hirozontal, vertical or diagonal squares array value is set to zeros bit board
 */
-
-static const std::array<std::array<uint64_t, Board::boardSize>, Board::boardSize> inBetween = [] () {
+inline static const std::array<std::array<uint64_t, Board::boardSize>, Board::boardSize> inBetween = [] () {
     std::array<std::array<uint64_t, Board::boardSize>, Board::boardSize> tab = {};
 
     for(int i = 0; i < Board::boardSize; ++i)
     {
         for(int j = 0; j < Board::boardSize; ++j)
         {
+            int min = (i < j ? i : j);
+            int max = (i > j ? i : j);
             if (i / 8 == j / 8)
             {
-                tab[i][j] = static_cast<uint64_t>(1ULL << abs(i - j) - 1) << (i < j ? i : j);
+                tab[i][j] = static_cast<uint64_t>(1ULL << abs(i - j) - 1) << min;
             }
             else if (i % 8 == j % 8)
             {
-                int dif = abs(i/8 - j/8);
-                for (int it = 1; it <= dif; ++it)
-                tab[i][j] |= static_cast<uint64_t>(1) << ((i % 8) * it*8); 
+                for (int it = min+8; it < max; it+=8) 
+                {
+                    tab[i][j] |= static_cast<uint64_t>(1) << it;
+                }
             }
             else if (abs(i/8 - j/8) == abs(i%8 - j%8))
             {
-                for (int d = 0; d < abs(i/8 - j/8); ++d)
+                for (int diag = 1, it = min+8+diag; it < max; diag++, it+=8+diag) 
                 {
-                    tab[i][j] |= static_cast<uint64_t>(1) << 9*(d+1) + i;
+                    tab[i][j] |= static_cast<uint64_t>(1) << it;
                 }
             }
             else
@@ -47,6 +60,8 @@ static const std::array<std::array<uint64_t, Board::boardSize>, Board::boardSize
 
     return tab;
 }();
+
+};
 
 
 
