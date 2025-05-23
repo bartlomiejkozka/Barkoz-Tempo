@@ -31,11 +31,15 @@ inline static const std::array<std::array<uint64_t, Board::boardSize>, Board::bo
     {
         for(int j = 0; j < Board::boardSize; ++j)
         {
+            if (i == j)
+            {
+                continue;
+            }
             int min = (i < j ? i : j);
             int max = (i > j ? i : j);
             if (i / 8 == j / 8)
             {
-                tab[i][j] = static_cast<uint64_t>(1ULL << abs(i - j) - 1) << min;
+                tab[i][j] = static_cast<uint64_t>((1ULL << (abs(i - j) - 1)) - 1) << (min + 1);
             }
             else if (i % 8 == j % 8)
             {
@@ -46,7 +50,12 @@ inline static const std::array<std::array<uint64_t, Board::boardSize>, Board::bo
             }
             else if (abs(i/8 - j/8) == abs(i%8 - j%8))
             {
-                for (int diag = 1, it = min+8+diag; it < max; diag++, it+=8+diag) 
+                int diag = 1;
+                if (min % 8 > max % 8)
+                {
+                    diag = -1;
+                }
+                for (int it = min+8+diag; it < max; it+=8+diag) 
                 {
                     tab[i][j] |= static_cast<uint64_t>(1) << it;
                 }

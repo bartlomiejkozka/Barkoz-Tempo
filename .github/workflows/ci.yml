@@ -2,7 +2,7 @@ name: CI - Build
 run-name: Triggered by ${{ github.actor }} on ${{ github.event_name }}
 on: [push, workflow_dispatch]
 jobs:
-  build:
+  build-and-test:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -18,3 +18,8 @@ jobs:
       - name: Build
         run: make
         working-directory: build
+
+      - name: Run Tests
+        run: ctest
+        working-directory: build
+
