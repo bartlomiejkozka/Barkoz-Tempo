@@ -9,8 +9,6 @@
 // - class Move for packing packed_move and have the move method and unmove with Bitboards change
 // - optional add some special bits fileds to packed move to have 32 bits instead of 16
 
-// - add inBetween 2d array (generator)
-
 // - on the fly move logic
 // - add simple evaluation with legal moves checks
 
@@ -34,7 +32,7 @@ Encoding:
     5:  0 1 0 1 - ep-caputre
     8:  1 0 0 0 - knigh-promotion
     9:  1 0 0 1 - bishop-promotion
-    10:  1 0 1 0 - rook-promotion
+    10: 1 0 1 0 - rook-promotion
     11: 1 0 1 1 - queen-promotion
     12: 1 1 0 0 - knight-promo capture
     13: 1 1 0 1 - bishop-promo capture
