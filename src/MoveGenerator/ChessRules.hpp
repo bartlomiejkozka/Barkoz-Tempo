@@ -4,5 +4,9 @@
 // class for cheking moves legality/pseudo legality
 // considering all rules of chess
 
+class ChessRules {
+
+};
+
 
 #endif

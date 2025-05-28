@@ -23,6 +23,7 @@ target_link_libraries(Barkoz-Tempo
         Board
         StateInfo
         PieceMap
+        MoveGenerator
 )
 
 # tests

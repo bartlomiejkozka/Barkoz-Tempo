@@ -106,7 +106,7 @@ struct Board
 
     std::unordered_map<uint64_t, uint8_t> repetitions = {}; // hash -> count
     uint8_t halfMoveClock = 0;
-    uint8_t enPassant = 0; // 0 - no en passant, 1 - white, 2 - black
+    uint8_t enPassant = 0; // enPassant Square, 255 - if no enPassant -> color is not imprtant beacuse of inremental semantic
     uint8_t castlingRights = 0x0F; // 0b00001(white kingsite)1(white queensite)1(black kingsite)1(balck queensite)
 };
 
