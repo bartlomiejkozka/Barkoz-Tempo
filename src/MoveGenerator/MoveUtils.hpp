@@ -27,6 +27,33 @@ struct MoveUtils {
 
     [[nodiscard("PURE FUN")]] static constexpr uint64_t empty(const uint64_t board) { return ~board; }
 
+    // recomended shift funciton when dealing with negative shift values (i.e. in relative moves)
+    [[nodiscard("PURE FUN")]] static constexpr uint64_t shift(uint64_t x, int shiftBy) { return shiftBy < 0 ? (x >> shiftBy) : (x << shiftBy); } 
+
+
+    /*
+    * Generation of static moves table
+    */
+    template<size_t N>
+    static constexpr std::array<uint64_t, Board::boardSize> genStaticMoves(const std::array<uint8_t, N> relativeMoves, const std::array<uint8_t, N> notBoardMaps)
+    {
+        std::array<uint64_t, Board::boardSize> moves = {};
+        moves.fill(1);
+
+        for (size_t i = 0; i < Board::boardSize; ++i)
+        {
+            moves[i] <<= i;
+            for (size_t j = 0; i < N; ++i)
+            {
+                moves[i] |= (shift(moves[i], relativeMoves[j]) & notBoardMaps[j]);
+            }
+        }
+
+        return moves;
+    }
+
+    //----------------------------------------------------------------------------------------------
+
     /*
     2D Array containing hard-coded bitbards with bits set that are between (vertical, horizoontal, diagonal) from-to indicies
 
@@ -35,9 +62,9 @@ struct MoveUtils {
     inline static const std::array<std::array<uint64_t, Board::boardSize>, Board::boardSize> inBetween = [] () {
         std::array<std::array<uint64_t, Board::boardSize>, Board::boardSize> tab = {};
 
-        for(int i = 0; i < Board::boardSize; ++i)
+        for (size_t i = 0; i < Board::boardSize; ++i)
         {
-            for(int j = 0; j < Board::boardSize; ++j)
+            for (size_t j = 0; j < Board::boardSize; ++j)
             {
                 if (i == j)
                 {

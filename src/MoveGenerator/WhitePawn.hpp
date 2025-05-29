@@ -6,7 +6,7 @@
 
 
 // TODO:
-// 1. Consider change this to be more abstractive, but not at the sacrifice of perf
+// 1. Consider change this to be more abstractive, but not at the sacrifice of perf -> refactor to static polymorphism
 
 
 /*
@@ -44,10 +44,10 @@ class WhitePawn {
     // may be used in future by evaluation function
 
     [[nodiscard("PURE FUN")]] static constexpr uint64_t getDblAttackTargets(const uint64_t bPawns, const uint64_t oponentPieces) { return getEastAttackTargets & getWestAttackTargets; }
-
+ 
     [[nodiscard("PURE FUN")]] static constexpr uint64_t getSingleAttackTargets(const uint64_t bPawns, const uint64_t oponentPieces) { return getEastAttackTargets ^ getWestAttackTargets; }
     
-    //------------------
+    //------------------s
     // Main API function
     //------------------
     
