@@ -17,13 +17,13 @@
 * 4. handling en passant pawn moves
 */
 
-class BlackPawn {
+class BlackPawnMap {
     public:
     //--------------------
     // Initilizers
     //--------------------
     
-    BlackPawn() = delete;
+    BlackPawnMap() = delete;
 
     //--------------------
     // Moves defined by Chess rules

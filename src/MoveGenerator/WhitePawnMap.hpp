@@ -14,13 +14,13 @@
 * For now two similar classes to have the best perf
 */
 
-class WhitePawn {
+class WhitePawnMap {
     public:
     //--------------------
     // Initilizers
     //--------------------
     
-    WhitePawn() = delete;s
+    WhitePawnMap() = delete;s
 
     //--------------------
     // Moves defined by Chess rules

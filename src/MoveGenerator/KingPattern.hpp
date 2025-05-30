@@ -1,15 +1,15 @@
-#ifndef KNIGHT_PATTERN_HPP
-#define KNIGHT_PATTERN_HPP
+#ifndef KING_PATTERN
+#define KING_PATTERN
 
 #include <cstdint>
 #include <array>
 #include "MoveUtils.hpp"
 
+// TODO
+// Consider as in White/Black Pawn Maps the abstraction with KnightPattern
 
-// Knight Piece, same as King Piece will be using predefined moves table to generate pseudo-legal moves
 
-
-class KnightPattern {
+class KingPattern {
     public:
     static constexpr uint8_t maxPosPosibilities = 8;
 
@@ -25,9 +25,10 @@ class KnightPattern {
 
     static constexpr uint64_t notAFile = 0x7F7F7F7F7F7F7F7F;
     static constexpr uint64_t notABFile = 0x3F3F3F3F3F3F3F3F;
-    static constexpr uint64_t notHFile = 0xFEFEFEFEFEFEFEFE;
+    static constexpr uint64_t notHFile = 0xFEFEFEFEFEFEFEFE;  
     static constexpr uint64_t notGHFile = 0xFCFCFCFCFCFCFCFC;
 };
+
 
 
 

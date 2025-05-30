@@ -28,6 +28,8 @@ struct MoveUtils {
     [[nodiscard("PURE FUN")]] static constexpr uint64_t empty(const uint64_t board) { return ~board; }
 
     // recomended shift funciton when dealing with negative shift values (i.e. in relative moves)
+    // left shift  : positives
+    // right shift : negatives
     [[nodiscard("PURE FUN")]] static constexpr uint64_t shift(uint64_t x, int shiftBy) { return shiftBy < 0 ? (x >> shiftBy) : (x << shiftBy); } 
 
 
@@ -35,7 +37,7 @@ struct MoveUtils {
     * Generation of static moves table
     */
     template<size_t N>
-    static constexpr std::array<uint64_t, Board::boardSize> genStaticMoves(const std::array<uint8_t, N> relativeMoves, const std::array<uint8_t, N> notBoardMaps)
+    static constexpr std::array<uint64_t, Board::boardSize> genStaticMoves(const std::array<int, N> relativeMoves, const std::array<uint64_t, N> notBoardMaps)
     {
         std::array<uint64_t, Board::boardSize> moves = {};
         moves.fill(1);
