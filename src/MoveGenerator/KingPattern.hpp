@@ -6,7 +6,9 @@
 #include "MoveUtils.hpp"
 
 // TODO
-// Consider as in White/Black Pawn Maps the abstraction with KnightPattern
+// 1. Consider to implement here the tagets to move -> moves & ~taboo, taboo squares = possible to move for king
+// 2. Consider as in White/Black Pawn Maps the abstraction with KnightPattern
+
 
 
 class KingPattern {
@@ -20,16 +22,14 @@ class KingPattern {
     static constexpr uint64_t getMoves() { MoveUtils::genStaticMoves(relativeMoves, notBoardMaps); } 
 
     private:
-    static constexpr std::array<int, maxPosPosibilities> relativeMoves = { 6, 15, 17, 10, -6, -15, -17, -10 }
-    static constexpr std::array<uint64_t, maxPosPosibilities> notBoardMaps = { notGHFile, notHFile, notAFile, notABFile, notABFile, notAFile, notHFile, notGHFile }
+    // next 2 arrays have to be initialized by order accordingly each other
+    static constexpr std::array<int, maxPosPosibilities> relativeMoves = { 1, 7, 8, 9, -1, -7, -8, -9 };
+    static constexpr std::array<uint64_t, maxPosPosibilities> notBoardMaps = { notHFile, notHile, notAny, notAFile, notAFile, notAFile, notAny, notHFile };
 
     static constexpr uint64_t notAFile = 0x7F7F7F7F7F7F7F7F;
-    static constexpr uint64_t notABFile = 0x3F3F3F3F3F3F3F3F;
-    static constexpr uint64_t notHFile = 0xFEFEFEFEFEFEFEFE;  
-    static constexpr uint64_t notGHFile = 0xFCFCFCFCFCFCFCFC;
+    static constexpr uint64_t notHFile = 0xFEFEFEFEFEFEFEFE;
+    static constexpr uint64_t notAny =   0xFFFFFFFFFFFFFFFF;
 };
-
-
 
 
 
