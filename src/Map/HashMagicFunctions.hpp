@@ -7,6 +7,9 @@
 #include <utility>
 
 
+// TODO:
+//      Here, global defintion of attackTab, then in Magic Pieces pointer to first attackTab bitboard.
+
 /*
 * The Class concept is dedicated to
 * generate random unique index for magic boards by brude force method - "Trial and Error"
@@ -25,21 +28,30 @@ class FancyMagicFunction {
     // Intilizators
     //--------------------
     
-    // Main usage to find the magic
-    explicit FancyMagicFunction(const uint8_t offset) {  }
+    explicit FancyMagicFunction(const uint8_t offset)
+        : _magic(generateMagic(offset)), _offset(offset) {}
     
     constexpr FancyMagicFunction(const FancyPair &params):
         : _magic(magic), _offset(offset) {}
 
-    // Probably unused
     constexpr FancyMagicFunction(const uint64_t magic, const uint8_t offset)
         : _magic(magic), _offset(offset) {}
 
+    //--------------------
+    // Getters
+    //--------------------
 
-
-
+    constexpr uint16_t getMagic()    { return _magic; }
+    constexpr uint8_t  getOffset()   { return _offset; }
 
     private:
+
+    // in case failure (max interation exceed) should throw/return
+    constexpr uint64_t generateMagic()
+    {
+        
+    }
+
     uint64_t _magic;
     uint8_t _offset;
 };
