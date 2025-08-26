@@ -6,7 +6,6 @@
 #include <random>
 #include <utility>
 
-
 // TODO:
 //      Here, global defintion of attackTab, then in Magic Pieces pointer to first attackTab bitboard.
 
@@ -32,7 +31,7 @@ class FancyMagicFunction {
         : _magic(generateMagic(offset)), _offset(offset) {}
     
     constexpr FancyMagicFunction(const FancyPair &params):
-        : _magic(magic), _offset(offset) {}
+        : _magic(magic), _offset(offset) {} 
 
     constexpr FancyMagicFunction(const uint64_t magic, const uint8_t offset)
         : _magic(magic), _offset(offset) {}
