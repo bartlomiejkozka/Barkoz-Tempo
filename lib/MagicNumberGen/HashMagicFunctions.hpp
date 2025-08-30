@@ -27,8 +27,8 @@ class FancyMagicFunction {
     // Intilizators
     //--------------------
     
-    explicit FancyMagicFunction(const uint8_t offset)
-        : _magic(generateMagic(offset)), _offset(offset) {}
+    explicit FancyMagicFunction(const uint8_t offset, const uint64_t occupancies, const uint64_t square)
+        : _magic(generateMagic(offset, occupancies, square)), _offset(offset) {}
     
     constexpr FancyMagicFunction(const FancyPair &params):
         : _magic(magic), _offset(offset) {} 
@@ -46,8 +46,14 @@ class FancyMagicFunction {
     private:
 
     // in case failure (max interation exceed) should throw/return
-    constexpr uint64_t generateMagic()
+    constexpr uint64_t generateMagic(const uint8_t offset, const uint64_t occupancies, const uint64_t square)
     {
+        // generator init
+        RandomGenerator rng;
+        std::random_device rd;
+        rng.seed(rd());
+
+        uint64_t magic = rng();
         
     }
 
