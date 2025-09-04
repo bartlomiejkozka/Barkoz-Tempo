@@ -97,7 +97,7 @@ struct Board
 
     /*
         Bit boards are represented by little endian convenction.
-        That means the bottom left corner of board is 0th bit so the least siginificant bit.
+        That means the bottom left corner of the board is 0th bit so the least siginificant bit. -> 0b'h8....a1'
         It is also the LSF (Least siginificant file) representation thus the first iteration of bitboard bits is by ranks in these ranks by files.
     */
     std::array<uint64_t, bitboardCount> bitboards = {}; //indexed by PieceDescriptor enum
