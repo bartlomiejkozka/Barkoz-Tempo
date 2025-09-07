@@ -22,4 +22,12 @@ inline int pop_1st(uint64_t *mask)
     return idx;
 }
 
+inline int count_1s(uint64_t mask)
+{
+    int i;
+    for (i = 0; mask; ++i, mask &= mask - 1) {}
+    return i;
+}
+
+
 #endif // BITOPERATION_HPP
