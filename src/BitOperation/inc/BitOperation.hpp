@@ -2,6 +2,7 @@
 #define BITOPERATION_HPP
 
 #include <cstdint>
+#include <bit>
 
 
 //BitOperation constants
@@ -14,5 +15,11 @@ inline uint64_t convertFromMinBitSetToMaxBitSet(uint64_t bitSet)
     return bitSet ^ 63;
 }
 
+inline int pop_1st(uint64_t *mask)
+{
+    int idx = countr_zero(*mask);
+    *mask &= (*mask - 1);
+    return idx;
+}
 
 #endif // BITOPERATION_HPP
