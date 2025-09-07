@@ -10,4 +10,5 @@ target_link_libraries(
     MoveGenerator
     INTERFACE
     Board
+    Debug
 )

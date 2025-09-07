@@ -4,6 +4,9 @@
 #include <cstdint>
 #include <bit>
 
+// TODO
+//
+// - Consider snake case name convenction for this module -> in future could be consider as minor lib
 
 //BitOperation constants
 constexpr uint64_t minBitSet = static_cast<uint64_t>(1);
@@ -17,7 +20,7 @@ inline uint64_t convertFromMinBitSetToMaxBitSet(uint64_t bitSet)
 
 inline int pop_1st(uint64_t *mask)
 {
-    int idx = countr_zero(*mask);
+    int idx = std::countr_zero(*mask);
     *mask &= (*mask - 1);
     return idx;
 }

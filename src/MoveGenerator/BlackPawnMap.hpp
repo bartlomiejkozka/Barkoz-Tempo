@@ -39,16 +39,16 @@ class BlackPawnMap {
 
     [[nodiscard("PURE FUN")]] static constexpr uint64_t getAnyAttackTargets(const uint64_t wPawns, const uint64_t oponentPieces) 
     { 
-        return getEastAttackTargets(oponentPieces) | getWestAttackTargets(oponentPieces); 
+        return getEastAttackTargets(wPawns, oponentPieces) | getWestAttackTargets(wPawns, oponentPieces); 
     }
 
     [[nodiscard("PURE FUN")]] static constexpr uint64_t getEpAttackTarget(const uint64_t wPawns, const uint64_t ep) { return (( wPawns >> 9) | (wPawns >> 7)) & (static_cast<uint64_t>(1) << ep); }
 
     // may be used in future by evaluation function
 
-    [[nodiscard("PURE FUN")]] static constexpr uint64_t getDblAttackTargets(const uint64_t wPawns, const uint64_t oponentPieces) { return getEastAttackTargets & getWestAttackTargets; }
+    [[nodiscard("PURE FUN")]] static constexpr uint64_t getDblAttackTargets(const uint64_t wPawns, const uint64_t oponentPieces) { return getEastAttackTargets(wPawns, oponentPieces) & getWestAttackTargets(wPawns, oponentPieces); }
 
-    [[nodiscard("PURE FUN")]] static constexpr uint64_t getSingleAttackTargets(const uint64_t wPawns, const uint64_t oponentPieces) { return getEastAttackTargets ^ getWestAttackTargets; }
+    [[nodiscard("PURE FUN")]] static constexpr uint64_t getSingleAttackTargets(const uint64_t wPawns, const uint64_t oponentPieces) { return getEastAttackTargets(wPawns, oponentPieces) ^ getWestAttackTargets(wPawns, oponentPieces); }
     
     //------------------
     // Main API function

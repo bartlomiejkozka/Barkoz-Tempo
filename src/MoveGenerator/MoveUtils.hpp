@@ -76,7 +76,7 @@ struct MoveUtils {
                 int max = (i > j ? i : j);
                 if (i / 8 == j / 8)
                 {
-                    tab[i][j] = static_cast<uint64_t>((1ULL << (abs(i - j) - 1)) - 1) << (min + 1);
+                    tab[i][j] = static_cast<uint64_t>((1ULL << (std::abs(static_cast<int>(i) - static_cast<int>(j)) - 1)) - 1) << (min + 1);
                 }
                 else if (i % 8 == j % 8)
                 {
@@ -85,7 +85,7 @@ struct MoveUtils {
                         tab[i][j] |= static_cast<uint64_t>(1) << it;
                     }
                 }
-                else if (abs(i/8 - j/8) == abs(i%8 - j%8))
+                else if (std::abs(static_cast<int>(i)/8 - static_cast<int>(j)/8) == std::abs(static_cast<int>(i)%8 - static_cast<int>(j)%8))
                 {
                     int diag = 1;
                     if (min % 8 > max % 8)
