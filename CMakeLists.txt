@@ -14,6 +14,7 @@ add_subdirectory(src/StateInfo)
 add_subdirectory(src/Shared)
 add_subdirectory(src/Debug)
 add_subdirectory(src/MoveGenerator)
+add_subdirectory(src/MoveGenerator/MagicGeneration)
 
 add_executable(Barkoz-Tempo src/main.cpp)
 
@@ -24,6 +25,7 @@ target_link_libraries(Barkoz-Tempo
         StateInfo
         PieceMap
         MoveGenerator
+        HashMagicFunction
 )
 
 # tests
