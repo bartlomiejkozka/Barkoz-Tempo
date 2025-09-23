@@ -22,23 +22,23 @@ struct RookHolder final : MagicHolder
 		int r, f;
         for(r = rk+1; r <= 7; r++) 
         {
-          result |= (1ULL << (fl + r*8));
-          if(block & (1ULL << (fl + r*8))) break;
-        }
+			result |= (1ULL << (fl + r*8));
+          	if(block & (1ULL << (fl + r*8))) break;
+        }     
         for(r = rk-1; r >= 0; r--) 
         {
-          result |= (1ULL << (fl + r*8));
-          if(block & (1ULL << (fl + r*8))) break;
+			result |= (1ULL << (fl + r*8));	
+          	if(block & (1ULL << (fl + r*8))) break;
         }
         for(f = fl+1; f <= 7; f++) 
         {
-          result |= (1ULL << (f + rk*8));
-          if(block & (1ULL << (f + rk*8))) break;
+          	result |= (1ULL << (f + rk*8));
+          	if(block & (1ULL << (f + rk*8))) break;
         }
         for(f = fl-1; f >= 0; f--) 
         {
-          result |= (1ULL << (f + rk*8));
-          if(block & (1ULL << (f + rk*8))) break;
+          	result |= (1ULL << (f + rk*8));
+          	if(block & (1ULL << (f + rk*8))) break;
         }
         return result;
     }

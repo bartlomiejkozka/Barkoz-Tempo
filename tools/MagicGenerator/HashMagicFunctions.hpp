@@ -29,9 +29,7 @@
 // };
 
 // TODO:
-//        
 // - Probably in another TU, global defintion of attackTab, then in Magic Pieces pointer to first attackTab bitboard.
-// - Do abstraction to MagicHolders
 
 /*
 * The Class concept is dedicated to
@@ -58,12 +56,6 @@ class FancyMagicFunction {
     explicit FancyMagicFunction(const uint64_t square, const int bits, MagicHolder *piece)
         : _magic(findMagic(square, bits, piece)), _offset(bits), _rng(RANDOM_SEED) {}
     
-    // constexpr FancyMagicFunction(const FancyPair &params):
-    //     : _magic(magic), _offset(offset) {} 
-
-    // constexpr FancyMagicFunction(const uint64_t magic, const uint8_t offset)
-    //     : _magic(magic), _offset(offset) {}
-
     //--------------------
     // Getters
     //--------------------
