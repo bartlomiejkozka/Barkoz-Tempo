@@ -19,15 +19,6 @@
 #define TWO_MOST_SIGN_BITSS		0xFF00000000000000ULL
 #define RANDOM_SEED				416587
 
-//-------------------
-// enums declarations
-//-------------------
-// enum class MagicHolder
-// {
-// 	Rook,
-// 	Bishop
-// };
-
 // TODO:
 // - Probably in another TU, global defintion of attackTab, then in Magic Pieces pointer to first attackTab bitboard.
 
@@ -89,7 +80,7 @@ class FancyMagicFunction {
 	}
 
 	/* chessprogramming */
-	uint64_t randomUint64() 
+	uint64_t randomUint64()
 	{
 		uint64_t u1, u2, u3, u4;
 		u1 = (uint64_t)(_rng()) & 0xFFFF; u2 = (uint64_t)(_rng()) & 0xFFFF;

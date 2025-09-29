@@ -3,6 +3,8 @@
 
 #include <cstdint>
 
+// TODO: Change this virtualization to templates and specialization
+
 /* Interface */
 struct MagicHolder
 {
