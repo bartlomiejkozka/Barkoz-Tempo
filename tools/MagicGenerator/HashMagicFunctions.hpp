@@ -10,7 +10,7 @@
 #include "MoveUtils.hpp"
 #include "BitOperation.hpp"
 #include "Debug.h"
-#include "MagicHolder.hpp"
+#include "MagicSlider.hpp"
 
 //-------------
 // Local macros
@@ -27,7 +27,7 @@
 * generate random unique index for magic boards by brude force method - "Trial and Error"
 * hold magic number and offset for specific bishop/rook position
 */
-template<class randomGenerator = std::mt19937_64>
+template<Slider S, class randomGenerator = std::mt19937_64>
 class FancyMagicFunction {
 
     // [magic number, offset]
@@ -44,8 +44,10 @@ class FancyMagicFunction {
     // Intilizators
     //--------------------
     
-    explicit FancyMagicFunction(const uint64_t square, const int bits, MagicHolder *piece)
-        : _magic(findMagic(square, bits, piece)), _offset(bits), _rng(RANDOM_SEED) {}
+	FancyMagicFunction() = default;
+
+    explicit FancyMagicFunction(const int square, const int bits)
+        : _magic(findMagic(square, bits)), _offset(bits), _rng(RANDOM_SEED) {}
     
     //--------------------
     // Getters
@@ -94,12 +96,12 @@ class FancyMagicFunction {
 		return randomUint64() & randomUint64() & randomUint64();
 	}
 
-	uint64_t findMagic(int square, int bits, MagicHolder *piece)
+	uint64_t findMagic(int square, int bits)
 	{
 		uint64_t mask, occupanies[maxIndex], attackers[maxIndex], used[maxIndex], magic;
 		int i, j, k, n, fail;
 
-		mask = piece->occupanciesMask(square);
+		mask = MagicSLider<S>::occupanciesMask(square);
 		n = count_1s(mask);
 
 		DEBUG_BOARD_INFO("before AttacksMap");
@@ -107,7 +109,7 @@ class FancyMagicFunction {
 		for(i = 0; i < (1 << n); i++)
 		{
 			occupanies[i] = indexToUint64(i, n, mask);
-			attackers[i] = piece->attacksMask(square, occupanies[i]);
+			attackers[i] = MagicSLider<S>::attacksMask(square, occupanies[i]);
 		}
 
 		DEBUG_BOARD_INFO("after AttacksMap");

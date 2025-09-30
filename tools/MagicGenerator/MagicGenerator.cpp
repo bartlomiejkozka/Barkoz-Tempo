@@ -6,19 +6,27 @@
 /*************************************************/
 
 #include "MagicGenerator.hpp"
-#include "MagicHolder.hpp"
+#include "MagicSlider.hpp"
+#include "HashMagicFunctions.hpp"
 
-#include <array>s
+#include <array>
 #include <utility>
+
+void generatePlainText()
+{
+    
+}
 
 void magicGenerate()
 {
-    std::array<std::pair<uint64_t, uint8_t>, BIT_BOARD_SQUARES_SIZE> magicsRook;
-    std::array<std::pair<uint64_t, uint8_t>, BIT_BOARD_SQUARES_SIZE> magicsBishop;
+    std::array<FancyMagicFunction<Slider::Rook>, MAGIC_ARRAY_SIZE> magicsRook;
+    std::array<FancyMagicFunction<Slider::Bishop>, MAGIC_ARRAY_SIZE> magicsBishop;
     
-    for (int i = 0; i < BIT_BOARD_SQUARES_SIZE; ++i)
+    for (int i = 0; i < MAGIC_ARRAY_SIZE; ++i)
     {
-        magicsRook[i] = findMagic(i, count1s(occupanciesMask))
+        magicsRook[i] = FancyMagicFunction<Slider::Rook>(i, count1s(MagicSlider<Slider::Rook>::occupanciesMask(i)));
+        magicsBishop[i] = FancyMagicFunction<Slider::Bishop>(i, count1s(MagicSlider<Slider::Bishop>::occupanciesMask(i)));
     }
+
 
 }
