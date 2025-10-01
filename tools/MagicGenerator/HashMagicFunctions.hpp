@@ -7,9 +7,6 @@
 #include <utility>
 #include <bit>
 
-#include "MoveUtils.hpp"
-#include "BitOperation.hpp"
-#include "Debug.h"
 #include "MagicSlider.hpp"
 
 //-------------
@@ -21,6 +18,22 @@
 
 // TODO:
 // - Probably in another TU, global defintion of attackTab, then in Magic Pieces pointer to first attackTab bitboard.
+
+inline int pop_1st(uint64_t *mask)
+{
+	int idx = std::countr_zero(*mask);
+	*mask &= (*mask - 1);
+	return idx;
+}
+
+inline int count_1s(uint64_t mask)
+{
+	int i;
+	for (i = 0; mask; ++i, mask &= mask - 1) {}
+	return i;
+}
+
+//--------------------
 
 /*
 * The Class concept is dedicated to
@@ -53,8 +66,8 @@ class FancyMagicFunction {
     // Getters
     //--------------------
 
-    constexpr uint64_t getMagic()   { return _magic; }
-    constexpr int  getOffset()   	{ return _offset; }
+    constexpr uint64_t getMagic() const noexcept { return _magic; }
+    constexpr int getOffset() const noexcept     { return _offset; }
 
     //--------------------
 
@@ -101,18 +114,14 @@ class FancyMagicFunction {
 		uint64_t mask, occupanies[maxIndex], attackers[maxIndex], used[maxIndex], magic;
 		int i, j, k, n, fail;
 
-		mask = MagicSLider<S>::occupanciesMask(square);
+		mask = MagicSlider<S>::occupanciesMask(square);
 		n = count_1s(mask);
-
-		DEBUG_BOARD_INFO("before AttacksMap");
 
 		for(i = 0; i < (1 << n); i++)
 		{
 			occupanies[i] = indexToUint64(i, n, mask);
-			attackers[i] = MagicSLider<S>::attacksMask(square, occupanies[i]);
+			attackers[i] = MagicSlider<S>::attacksMask(square, occupanies[i]);
 		}
-
-		DEBUG_BOARD_INFO("after AttacksMap");
 
 		for(k = 0; k < MAGIC_GEN_TIMEOUT; k++)
 		{
