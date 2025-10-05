@@ -10,6 +10,8 @@
 
 #include <cstdint>
 #include <array>
+#include <utility>
+#include <bit>
 
 class Bishop 
 {
@@ -24,7 +26,7 @@ class Bishop
     // Main API function
     //------------------
 
-    [[nodiscard("PURE FUN")]] static constexpr uint64_t getMoves()
+    [[nodiscard("PURE FUN")]] static const uint64_t getMoves(uint64_t bishopMap)
     {
         
     }

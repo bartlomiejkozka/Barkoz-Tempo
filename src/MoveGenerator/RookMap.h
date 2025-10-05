@@ -10,10 +10,35 @@
 
 #include <cstdint>
 #include <array>
+#include "MoveUtils.hpp"
+#include "BitOperation.hpp"
+
+// computes one of occupanices combination based on occupancie index - max combinations=4096
+// * param[in] : bits -> occupaniec number - max=12
+// * param[in] : mask -> occupancies mask
+/* chessprogramming */
+constexpr uint64_t indexToUint64(const int index, const int bits, uint64_t mask)
+{
+    uint64_t result = 0ULL;
+    for(int i = 0; i < bits; i++)
+    {
+        int j = pop_1st(&mask);
+        if (index & (1 << i))
+        {
+            result |= (1ULL << j);
+        }
+    }
+    return result;
+}
+
+constexpr int transform(const uint64_t mask, const uint64_t magic, const int bits)
+{
+    return (int)((mask * magic) >> (64 - bits));
+}
 
 class Rook 
 {
-    public:
+public:
     //--------------------
     // Initilizers
     //--------------------
@@ -29,7 +54,45 @@ class Rook
         //TODO: change the fun. in King/Knight to return the possible squares not template
     }
 
-    private:
+private:
+    [[nodiscard("PURE FUN")]] static constexpr uint64_t occupanciesMask(const int square)
+    {
+        return (inBetween[square][square + (7 - (square % 8))]        // right
+                | inBetween[square][square - (square % 8)]            // left       
+                | inBetween[square][square + 8 * (7 - (square / 8))]  // up
+                | inBetween[square][square - 8 * (square / 8)]);      // down
+    }
+
+    /* chessprogramming */
+    [[nodiscard("PURE FUN")]] static uint64_t attacksMask(const int square, const uint64_t block)
+    {
+        uint64_t result = 0ULL;
+        int rk = square/8;
+        int fl = square%8;
+        int r, f;
+        for(r = rk+1; r <= 7; r++) 
+        {
+            result |= (1ULL << (fl + r*8));
+            if(block & (1ULL << (fl + r*8))) break;
+        }     
+        for(r = rk-1; r >= 0; r--) 
+        {
+            result |= (1ULL << (fl + r*8));	
+            if(block & (1ULL << (fl + r*8))) break;
+        }
+        for(f = fl+1; f <= 7; f++) 
+        {
+            result |= (1ULL << (f + rk*8));
+            if(block & (1ULL << (f + rk*8))) break;
+        }
+        for(f = fl-1; f >= 0; f--) 
+        {
+            result |= (1ULL << (f + rk*8));
+            if(block & (1ULL << (f + rk*8))) break;
+        }
+        return result;
+    }
+
     static constexpr std::array<std::pair<uint64_t, int>, 64> RookMagics = {
         { 0x80008040002010ULL, 12},
         { 0x80200040008011ULL, 11},
@@ -96,6 +159,27 @@ class Rook
         { 0xa1001100800b204ULL, 11},
         { 0x320040500209142ULL, 12}
     };
+
+    inline static const std::array<std::array<uint64_t, 4096>, 64> RookAttacks = [] () {
+        std::array<std::array<uint64_t, 4096>, 64> attacks{};
+
+        //iterate through all squares
+        for (int sq = 0; sq < 64; ++sq)
+        {
+            uint64_t occupanies[4096], attackers[4096];
+            uint64_t mask = occupanciesMask(sq);
+            int n = count_1s(mask);
+
+            for(int i = 0; i < (1 << n); i++)
+            {
+                occupanies[i] = indexToUint64(i, n, mask);
+                attackers[i] = attacksMask(sq, occupanies[i]);
+                int idx = transform(occupanies[i], RookMagics[sq].first, RookMagics[sq].second);
+                attacks[sq][idx] = attackers[i];
+            }
+        }
+        return attacks;
+    }();
 };
 
 #endif // ROOK_MAP
