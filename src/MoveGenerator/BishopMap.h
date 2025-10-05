@@ -12,10 +12,12 @@
 #include <array>
 #include <utility>
 #include <bit>
+#include "MoveUtils.hpp"
+#include "BitOperation.hpp"
 
 class Bishop 
 {
-    public:
+public:
     //--------------------
     // Initilizers
     //--------------------
@@ -26,12 +28,65 @@ class Bishop
     // Main API function
     //------------------
 
-    [[nodiscard("PURE FUN")]] static const uint64_t getMoves(uint64_t bishopMap)
+    [[nodiscard("PURE FUN")]] static const uint64_t getMoves(const uint64_t bishopMap)
     {
+        if (0 == bishopMap)
+        {
+            return 0ULL;
+        }
+
+        const int sq1 = static_cast<int>(countr_zero(bishopMap));
+        bishopMap &= bishopMap - 1;
+        const uint64_t ba = BishopAttacks[sq1][MoveUtils::Slider::transform(sq1, BishopMagics[sq1])];
+        if (0 == bishopMap)
+        {
+            return ba;
+        }
+
+        const int sq2 = static_cast<int>(countr_zero(bishopMap));
         
+        return ba | BishopAttacks[sq2][MoveUtils::Slider::transform(sq2, BishopMagics[sq2])];
     }
 
-    private:
+private:
+    [[nodiscard("PURE FUN")]] static constexpr uint64_t occupanciesMask(const int square)
+    {
+        return (inBetween[square][square + 9 * std::min(7 - (square % 8), 7 - (square / 8))]  // up-right
+             |  inBetween[square][square + 7 * std::min((square % 8), 7 - (square / 8))]      // up-left
+             |  inBetween[square][square - 7 * std::min(7 - (square % 8), (square / 8))]      // down-right
+             |  inBetween[square][square - 9 * std::min((square % 8), (square / 8))]);        // down-left
+    }
+
+    /* chessprogramming */
+    [[nodiscard("PURE FUN")]] static uint64_t attacksMask(const int square, const uint64_t block)
+    {
+        uint64_t result = 0ULL;
+        int rk = square/8;
+		int fl = square%8;
+		int r, f;
+        for(r = rk+1, f = fl+1; r <= 7 && f <= 7; r++, f++) 
+        {
+          result |= (1ULL << (f + r*8));
+          if(block & (1ULL << (f + r * 8))) break;
+        }
+        for(r = rk+1, f = fl-1; r <= 7 && f >= 0; r++, f--) 
+        {
+          result |= (1ULL << (f + r*8));
+          if(block & (1ULL << (f + r * 8))) break;
+        }
+        for(r = rk-1, f = fl+1; r >= 0 && f <= 7; r--, f++) 
+        {
+          result |= (1ULL << (f + r*8));
+          if(block & (1ULL << (f + r * 8))) break;
+        }
+        for(r = rk-1, f = fl-1; r >= 0 && f >= 0; r--, f--) 
+        {
+          result |= (1ULL << (f + r*8));
+          if(block & (1ULL << (f + r * 8))) break;
+        }
+        return result;
+    }
+
     static constexpr std::array<std::pair<uint64_t, int>, 64> BishopMagics = {
         { 0x11014200820200ULL, 6},
         { 0x1011940084004080ULL, 5},
@@ -98,6 +153,27 @@ class Bishop
         { 0x50580a10242100ULL, 5},
         { 0x11014200820200ULL, 6}
     };
+
+    inline static const std::array<std::array<uint64_t, 4096>, 64> BishopAttacks = [] () {
+        std::array<std::array<uint64_t, 4096>, 64> attacks{};
+
+        //iterate through all squares
+        for (int sq = 0; sq < 64; ++sq)
+        {
+            uint64_t occupanies[4096], attackers[4096];
+            uint64_t mask = occupanciesMask(sq);
+            int n = count_1s(mask);
+
+            for(int i = 0; i < (1 << n); i++)
+            {
+                occupanies[i] = MoveUtils::Slider::indexToUint64(i, n, mask);
+                attackers[i] = attacksMask(sq, occupanies[i]);
+                int idx = MoveUtils::Slider::transform(occupanies[i], BishopMagics[sq].first, BishopMagics[sq].second);
+                attacks[sq][idx] = attackers[i];
+            }
+        }
+        return attacks;
+    }();
 };
 
 #endif // BISHOP_MAP

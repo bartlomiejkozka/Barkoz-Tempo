@@ -10,31 +10,13 @@
 
 #include <cstdint>
 #include <array>
+#include <utility>
+#include <bit>
 #include "MoveUtils.hpp"
 #include "BitOperation.hpp"
 
-// computes one of occupanices combination based on occupancie index - max combinations=4096
-// * param[in] : bits -> occupaniec number - max=12
-// * param[in] : mask -> occupancies mask
-/* chessprogramming */
-constexpr uint64_t indexToUint64(const int index, const int bits, uint64_t mask)
-{
-    uint64_t result = 0ULL;
-    for(int i = 0; i < bits; i++)
-    {
-        int j = pop_1st(&mask);
-        if (index & (1 << i))
-        {
-            result |= (1ULL << j);
-        }
-    }
-    return result;
-}
-
-constexpr int transform(const uint64_t mask, const uint64_t magic, const int bits)
-{
-    return (int)((mask * magic) >> (64 - bits));
-}
+//TODO: change the fun. in King/Knight to return the possible squares not template
+        
 
 class Rook 
 {
@@ -49,9 +31,25 @@ public:
     // Main API function
     //------------------
 
-    [[nodiscard("PURE FUN")]] static constexpr uint64_t getMoves()
+    // return: 0 -> 0 moves to do
+    [[nodiscard("PURE FUN")]] static const uint64_t getMoves(const uint64_t rookMask)
     {
-        //TODO: change the fun. in King/Knight to return the possible squares not template
+        if (0 == rookMask)
+        {
+            return 0ULL;
+        }
+
+        const int sq1 = static_cast<int>(countr_zero(rookMask));
+        rookMask &= rookMask - 1;
+        const uint64_t ra = RookAttacks[sq1][MoveUtils::Slider::transform(sq1, RookMagics[sq1])];
+        if (0 == rookMask)
+        {
+            return ra;
+        }
+
+        const int sq2 = static_cast<int>(countr_zero(rookMask));
+        
+        return ra | RookAttacks[sq2][MoveUtils::Slider::transform(sq2, RookMagics[sq2])];
     }
 
 private:
@@ -172,9 +170,9 @@ private:
 
             for(int i = 0; i < (1 << n); i++)
             {
-                occupanies[i] = indexToUint64(i, n, mask);
+                occupanies[i] = MoveUtils::Slider::indexToUint64(i, n, mask);
                 attackers[i] = attacksMask(sq, occupanies[i]);
-                int idx = transform(occupanies[i], RookMagics[sq].first, RookMagics[sq].second);
+                int idx = MoveUtils::Slider::transform(occupanies[i], RookMagics[sq].first, RookMagics[sq].second);
                 attacks[sq][idx] = attackers[i];
             }
         }

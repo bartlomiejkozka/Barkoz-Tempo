@@ -107,6 +107,45 @@ struct MoveUtils {
         return tab;
     }();
 
+    struct Slider {
+        //------------------
+        // Initializators
+        //------------------
+
+        Slider() = delete;
+            
+        //------------------
+        // Methods
+        //------------------
+        
+        // computes one of occupanices combination based on occupancie index - max combinations=4096
+        // * param[in] : bits -> occupaniec number - max=12
+        // * param[in] : mask -> occupancies mask
+        /* chessprogramming */
+        static constexpr uint64_t indexToUint64(const int index, const int bits, uint64_t mask)
+        {
+            uint64_t result = 0ULL;
+            for(int i = 0; i < bits; i++)
+            {
+                int j = pop_1st(&mask);
+                if (index & (1 << i))
+                {
+                    result |= (1ULL << j);
+                }
+            }
+            return result;
+        }
+
+        static constexpr int transform(const uint64_t mask, const uint64_t magic, const int bits)
+        {
+            return (int)((mask * magic) >> (64 - bits));
+        }
+        static constexpr int transform(const uint64_t mask, const std::pair<uint64_t, int> magic)
+        {
+            return (int)((mask * magic.first) >> (64 - magic.second));
+        }
+    };
+
 };
 
 
