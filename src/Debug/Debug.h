@@ -2,7 +2,7 @@
 #define DEBUG_H
 
 #include "DebugCfg.h"
-#include "StdCfg.h"
+#include "Shared/StdCfg.h"
 #include "DebugAnsi.h"
 
 #if defined(DEBUG_PRINTF_ENABLE) && (DEBUG_PRINTF_ENABLE == STD_ON)

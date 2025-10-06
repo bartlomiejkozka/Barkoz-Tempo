@@ -5,7 +5,7 @@
 #include "Board.hpp"
 #include "StateInfo.hpp"
 #include "PieceMap.hpp"
-#include "BlackPawnMap.hpp"
+#include "MoveGenerator/BlackPawnMap.hpp"
 
 int main()
 {

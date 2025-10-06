@@ -1,10 +1,9 @@
-add_library(BoardUtils BoardUtils.cpp)
+add_library(BoardUtils INTERFACE)
 
 target_include_directories(BoardUtils
-    PUBLIC
-        ${CMAKE_CURRENT_SOURCE_DIR}
+    INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
 target_link_libraries(BoardUtils
-    PUBLIC Board
+    INTERFACE Board   # included by header
 )

@@ -2,7 +2,7 @@
 #define DEBUG_ANSI_H
 
 #include "DebugCfg.h"
-#include "StdCfg.h"
+#include "Shared/StdCfg.h"
 
 #if defined(DEBUG_ANSI_COLOR_ENABLE) && (DEBUG_ANSI_COLOR_ENABLE == STD_ON)
 

@@ -1,7 +1,7 @@
 #ifndef DEBUG_CFG_H
 #define DEBUG_CFG_H
 
-#include "StdCfg.h"
+#include "Shared/StdCfg.h"
 
 //--------DEBUG SEVERITY LEVELS--------
 #define DEBUG_LVL_DISABLED  (0U)

@@ -6,16 +6,28 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-add_subdirectory(src/BitOperation)
-add_subdirectory(src/Board)
-add_subdirectory(src/BoardUtils)
-add_subdirectory(src/PieceMap)
-add_subdirectory(src/StateInfo)
-add_subdirectory(src/Shared)
-add_subdirectory(src/Debug)
-add_subdirectory(src/MoveGenerator)
-
 add_executable(Barkoz-Tempo src/main.cpp)
+
+# set_target_properties(Barkoz-Tempo PROPERTIES
+#   CMAKE_CXX_STANDARD 20
+#   CMAKE_CXX_STANDARD_REQUIRED ON  # compiler must use C++ specified version
+#   CMAKE_CXX_EXTENSIONS OFF        # compiler can use only ISO C++ version specifier (GNU extensions not used)
+# )
+
+set(MODULE_DIRS
+  src/BitOperation
+  src/Board
+  src/BoardUtils
+  src/PieceMap
+  src/StateInfo
+  src/Shared
+  src/Debug
+  src/MoveGenerator
+)
+
+foreach(d IN LISTS MODULE_DIRS)
+  add_subdirectory(${d})
+endforeach()
 
 target_link_libraries(Barkoz-Tempo
     PRIVATE

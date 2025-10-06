@@ -1,12 +1,10 @@
-add_library(Board src/Board.cpp)
+add_library(Board INTERFACE)
 
+# see CMakeLists file comment in BitOperation module
 target_include_directories(Board
-    PUBLIC
-        ${CMAKE_CURRENT_SOURCE_DIR}/inc
+    INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
 target_link_libraries(Board
-    PUBLIC 
-        BitOperation
-        BoardUtils
+    INTERFACE BitOperation    # have to be public -> h file use this
 )

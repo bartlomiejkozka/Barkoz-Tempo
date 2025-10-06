@@ -5,7 +5,7 @@
 // considering all rules of chess
 
 class ChessRules {
-
+    
 };
 
 
