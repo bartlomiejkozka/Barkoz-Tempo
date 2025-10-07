@@ -1,0 +1,4 @@
+# TODO:
+# - Finish defining final move encoding
+# - Define all chess rules required in order to generate legal moves
+# - Do legal moves generation and Perft tests

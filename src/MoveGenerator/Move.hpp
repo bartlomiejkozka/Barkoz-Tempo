@@ -16,18 +16,18 @@
 
 /*
 Packed move bits meaning:
-    0-5:    from square
-    6-11:   to square
-    12:     promotion
+    0-5:    origin square
+    6-11:   target square
+    12:     promotion (promoted piece encoded on special bits)
     13:     capture
     14:     special 1
     15:     special 0
 
-Encoding:
+Last 4 Nibble bits Encoding:
     0:  0 0 0 0 - quiet move (no capure, no promotion)
     1:  0 0 0 1 - double pawn push
-    2:  0 1 0 - king castle
-    3:  0 1 1 - queen castle
+    2:  0 0 1 0 - king castle
+    3:  0 0 1 1 - queen castle
     4:  0 1 0 0 - caputres
     5:  0 1 0 1 - ep-caputre
     8:  1 0 0 0 - knigh-promotion
@@ -39,8 +39,8 @@ Encoding:
     14: 1 1 1 0 - rook-promo capture
     15: 1 1 1 1 - queen-promo capture
 
-* For now every move type will have encoded value form 1 - 15 in decimal to qucik checks the type of move
-* This causes losses on felxibility - be aware
+* This implementation encode value form 1 - 15 in decimal to qucik checks the type of move
+* It is possible to store moves on 32 bits (with capture, ...), but it's much worse for Transposition table memory
 */
 struct packedMove
 {
@@ -67,8 +67,7 @@ struct packedMove
 
     [[nodiscard]] constexpr uint16_t getSpecials() { return _packed_move & specialBits_mask; }
 
-    // unused for this logic implementation
-    
+    // unused for this logic implementation -> corresponding functions in Move class
     /*
     [[nodiscard]] constexpr bool isPromotion() { return (_packed_move & promotion_mask) != 0; }
 
@@ -126,12 +125,10 @@ class Move
 
     void make_move(Board &b)
     {
-        
     }
 
     void unmake_move(Board &b)
     {
-
     }
 };
 

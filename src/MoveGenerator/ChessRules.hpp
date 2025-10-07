@@ -1,12 +1,21 @@
+// Copyright (c) 2025 Bartlomiej Kozka
+// All rights reserved.
+
+/*************** File description ****************/
+// Class for cheking moves legality/pseudo legality
+/*************************************************/
+
 #ifndef CHESS_RULES_HPP
 #define ChESS_RULES_HPP
 
-// class for cheking moves legality/pseudo legality
-// considering all rules of chess
+#include "Board.hpp"
 
 class ChessRules {
+private:
+    Board &_board;
+
+public:
     
 };
-
 
 #endif

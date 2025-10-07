@@ -1,3 +1,4 @@
+// Copyright (c) 2025 Bartlomiej Kozka
 // All rights reserved.
 
 /*************** File description ****************/
