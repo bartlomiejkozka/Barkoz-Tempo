@@ -31,26 +31,16 @@ public:
     //------------------
     // Main API function
     //------------------
-
-    // return: 0 -> 0 moves to do
-    [[nodiscard("PURE FUN")]] static const uint64_t getMoves(const uint64_t rookMask)
+    // TODO: Make Template for these slider functions
+    [[nodiscard("PURE FUN")]] static const uint64_t getMoves(const originSq, const uint64_t bbUs, const uint64_t bbThem)
     {
-        if (0 == rookMask)
-        {
-            return 0ULL;
-        }
-
-        const int sq1 = static_cast<int>(countr_zero(rookMask));
-        rookMask &= rookMask - 1;
-        const uint64_t ra = RookAttacks[sq1][MoveUtils::Slider::transform(sq1, RookMagics[sq1])];
-        if (0 == rookMask)
-        {
-            return ra;
-        }
-
-        const int sq2 = static_cast<int>(countr_zero(rookMask));
+        const uint64_t occupancieUs = bbUs & occupanciesMask(originSq);
+        const uint64_t occupancieThem = bbThem & occupanciesMask(originSq);
         
-        return ra | RookAttacks[sq2][MoveUtils::Slider::transform(sq2, RookMagics[sq2])];
+        const uint64_t attacks = RookAttacks[originSq][MoveUtils::Slider::transform(occupancieThem, RookMagics[originSq])];
+        attacks |= occupancieUs;
+
+        return attacks;
     }
 
 private:

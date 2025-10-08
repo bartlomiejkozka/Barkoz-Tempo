@@ -14,7 +14,7 @@
 * 1. pawn pushes
 * 2. double pawn pushes
 * 3. pawn attacks
-* 4. handling en passant pawn moves
+* 4. En passant strikes
 */
 
 class BlackPawnMap {
@@ -29,34 +29,35 @@ class BlackPawnMap {
     // Moves defined by Chess rules
     //--------------------
 
-    [[nodiscard("PURE FUN")]] static constexpr uint64_t getPushTargets(const uint64_t wPawns, const uint64_t fullBoard) { return wPawns >> 8 & MoveUtils::empty(fullBoard); }
+    [[nodiscard("PURE FUN")]] static constexpr uint64_t getPushTargets(const uint64_t originSq, const uint64_t fullBoard) { return originSq >> 8 & MoveUtils::empty(fullBoard); }
 
-    [[nodiscard("PURE FUN")]] static constexpr uint64_t getDblPushTargets(const uint64_t wPawns, const uint64_t fullBoard) { return wPawns >> 16 & MoveUtils::empty(fullBoard); }
+    [[nodiscard("PURE FUN")]] static constexpr uint64_t getDblPushTargets(const uint64_t originSq, const uint64_t fullBoard) { return originSq >> 16 & MoveUtils::empty(fullBoard); }
 
-    [[nodiscard("PURE FUN")]] static constexpr uint64_t getWestAttackTargets(const uint64_t wPawns, const uint64_t oponentPieces) { return wPawns & notAFile >> 9 & oponentPieces; }
+    [[nodiscard("PURE FUN")]] static constexpr uint64_t getWestAttackTargets(const uint64_t originSq, const uint64_t oponentPieces) { return originSq & notAFile >> 9 & oponentPieces; }
 
-    [[nodiscard("PURE FUN")]] static constexpr uint64_t getEastAttackTargets(const uint64_t wPawns, const uint64_t oponentPieces) { return wPawns & notHFile >> 7 & oponentPieces; }
+    [[nodiscard("PURE FUN")]] static constexpr uint64_t getEastAttackTargets(const uint64_t originSq, const uint64_t oponentPieces) { return originSq & notHFile >> 7 & oponentPieces; }
 
-    [[nodiscard("PURE FUN")]] static constexpr uint64_t getAnyAttackTargets(const uint64_t wPawns, const uint64_t oponentPieces) 
+    [[nodiscard("PURE FUN")]] static constexpr uint64_t getAnyAttackTargets(const uint64_t originSq, const uint64_t oponentPieces) 
     { 
-        return getEastAttackTargets(wPawns, oponentPieces) | getWestAttackTargets(wPawns, oponentPieces); 
+        return getEastAttackTargets(originSq, oponentPieces) | getWestAttackTargets(originSq, oponentPieces); 
     }
 
-    [[nodiscard("PURE FUN")]] static constexpr uint64_t getEpAttackTarget(const uint64_t wPawns, const uint64_t ep) { return (( wPawns >> 9) | (wPawns >> 7)) & (static_cast<uint64_t>(1) << ep); }
+    [[nodiscard("PURE FUN")]] static constexpr uint64_t getEpAttackTarget(const uint64_t originSq, const uint64_t ep) { return (( originSq >> 9) | (originSq >> 7)) & (static_cast<uint64_t>(1) << ep); }
 
     // may be used in future by evaluation function
+    // TODO[Low prior]: get to know what author meant above
 
-    [[nodiscard("PURE FUN")]] static constexpr uint64_t getDblAttackTargets(const uint64_t wPawns, const uint64_t oponentPieces) { return getEastAttackTargets(wPawns, oponentPieces) & getWestAttackTargets(wPawns, oponentPieces); }
+    [[nodiscard("PURE FUN")]] static constexpr uint64_t getDblAttackTargets(const uint64_t originSq, const uint64_t oponentPieces) { return getEastAttackTargets(originSq, oponentPieces) & getWestAttackTargets(originSq, oponentPieces); }
 
-    [[nodiscard("PURE FUN")]] static constexpr uint64_t getSingleAttackTargets(const uint64_t wPawns, const uint64_t oponentPieces) { return getEastAttackTargets(wPawns, oponentPieces) ^ getWestAttackTargets(wPawns, oponentPieces); }
+    [[nodiscard("PURE FUN")]] static constexpr uint64_t getSingleAttackTargets(const uint64_t originSq, const uint64_t oponentPieces) { return getEastAttackTargets(originSq, oponentPieces) ^ getWestAttackTargets(originSq, oponentPieces); }
     
     //------------------
     // Main API function
     //------------------
 
-    [[nodiscard("PURE FUN")]] static constexpr uint64_t getMoves(const uint64_t wPawns, const uint64_t fullBoard, const uint64_t oponentPieces, const uint64_t ep)
+    [[nodiscard("PURE FUN")]] static constexpr uint64_t getMoves(const uint64_t originSq, const uint64_t fullBoard, const uint64_t oponentPieces, const uint64_t ep)
     {
-        return getPushTargets(wPawns, fullBoard) | getDblPushTargets(wPawns, fullBoard) | getAnyAttackTargets(wPawns, oponentPieces) | getEpAttackTarget(wPawns, ep);
+        return getPushTargets(originSq, fullBoard) | getDblPushTargets(originSq, fullBoard) | getAnyAttackTargets(originSq, oponentPieces) | getEpAttackTarget(originSq, ep);
     }
 
 

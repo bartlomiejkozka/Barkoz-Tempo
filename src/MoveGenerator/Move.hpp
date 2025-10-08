@@ -7,11 +7,8 @@
 
 // TODO:
 // - class Move for packing packed_move and have the move method and unmove with Bitboards change
-// - optional add some special bits fileds to packed move to have 32 bits instead of 16
-
 // - on the fly move logic
 // - add simple evaluation with legal moves checks
-
 
 
 /*
@@ -44,10 +41,10 @@ Last 4 Nibble bits Encoding:
 */
 struct packedMove
 {
-    private:
+private:
     uint16_t _packed_move;
 
-    public:
+public:
 
     //---------BIT MASKS--------
 
@@ -82,10 +79,10 @@ struct packedMove
 
 class Move 
 {
-    private:
+private:
     packedMove packed_move;
 
-    public:
+public:
 
     //-------HELPERS--------
 

@@ -28,24 +28,15 @@ public:
     // Main API function
     //------------------
 
-    [[nodiscard("PURE FUN")]] static const uint64_t getMoves(const uint64_t bishopMap)
+    [[nodiscard("PURE FUN")]] static const uint64_t getMoves(const originSq, const uint64_t bbUs, const uint64_t bbThem)
     {
-        if (0 == bishopMap)
-        {
-            return 0ULL;
-        }
-
-        const int sq1 = static_cast<int>(countr_zero(bishopMap));
-        bishopMap &= bishopMap - 1;
-        const uint64_t ba = BishopAttacks[sq1][MoveUtils::Slider::transform(sq1, BishopMagics[sq1])];
-        if (0 == bishopMap)
-        {
-            return ba;
-        }
-
-        const int sq2 = static_cast<int>(countr_zero(bishopMap));
+        const uint64_t occupancieUs = bbUs & occupanciesMask(originSq);
+        const uint64_t occupancieThem = bbThem & occupanciesMask(originSq);
         
-        return ba | BishopAttacks[sq2][MoveUtils::Slider::transform(sq2, BishopMagics[sq2])];
+        const uint64_t attacks = BishopAttacks[originSq][MoveUtils::Slider::transform(occupancieThem, BishopMagics[originSq])];
+        attacks |= occupancieUs;
+
+        return attacks;
     }
 
 private:
@@ -57,6 +48,7 @@ private:
              |  inBetween[square][square - 9 * std::min((square % 8), (square / 8))]);        // down-left
     }
 
+    // return: mask of normal moves & attacks
     /* chessprogramming */
     [[nodiscard("PURE FUN")]] static uint64_t attacksMask(const int square, const uint64_t block)
     {
@@ -153,7 +145,7 @@ private:
         { 0x50580a10242100ULL, 5},
         { 0x11014200820200ULL, 6}
     };
-
+    
     inline static const std::array<std::array<uint64_t, 4096>, 64> BishopAttacks = [] () {
         std::array<std::array<uint64_t, 4096>, 64> attacks{};
 

@@ -9,17 +9,21 @@
 // Knight Piece, same as King Piece will be using predefined moves table to generate pseudo-legal moves
 
 
-class KnightPattern {
-    public:
+class KnightPattern 
+{
+public:
     static constexpr uint8_t maxPosPosibilities = 8;
 
     //--------------
     // API function
     //--------------
 
-    static constexpr uint64_t getMoves() { MoveUtils::genStaticMoves(relativeMoves, notBoardMaps); } 
+    static constexpr uint64_t getMoves(const uint64_t bbUs) 
+    { 
+        MoveUtils::genStaticMoves(relativeMoves, notBoardMaps) & ~bbUs; 
+    }
 
-    private:
+private:
     static constexpr std::array<int, maxPosPosibilities> relativeMoves = { 6, 15, 17, 10, -6, -15, -17, -10 }
     static constexpr std::array<uint64_t, maxPosPosibilities> notBoardMaps = { notGHFile, notHFile, notAFile, notABFile, notABFile, notAFile, notHFile, notGHFile }
 

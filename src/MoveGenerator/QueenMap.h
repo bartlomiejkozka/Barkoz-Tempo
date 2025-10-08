@@ -10,10 +10,12 @@
 
 #include <cstdint>
 #include <array>
+#include "BishopMap.h"
+#include "RookMap.h"
 
 class Queen 
 {
-    public:
+public:
     //--------------------
     // Initilizers
     //--------------------
@@ -24,13 +26,10 @@ class Queen
     // Main API function
     //------------------
 
-    [[nodiscard("PURE FUN")]] static constexpr uint64_t getMoves()
+    [[nodiscard("PURE FUN")]] static constexpr uint64_t getMoves(const originSq, const uint64_t bbUs, const uint64_t bbThem)
     {
-        
+        return BishopMap::getMoves(originSq, bbUs, bbThem) | RookMap::getMoves(originSq, bbUs, bbThem);
     }
-
-    private:
-
 };
 
 #endif // QUEEN_MAP

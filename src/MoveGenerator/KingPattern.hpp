@@ -10,18 +10,21 @@
 // 2. Consider as in White/Black Pawn Maps the abstraction with KnightPattern
 
 
-
-class KingPattern {
-    public:
+class KingPattern 
+{
+public:
     static constexpr uint8_t maxPosPosibilities = 8;
 
     //--------------
     // API function
     //--------------
 
-    static constexpr uint64_t getMoves() { MoveUtils::genStaticMoves(relativeMoves, notBoardMaps); } 
+    static constexpr uint64_t getMoves(const uint64_t bbUs) 
+    {
+        return MoveUtils::genStaticMoves(relativeMoves, notBoardMaps) & ~bbUs;
+    }
 
-    private:
+private:
     // next 2 arrays have to be initialized by order accordingly each other
     static constexpr std::array<int, maxPosPosibilities> relativeMoves = { 1, 7, 8, 9, -1, -7, -8, -9 };
     static constexpr std::array<uint64_t, maxPosPosibilities> notBoardMaps = { notHFile, notHile, notAny, notAFile, notAFile, notAFile, notAny, notHFile };

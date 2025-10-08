@@ -136,11 +136,11 @@ struct MoveUtils {
             return result;
         }
 
-        static constexpr int transform(const uint64_t mask, const uint64_t magic, const int bits)
+        static constexpr int transform(const uint64_t occupancieMask, const uint64_t magic, const int bits)
         {
             return (int)((mask * magic) >> (64 - bits));
         }
-        static constexpr int transform(const uint64_t mask, const std::pair<uint64_t, int> magic)
+        static constexpr int transform(const uint64_t occupancieMask, const std::pair<uint64_t, int> magic)
         {
             return (int)((mask * magic.first) >> (64 - magic.second));
         }

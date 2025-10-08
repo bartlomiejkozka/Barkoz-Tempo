@@ -65,6 +65,7 @@ inline const std::array<std::array<uint64_t,BOARD_SIZE>, BOARD_SIZE> inBetween =
     return tab;
 }();
 
+// non-type template param
 template<Slider> struct MagicSlider;
 
 /*---------SPECIALIZATIONS---------*/
