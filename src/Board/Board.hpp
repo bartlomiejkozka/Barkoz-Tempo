@@ -15,8 +15,8 @@
  *******************************************************************************/
 enum class PieceDescriptor : size_t
 {
-    nWhite,
-    nBlack,
+    nWhite, // side to move color indicator
+    nBlack, // side to move color indicator
     wPawn,
     bPawn,
     wKnight,
@@ -36,14 +36,13 @@ enum class PieceDescriptor : size_t
 // - add castling bitboards
 // - add en passant bitboards
 // - implement stack of prevMoves to undo moves
-// - then could be implemented the useful bit opertaions in signle class
 
 
 /******************************************************************************
  * Class representing a chess board
  * Main chess fileds: bitboards, playing color, castling, en passant, etc.
  * The board is reprtesented by 14 bitboards, 12 for every cardinal piece type
- * and 2 for any piece of a color (white/black)
+ * and 2 for any piece of a color (white - bottom ranks / black - upper ranks)
  *******************************************************************************/
 struct Board
 {
@@ -106,8 +105,8 @@ struct Board
 
     std::unordered_map<uint64_t, uint8_t> repetitions = {}; // hash -> count
     uint8_t halfMoveClock = 0;
-    uint8_t enPassant = 0; // enPassant Square, 255 - if no enPassant -> color is not imprtant beacuse of inremental semantic
-    uint8_t castlingRights = 0x0F; // 0b00001(white kingsite)1(white queensite)1(black kingsite)1(balck queensite)
+    uint8_t enPassant = 0; // enPassant Square, 0 - if no enPassant
+    uint8_t castlingRights = 0x0F; // 0b00001(white kingside)1(white queenside)1(black kingside)1(balck queenside)
 };
 
 

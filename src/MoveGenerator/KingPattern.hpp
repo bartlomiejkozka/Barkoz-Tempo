@@ -19,7 +19,7 @@ public:
     // API function
     //--------------
 
-    static constexpr uint64_t getMoves(const uint64_t bbUs) 
+    static constexpr uint64_t getMoves(const uint64_t bbUs)
     {
         return MoveUtils::genStaticMoves(relativeMoves, notBoardMaps) & ~bbUs;
     }

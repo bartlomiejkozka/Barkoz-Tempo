@@ -42,7 +42,11 @@ class BlackPawnMap {
         return getEastAttackTargets(originSq, oponentPieces) | getWestAttackTargets(originSq, oponentPieces); 
     }
 
-    [[nodiscard("PURE FUN")]] static constexpr uint64_t getEpAttackTarget(const uint64_t originSq, const uint64_t ep) { return (( originSq >> 9) | (originSq >> 7)) & (static_cast<uint64_t>(1) << ep); }
+    [[nodiscard("PURE FUN")]] static constexpr uint64_t getEpAttackTarget(const uint64_t originSq, const int ep)
+    {
+        if (0 == ep) return 0ULL;
+        return (( originSq >> 9) | (originSq >> 7)) & (static_cast<uint64_t>(1) << ep);
+    }
 
     // may be used in future by evaluation function
     // TODO[Low prior]: get to know what author meant above
