@@ -90,6 +90,15 @@ struct Board
         0xFFUL << 8, 0xFFUL << convertFromMinBitSetToMaxBitSet(16)
     };
     
+    // ---------------------------------
+    // getters
+    // ---------------------------------
+
+    const uint64_t fullBoard() const 
+    { 
+        return bitboards[PieceDescriptor::nWhite] & bitboards[PieceDescriptor::nBlack]; 
+    }
+
     //==================================
     //===========Board Attibutes========
     //==================================

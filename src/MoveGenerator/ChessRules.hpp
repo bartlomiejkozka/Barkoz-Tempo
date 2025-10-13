@@ -26,12 +26,14 @@ public:
     // --------------------
     // Castling bit masks
     // --------------------
-    static constexpr uint8_t whiteCastlingRightMask = 0x04;
-    static constexpr uint8_t blackCastlingRightMask = 0x01;
-    static constexpr uint64_t whiteCastlingKingSide  = 0x0000000000000090;
-    static constexpr uint64_t whiteCastlingQueenSide = 0x0000000000000011;
-    static constexpr uint64_t blackCastlingKingSide  = 0x9000000000000000;
-    static constexpr uint64_t blackCastlingQueenSide = 0x1100000000000000;
+    constexpr std::array<uint64_t,2> KRight   { /* W */ 1ull<<3, /* B */ 1ull<<1 };
+    constexpr std::array<uint64_t,2> QRight   { /* W */ 1ull<<2, /* B */ 1ull<<0 };
+    constexpr std::array<uint64_t,2> KBlockers{ /* W */ (1ull<<5)|(1ull<<6), /* B */ (1ull<<61)|(1ull<<62) };
+    constexpr std::array<uint64_t,2> QBlockers{ /* W */ (1ull<<1)|(1ull<<2)|(1ull<<3), /* B */ (1ull<<57)|(1ull<<58)|(1ull<<59) };
+    constexpr std::array<uint64_t,2> KDest    { /* W */ (1ull<<6), /* B */ (1ull<<62) };
+    constexpr std::array<uint64_t,2> QDest    { /* W */ (1ull<<2), /* B */ (1ull<<58) };
+
+
     // --------------------
     // Initializators
     // --------------------
@@ -41,34 +43,29 @@ public:
     // --------------------
     // Methods
     // --------------------
+    // without cheking is the King attacked
     [[nodiscard]] const uint64_t parseAndGetCastlingMoves() const
     {
-        std::pair<bool, bool> isCastlingPossible{/*king-site*/0, /*queen-site*/0};
-        const std::pair<uint64_t. uint64_t> mask{/*king-site*/0, /*queen-site*/0};
-        const uint64_t castlingMap = 0;
-
-        if (PieceDescriptor::nWhite == _board.sideToMove)
-        {
-            isCastlingPossible = {_board.sideToMove & (whiteCastlingRightMask << 1), 
-                                  _board.sideToMove & whiteCastlingRightMask};
-            mask = {whiteCastlingKingSide, blackCastlingRightMask};
-            castlingMap = _board.bitboards[PieceDescriptor::wKing]
-                | _board.bitboards[PieceDescriptor::wRook]
-        }
-        else if (PieceDescriptor::bWhite == _board.sideToMove)
-        {
-            isCastlingPossible = {_board.sideToMove & (blackCastlingRightMask << 1), 
-                                  _board.sideToMove & blackCastlingRightMask};
-            mask = {blackCastlingKingSide, blackCastlingQueenSide};
-            castlingMap = _board.bitboards[PieceDescriptor::bKing]
-                | _board.bitboards[PieceDescriptor::bRook]        
-        }
-        else
-        {
-        }
+        const size_t s = static_cast<int>(_board.sideToMove);
         
-              
+        const bool canK = (_board.castlingRights & KRight[s]) != 0;
+        const bool canQ = (_board.castlingRights & QRight[s]) != 0;
+
+        const uint64_t moves = 0;
+        // king-side
+        if ( canK && (KBlockers[s] && _board.fullBoard()) )
+        {
+            moves |= KDest[s];
+        }
+        // queen-side
+        if ( canQ && (QBlockers[s] && _board.fullBoard()) )
+        {
+            moves |= QDest[s];
+        }
+
+        return moves;
     }
+    
 
 private:
     Board &_board;
