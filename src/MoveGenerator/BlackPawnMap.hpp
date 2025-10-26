@@ -3,7 +3,8 @@
 
 #include <cstdint>
 #include "MoveUtils.hpp"
-
+#include "Board.hpp"
+#include "WhitePawnMap.hpp"
 
 /*
 * Basic Lowest Level Component of Legal Moves
@@ -55,21 +56,37 @@ class BlackPawnMap {
 
     [[nodiscard("PURE FUN")]] static constexpr uint64_t getSingleAttackTargets(const uint64_t originSq, const uint64_t oponentPieces) { return getEastAttackTargets(originSq, oponentPieces) ^ getWestAttackTargets(originSq, oponentPieces); }
     
-    //------------------
-    // Main API function
-    //------------------
+    //--------------------------
+    // Main API function - moves
+    //--------------------------
 
     [[nodiscard("PURE FUN")]] static constexpr uint64_t getMoves(const uint64_t originSq, const uint64_t fullBoard, const uint64_t oponentPieces, const uint64_t ep)
     {
         return getPushTargets(originSq, fullBoard) | getDblPushTargets(originSq, fullBoard) | getAnyAttackTargets(originSq, oponentPieces) | getEpAttackTarget(originSq, ep);
     }
 
+    //--------------------------
+    // Main API function - table
+    //--------------------------
+
+    // Ep exluded -> in general case (King check) Ep not used
+    constexpr std::array<uint64_t, Board::boardSize> attacksTo = [] 
+    {
+        constexpr std::array<uint64_t, Board::boardSize> res{};
+        constexpr uint64_t oPieces = 0xFFFFFFFFFFFFFFFF;
+
+        for (int i = 0, uint64_t pos = 1; i < Board::boardSize; pos <<= 1, ++i)
+        {
+            res[i] = WhitePawnMap::getAnyAttackTargets(pos, oPieces);
+        }
+
+        return res;
+    }();
 
     private:
-    //--------------------
+    //----------------------------
     // Helpers for attacking moves
-    //--------------------
-
+    //----------------------------
     static constexpr uint64_t notAFile = 0x7F7F7F7F7F7F7F7F;
     static constexpr uint64_t notHFile = 0xFEFEFEFEFEFEFEFE;
 };

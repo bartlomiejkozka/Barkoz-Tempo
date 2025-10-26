@@ -65,7 +65,7 @@ public:
 
         return moves;
     }
-    
+        
 
 private:
     Board &_board;

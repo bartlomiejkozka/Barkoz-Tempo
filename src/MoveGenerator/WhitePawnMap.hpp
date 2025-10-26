@@ -3,6 +3,7 @@
 
 #include <cstdint>
 #include "MoveUtils.hpp"
+#include "BlackPawnMap.hpp"
 
 
 // TODO:
@@ -59,6 +60,24 @@ class WhitePawnMap {
     {
         return getPushTargets(originSq, fullBoard) | getDblPushTargets(originSq, fullBoard) | getAnyAttackTargets(originSq, oponentPieces) | getEpAttackTarget(originSq, ep);
     }
+
+    //--------------------------
+    // Main API function - table
+    //--------------------------
+
+    // Ep exluded -> in general case (King check) Ep not used
+    constexpr std::array<uint64_t, Board::boardSize> attacksTo = [] 
+    {
+        constexpr std::array<uint64_t, Board::boardSize> res{};
+        constexpr uint64_t oPieces = 0xFFFFFFFFFFFFFFFF;
+
+        for (int i = 0, uint64_t pos = 1; i < Board::boardSize; pos <<= 1, ++i)
+        {
+            res[i] = BlackPawnMap::getAnyAttackTargets(pos, oPieces);
+        }
+
+        return res;
+    }();
 
     private:
     //--------------------

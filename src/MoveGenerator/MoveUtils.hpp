@@ -10,7 +10,7 @@
 /* 
 * Usage of inline static varaible is neccessary to avoid the linkage error.
 * Up to c++17 is possiblity to attach the same static var to different TU across program.
-* Before it was not possible due to linker err.
+* Before, it was not possible due to linker err.
 */
 
 struct MoveUtils {
@@ -33,13 +33,18 @@ struct MoveUtils {
     [[nodiscard("PURE FUN")]] static constexpr uint64_t shift(uint64_t x, int shiftBy) { return shiftBy < 0 ? (x >> shiftBy) : (x << shiftBy); } 
 
 
+    // -------------------
+    // King/Knight Use
+    // -------------------
+
     /*
     * Generation of static moves table
+    * This function can also be used to gen attackstTo table !
     */
     template<size_t N>
-    static constexpr std::array<uint64_t, Board::boardSize> genStaticMoves(const std::array<int, N> relativeMoves, const std::array<uint64_t, N> notBoardMaps)
+    static consteval std::array<uint64_t, Board::boardSize> genStaticMoves(const std::array<int, N> &relativeMoves, const std::array<uint64_t, N> &notBoardMaps)
     {
-        std::array<uint64_t, Board::boardSize> moves = {};
+        constexpr std::array<uint64_t, Board::boardSize> moves = {};
         moves.fill(1);
 
         for (size_t i = 0; i < Board::boardSize; ++i)
