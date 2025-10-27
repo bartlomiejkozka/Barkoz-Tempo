@@ -44,35 +44,15 @@ public:
     // Methods
     // --------------------
     // without cheking is the King attacked
-    [[nodiscard]] const uint64_t parseAndGetCastlingMoves() const
-    {
-        const size_t s = static_cast<int>(_board.sideToMove);
+    [[nodiscard]] const uint64_t getCastlingMoves() const;
         
-        const bool canK = (_board.castlingRights & KRight[s]) != 0;
-        const bool canQ = (_board.castlingRights & QRight[s]) != 0;
-
-        const uint64_t moves = 0;
-        // king-side
-        if ( canK && (KBlockers[s] && _board.fullBoard()) )
-        {
-            moves |= KDest[s];
-        }
-        // queen-side
-        if ( canQ && (QBlockers[s] && _board.fullBoard()) )
-        {
-            moves |= QDest[s];
-        }
-
-        return moves;
-    }
-        
-
 private:
     Board &_board;
 
     // --------------------
-    // Methods
+    // Methods - helpers
     // --------------------
+    [[nodiscard]] const uint64_t attacksTo(const int sq, const pColor movePColor) const;
 };
 
 #endif

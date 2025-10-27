@@ -32,15 +32,16 @@ public:
     // Main API function
     //------------------
     // TODO: Make Template for these slider functions
+    /*
+    * This function could be also used to get attacksTo squares, then originSq = attacksTo
+    */
     [[nodiscard("PURE FUN")]] static const uint64_t getMoves(const originSq, const uint64_t bbUs, const uint64_t bbThem)
     {
-        const uint64_t occupancieUs = bbUs & occupanciesMask(originSq);
-        const uint64_t occupancieThem = bbThem & occupanciesMask(originSq);
-        
-        const uint64_t attacks = RookAttacks[originSq][MoveUtils::Slider::transform(occupancieThem, RookMagics[originSq])];
-        attacks |= occupancieUs;
+        const uin64_t occ = (bbUs | bbThem) & occupanciesMask(originSq);
 
-        return attacks;
+        const uint64_t attacks = RookAttacks[originSq][MoveUtils::Slider::transform(occ, RookMagics[originSq])];
+
+        return attacks & ~bbUs;
     }
 
 private:

@@ -30,13 +30,11 @@ public:
 
     [[nodiscard("PURE FUN")]] static const uint64_t getMoves(const originSq, const uint64_t bbUs, const uint64_t bbThem)
     {
-        const uint64_t occupancieUs = bbUs & occupanciesMask(originSq);
-        const uint64_t occupancieThem = bbThem & occupanciesMask(originSq);
+        const uin64_t occ = (bbUs | bbThem) & occupanciesMask(originSq);
         
-        const uint64_t attacks = BishopAttacks[originSq][MoveUtils::Slider::transform(occupancieThem, BishopMagics[originSq])];
-        attacks |= occupancieUs;
+        const uint64_t attacks = BishopAttacks[originSq][MoveUtils::Slider::transform(occ, BishopMagics[originSq])];
 
-        return attacks;
+        return attacks & ~bbUs;
     }
 
 private:
