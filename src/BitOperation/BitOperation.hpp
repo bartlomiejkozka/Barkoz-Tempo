@@ -18,10 +18,10 @@ inline uint64_t convertFromMinBitSetToMaxBitSet(uint64_t bitSet)
     return bitSet ^ 63;
 }
 
-inline int pop_1st(uint64_t *mask)
+inline int pop_1st(uint64_t &mask)
 {
-    int idx = std::countr_zero(*mask);
-    *mask &= (*mask - 1);
+    int idx = std::countr_zero(mask);
+    mask &= (mask - 1);
     return idx;
 }
 
@@ -31,6 +31,7 @@ inline int count_1s(uint64_t mask)
     for (i = 0; mask; ++i, mask &= mask - 1) {}
     return i;
 }
+
 
 
 #endif // BITOPERATION_HPP

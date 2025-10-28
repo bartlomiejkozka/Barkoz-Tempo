@@ -52,7 +52,24 @@ private:
     // --------------------
     // Methods - helpers
     // --------------------
-    [[nodiscard]] const uint64_t attacksTo(const int sq, const pColor movePColor) const;
+    
+    // --------------------
+    // Attacks (check)
+    // --------------------
+
+    [[nodiscard]] uint64_t attacksTo(const int sq, const pColor movePColor) const;
+
+    [[nodiscard]] const bool isAttackedTo(const int sq, const pColor movePColor) const;
+
+    [[nodiscard]] const bool isPathSafe(uint64_t pathSq, const pColor movePColor) const;
+
+    // --------------------
+    // Pins (x-rays)
+    // --------------------
+
+    // return: pinners -> pieces obscured by pins
+    template <uint64_t (*Attacks)(const int, const uint64_t, const uint64_t)>
+    [[nodiscard]] uint64_t ChessRules::xrayAttacks(int sq, uint64_t bbUs, uint64_t bbThem, uint64_t blockers) const;
 };
 
 #endif

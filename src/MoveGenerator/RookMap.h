@@ -35,7 +35,7 @@ public:
     /*
     * This function could be also used to get attacksTo squares, then originSq = attacksTo
     */
-    [[nodiscard("PURE FUN")]] static const uint64_t getMoves(const originSq, const uint64_t bbUs, const uint64_t bbThem)
+    [[nodiscard("PURE FUN")]] static const uint64_t getMoves(const int originSq, const uint64_t bbUs, const uint64_t bbThem)
     {
         const uin64_t occ = (bbUs | bbThem) & occupanciesMask(originSq);
 
