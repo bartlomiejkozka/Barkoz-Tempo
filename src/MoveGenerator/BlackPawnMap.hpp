@@ -70,13 +70,14 @@ class BlackPawnMap {
     //--------------------------
 
     // Ep exluded -> in general case (King check) Ep not used
-    constexpr std::array<uint64_t, Board::boardSize> attacksTo = [] 
+    constexpr std::array<uint64_t, Board::boardSize> attacksTo = [] constexpr
     {
-        constexpr std::array<uint64_t, Board::boardSize> res{};
+        std::array<uint64_t, Board::boardSize> res{};
         constexpr uint64_t oPieces = 0xFFFFFFFFFFFFFFFF;
 
-        for (int i = 0, uint64_t pos = 1; i < Board::boardSize; pos <<= 1, ++i)
+        for (int i = 0; i < Board::boardSize; ++i)
         {
+            uint64_t pos = 1UL << i;
             res[i] = WhitePawnMap::getAnyAttackTargets(pos, oPieces);
         }
 

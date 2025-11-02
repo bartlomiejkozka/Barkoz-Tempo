@@ -66,7 +66,8 @@ struct MoveUtils {
 
     * For the not hirozontal, vertical or diagonal squares array value is set to zeros bit board
     */
-    inline static const std::array<std::array<uint64_t, Board::boardSize>, Board::boardSize> inBetween = [] () {
+    inline static constexpr std::array<std::array<uint64_t, Board::boardSize>, Board::boardSize> inBetween = [] () constexpr
+    {
         std::array<std::array<uint64_t, Board::boardSize>, Board::boardSize> tab = {};
 
         for (size_t i = 0; i < Board::boardSize; ++i)

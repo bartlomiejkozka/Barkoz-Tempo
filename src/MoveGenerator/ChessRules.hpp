@@ -16,6 +16,8 @@
 #include <utility>
 #include "Board.hpp"
 #include "Move.hpp"
+#include "BitOperation.hpp"
+#include "MoveUtils.hpp"
 
 #define MAX_MOVES_NUMBER    (256)   // rael max is 218
 
@@ -23,6 +25,12 @@
 class ChessRules
 {
 public:
+    enum class Sliders
+    {
+        Bishop,
+        Rook
+    };
+
     // --------------------
     // Castling bit masks
     // --------------------
@@ -52,10 +60,6 @@ private:
     // --------------------
     // Methods - helpers
     // --------------------
-    
-    // --------------------
-    // Attacks (check)
-    // --------------------
 
     [[nodiscard]] uint64_t attacksTo(const int sq, const pColor movePColor) const;
 
@@ -67,9 +71,51 @@ private:
     // Pins (x-rays)
     // --------------------
 
-    // return: pinners -> pieces obscured by pins
+    // blockers: by default it is attacked pieces bitboard
+    // use example to get pinners: xrayAttacks() & bbThem;
     template <uint64_t (*Attacks)(const int, const uint64_t, const uint64_t)>
-    [[nodiscard]] uint64_t ChessRules::xrayAttacks(int sq, uint64_t bbUs, uint64_t bbThem, uint64_t blockers) const;
+    [[nodiscard]] uint64_t ChessRules::xrayAttacks(int sq, uint64_t bbUs, uint64_t bbThem) const;
+
+    template <uint64_t (*Attacks)(const int, const uint64_t, const uint64_t), Sliders slider>
+    [[nodiscard]] uint64_t getPins(/*kingSq*/int sq) const;
+
+    [[nodiscard]] uint64_t getAllPins(int sq) const;
+
+    // ---------------------------
+    // King Move
+    // ---------------------------
+
+    uint64_t getKingMove() const;
 };
+
+
+// ---------------------
+// Functions definitions
+// ---------------------
+
+template <uint64_t (*Attacks)(const int, const uint64_t, const uint64_t)>
+[[nodiscard]] uint64_t ChessRules::xrayAttacks(int sq, uint64_t bbUs, uint64_t bbThem) const
+{
+    uint64_t attacks = Attacks(sq, bbThem, bbUs);
+    uint64_t blockers = bbThem & attacks;
+
+    // retuns the attacks behind the pin when there was a pinner
+    return attacks ^ Attacks(sq, bbUs, bbThem ^ blockers);
+}
+
+template <uint64_t (*Attacks)(const int, const uint64_t, const uint64_t), Sliders slider>
+[[nodiscard]] uint64_t ChessRules::getPins(/*kingSq*/int sq) const
+{
+    const uint64_t sliderOpp = slider ? _board.bbThemRQ() : _board.bbUsBQ();
+    uint64_t pinned = 0;
+    pinner = xrayAttacks<Attacks>(sq, _board.bbUs(), _board.bbThem()) & sliderOpp;
+    while (pinner)
+    {
+        int sqP = pop_1st(pinner);
+        pinned |= inBetween[sqP][sq] & _board.bbUs();
+    }
+
+    return pinned;
+}
 
 #endif

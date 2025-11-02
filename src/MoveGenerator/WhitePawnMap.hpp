@@ -1,5 +1,5 @@
-#ifndef BLACK_PAWN_HPP
-#define BLACK_PAWN_HPP
+#ifndef WHITW_PAWN_HPP
+#define WHITE_PAWN_HPP
 
 #include <cstdint>
 #include "MoveUtils.hpp"
@@ -66,7 +66,7 @@ class WhitePawnMap {
     //--------------------------
 
     // Ep exluded -> in general case (King check) Ep not used
-    constexpr std::array<uint64_t, Board::boardSize> attacksTo = [] 
+    constexpr std::array<uint64_t, Board::boardSize> attacksTo = [] constexpr
     {
         constexpr std::array<uint64_t, Board::boardSize> res{};
         constexpr uint64_t oPieces = 0xFFFFFFFFFFFFFFFF;

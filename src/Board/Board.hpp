@@ -122,6 +122,40 @@ struct Board
     uint8_t halfMoveClock = 0;
     uint8_t enPassant = 0; // enPassant Square, 0 - if no enPassant
     uint8_t castlingRights = 0x0F; // 0b00001(white kingside)1(white queenside)1(black kingside)1(balck queenside)
+
+    // ---------------------------------
+    // Helpers
+    // ---------------------------------
+
+    size_t bbUs() const
+    {
+        return bitboards[static_cast<size_t>(sideToMove)];
+    }
+    size_t bbUsRQ() const
+    {
+        return bitboards[static_cast<size_t>(PieceDescriptor::wRook) + static_cast<size_t>(sideToMove)]
+            | bitboards[static_cast<size_t>(PieceDescriptor::wQueen) + static_cast<size_t>(sideToMove)];
+    }
+    size_t bbUsBQ() const
+    {
+        return bitboards[static_cast<size_t>(PieceDescriptor::wBishop) + static_cast<size_t>(sideToMove)]
+            | bitboards[static_cast<size_t>(PieceDescriptor::wQueen) + static_cast<size_t>(sideToMove)];
+    }
+
+    size_t bbThem() const
+    {
+        return static_cast<bool>(sideToMove) ? bitboards[static_cast<size_t>(sideToMove) - 1] : bitboards[static_cast<size_t>(sideToMove) + 1];
+    }
+    size_t bbThemRQ() const
+    {
+        return bitboards[static_cast<size_t>(PieceDescriptor::bRook) - static_cast<size_t>(sideToMove)]
+            | bitboards[static_cast<size_t>(PieceDescriptor::bQueen) - static_cast<size_t>(sideToMove)];
+    }
+    size_t bbThemBQ() const
+    {
+        return bitboards[static_cast<size_t>(PieceDescriptor::bBishop) - static_cast<size_t>(sideToMove)]
+            | bitboards[static_cast<size_t>(PieceDescriptor::bQueen) - static_cast<size_t>(sideToMove)];
+    }
 };
 
 

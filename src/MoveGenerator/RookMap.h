@@ -33,7 +33,7 @@ public:
     //------------------
     // TODO: Make Template for these slider functions
     /*
-    * This function could be also used to get attacksTo squares, then originSq = attacksTo
+    * This function could be also used to get attacksTo squares, then originSq = attacksTo, and bbUs = bbThem, and bbThem = bbUs
     */
     [[nodiscard("PURE FUN")]] static const uint64_t getMoves(const int originSq, const uint64_t bbUs, const uint64_t bbThem)
     {

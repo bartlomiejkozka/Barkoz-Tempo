@@ -23,16 +23,16 @@
     const bool canK = (_board.castlingRights & KRight[s]) != 0;
     const bool canQ = (_board.castlingRights & QRight[s]) != 0;
 
-    const uint64_t moves = 0;
+    uint64_t moves = 0;
     // king-side
     if ( canK && (KBlockers[s] & _board.fullBoard())
-        && isPathSafe(KBlockers[s], static_cast<pColor>s) )
+        && isPathSafe(KBlockers[s], static_cast<pColor>(s)) )
     {
         moves |= KDest[s];
     }
     // queen-side
     if ( canQ && (QBlockers[s] && _board.fullBoard())
-        && isPathSafe(QBlockers[s], static_cast<pColor>s) )
+        && isPathSafe(QBlockers[s], static_cast<pColor>(s)) )
     {
         moves |= QDest[s];
     }
@@ -43,7 +43,7 @@
 
 [[nodiscard]] uint64_t ChessRules::attacksTo(const int sq, const pColor attackedPColor) const
 {
-    const uint64_t pawns = attackedPColor ? BlackPawnMap::attacksTo[sq] & _board.bitboards[PieceDescriptor::wPawn + attackedPColor]
+    const uint64_t pawns = static_cast<bool>(attackedPColor) ? BlackPawnMap::attacksTo[sq] & _board.bitboards[PieceDescriptor::wPawn + attackedPColor]
         : WhitePawnMap::attacksTo[sq] & _board.bitboards[PieceDescriptor::wPawn + attackedPColor];
 
     const uint64_t bishop = BishopMap::getMoves(sq, _board.bitboards[PieceDescriptor::bBishop - attackedPColor],  _board.bitboards[PieceDescriptor::bBishop + attackedPColor]);
@@ -90,14 +90,17 @@
     return true;
 }
 
-// blockers: by default it is attacked pieces bitboard
-// use example to get pinners: xrayAttacks() & bbThem;
-template <uint64_t (*Attacks)(const int, const uint64_t, const uint64_t)>
-[[nodiscard]] uint64_t ChessRules::xrayAttacks(int sq, uint64_t bbUs, uint64_t bbThem, uint64_t blockers) const
+[[nodiscard]] uint64_t ChessRules::getAllPins(int sq) const
 {
-    uint64_t attacks = Attacks(sq, bbUs, bbThem);
-    blockers &= attacks;
+    return getPins<BishopMap::getMoves, Sliders::Bishop>(sq)
+        | getPins<RookMap::getMoves, Sliders::Rook>(sq);
+}
 
-    // retuns the attacks behind the pin when there was a pinner
-    return attacks ^ Attacks(sq, bbUs, bbThem ^ blockers);
+// ---------------------------
+// King Move
+// ---------------------------
+
+uint64_t getKingMove() const
+{
+    
 }
