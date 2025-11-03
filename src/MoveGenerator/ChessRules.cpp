@@ -100,7 +100,18 @@
 // King Move
 // ---------------------------
 
-uint64_t getKingMove() const
+uint64_t ChessRules::getKingMove() const
 {
-    
+    // moves init
+    uint64_t movesR = KingPattern::getMoves(_board.bbUs(Piece::King), _board.bbUs());
+    while (movesR)
+    {
+        int sq = pop_1st(movesR);
+        if (isAttackedTo(sq))
+        {
+            // add to moves
+        }
+    }
+
+    // moves + castling moves
 }

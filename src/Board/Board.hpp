@@ -31,6 +31,20 @@ enum class PieceDescriptor : size_t
     bKing
 };
 
+/******************************************************************************
+* Color indistinguishable PieceType
+* (used in Helper: bb(PieceType))
+ *******************************************************************************/
+enum class Piece : size_t
+{
+    Pawn   = 2,
+    Knight = 4,
+    Bishop = 6,
+    Rook   = 8,
+    Queen  = 10,
+    King   = 12
+};
+
 enum class pColor : int
 {
     White,
@@ -155,6 +169,16 @@ struct Board
     {
         return bitboards[static_cast<size_t>(PieceDescriptor::bBishop) - static_cast<size_t>(sideToMove)]
             | bitboards[static_cast<size_t>(PieceDescriptor::bQueen) - static_cast<size_t>(sideToMove)];
+    }
+
+    uint64_t bbUs(Piece pieceType) const
+    {
+        return bitboards[static_cast<size_t>(pieceType) + static_cast<size_t>(sideToMove)] 
+    }
+
+    uint64_t bbThem(Piece pieceType) const
+    {
+        return bitboards[static_cast<size_t>(pieceType) + 1 - static_cast<size_t>(sideToMove)]
     }
 };
 

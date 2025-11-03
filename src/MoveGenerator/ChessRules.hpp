@@ -85,6 +85,7 @@ private:
     // King Move
     // ---------------------------
 
+    // Regular legal king moves + castlings 
     uint64_t getKingMove() const;
 };
 
