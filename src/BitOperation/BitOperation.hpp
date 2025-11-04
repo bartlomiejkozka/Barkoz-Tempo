@@ -33,5 +33,4 @@ inline int count_1s(uint64_t mask)
 }
 
 
-
 #endif // BITOPERATION_HPP

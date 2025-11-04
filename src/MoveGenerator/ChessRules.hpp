@@ -31,6 +31,9 @@ public:
         Rook
     };
 
+    static constexpr int MovesBufferSize = 256; // the max number of moves in single move is 218
+
+    static constexpr int castlingMaxPossibilities = 4;
     // --------------------
     // Castling bit masks
     // --------------------
@@ -80,6 +83,30 @@ private:
     [[nodiscard]] uint64_t getPins(/*kingSq*/int sq) const;
 
     [[nodiscard]] uint64_t getAllPins(int sq) const;
+
+    // ---------------------------
+    // Move Type Helpers
+    // ---------------------------
+
+    // King - Knight -------------
+    [[nodiscard]] const MoveType encodeKingKnightMoveTypePure(int targetSq);
+
+    // King Castling -------------
+    [[nodiscard]] const MoveType encodeCastling(int targetSq)
+    {
+        if ( bitBoardSet(targetSq) & KDest[static_cast<size_t>(_board.sideToMove)] )
+        {
+            return MoveType::KING_CASTLE;
+        }
+        else if ( bitBoardSet(targetSq) & QDest[static_cast<size_t>(_board.sideToMove)] )
+        {
+            return MoveType::QUEEN_CASTLE;
+        }
+        else
+        {
+            // return sth
+        }
+    }
 
     // ---------------------------
     // King Move

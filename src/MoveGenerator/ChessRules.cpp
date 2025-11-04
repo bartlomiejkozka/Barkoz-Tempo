@@ -14,6 +14,9 @@
 #include "BishopMap.h"
 #include "RookMap.h"
 #include "QueenMap.h"
+#include "Move.hpp"
+
+#include <array>
 
 
 [[nodiscard]] const uint64_t ChessRules::getCastlingMoves() const
@@ -55,7 +58,7 @@
         | (KnightPattern::attacksTo[sq] & _board.bitboards[PieceDescriptor::wKnight + attackedPColor]);
 }
 
-[[nodiscard]] const bool isAttackedTo(const int sq, const pColor movePColor) const
+[[nodiscard]] const bool ChessRules::isAttackedTo(const int sq, const pColor movePColor) const
 {
     const uint64_t queen = QueenMap::getMoves(sq, _board.bitboards[PieceDescriptor::bQueen - attackedPColor],  _board.bitboards[PieceDescriptor::bQueen + attackedPColor]);
     if (queen) return true;
@@ -77,7 +80,7 @@
     return false;
 }
 
-[[nodiscard]] const bool isPathSafe(uint64_t pathSq, const pColor movePColor) const
+[[nodiscard]] const bool ChessRules:: isPathSafe(uint64_t pathSq, const pColor movePColor) const
 {
     while (pathSq) 
     {
@@ -97,21 +100,45 @@
 }
 
 // ---------------------------
+// Move Type Helpers
+// ---------------------------
+
+// King - Knight -------------
+[[nodiscard]] const MoveType ChessRules::encodeKingKnightMoveTypePure(int targetSq)
+{
+    if ( bitBoardSet(targetSq) & _board.bbThem() )
+    {
+        return MoveType::CAPTURE;
+    }
+    
+    return MoveType::QUIET;
+}
+
+// ---------------------------
 // King Move
 // ---------------------------
 
-uint64_t ChessRules::getKingMove() const
+Move* ChessRules::getKingMove(Move *moves) const
 {
-    // moves init
-    uint64_t movesR = KingPattern::getMoves(_board.bbUs(Piece::King), _board.bbUs());
+    const int kingSq = count_1s(_board.bbUs(Piece::King));
+
+    uint64_t movesR = KingPattern::getMoves(static_cast<size_t>(kingSq), _board.bbUs());
     while (movesR)
     {
         int sq = pop_1st(movesR);
-        if (isAttackedTo(sq))
+        if ( !isAttackedTo(sq) )
         {
-            // add to moves
+            *moves++ = Move(kingSq, sq, encodeKingKnightMoveTypePure(sq));
         }
     }
 
-    // moves + castling moves
+    // add castling moves
+    uint64_t castlings = getCastlingMoves();
+    while (castlings)
+    {
+        int sq = pop_1st(castlings);
+        *moves++ = Move(kingSq, sq, encodeCastling(sq));
+    }
+
+    return moves;
 }

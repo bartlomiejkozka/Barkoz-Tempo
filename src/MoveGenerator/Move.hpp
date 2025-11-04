@@ -45,6 +45,9 @@ private:
     uint16_t _packed_move;
 
 public:
+    //---------INITIALIZER--------
+
+    explicit packedMove(uint16 packedMove) : _packed_move(packedMove);
 
     //---------BIT MASKS--------
 
@@ -76,6 +79,23 @@ public:
     */
 };
 
+enum class MoveType : uint16_t 
+{
+    QUIET        = 0, 
+    DOUBLE_PUSH  = 1, 
+    KING_CASTLE  = 2, 
+    QUEEN_CASTLE = 3,
+    CAPTURE      = 4, 
+    EP_CAPTURE   = 5,
+    KN_PROM      = 8, 
+    B_PROM       = 9, 
+    R_PROM       = 10, 
+    Q_PROM       = 11,
+    KN_PROM_CAP  = 12, 
+    B_PROM_CAP   = 13, 
+    R_PROM_CAP   = 14,
+    Q_PROM_CAP   = 15
+};
 
 class Move 
 {
@@ -83,9 +103,19 @@ private:
     packedMove packed_move;
 
 public:
+    static constexpr int OriginSq = 12;
+    static constexpr int TargetSq = 6;
 
-    //-------HELPERS--------
+    //--------------------
+    // Initializers
+    //--------------------
 
+    explicit Move(int origin, int target, MoveType type)
+        : packedMove(static_cast<uint16_t>( (type << OriginSqOriginSq) | (target << TargetSq) | type )); 
+
+    explicit Move(int origin, int target, uint16_t type)
+        : packedMove(static_cast<uint16_t>( (type << OriginSqOriginSq) | (target << TargetSq) | type ));
+    
     //--------------------
     // Typed of move
     //--------------------
@@ -118,15 +148,12 @@ public:
 
     [[nodiscardd]] constexpr bool isQueenPromoCapture() { return packed_move.getSpecials() == 15; }
 
-    //--------METHODS------
+    //--------Getters------
 
-    void make_move(Board &b)
-    {
-    }
+    static constexpr uint16_t OriginSqFlag = 0x3F;
 
-    void unmake_move(Board &b)
-    {
-    }
+    int OriginSq(Move m) { return m & OriginSqFlag; }
+    int TargetSq(Move m) { return (m >> 6) & OriginSqFlag; }
 };
 
 #endif
