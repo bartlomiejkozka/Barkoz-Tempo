@@ -17,6 +17,7 @@
 #include "Move.hpp"
 
 #include <array>
+#include <utility>
 
 
 [[nodiscard]] const uint64_t ChessRules::getCastlingMoves() const
@@ -112,6 +113,25 @@
     }
     
     return MoveType::QUIET;
+}
+
+// King Castling -------------
+[[nodiscard]] const MoveType ChessRules::encodeCastling(int targetSq)
+{
+    if ( bitBoardSet(targetSq) & KDest[static_cast<size_t>(_board.sideToMove)] )
+    {
+        return MoveType::KING_CASTLE;
+    }
+    else if ( bitBoardSet(targetSq) & QDest[static_cast<size_t>(_board.sideToMove)] )
+    {
+        return MoveType::QUEEN_CASTLE;
+    }
+    else
+    {
+    }
+
+    std::unreachable();
+    return MoveType::QUIET; //  this is not valid response !!!
 }
 
 // ---------------------------

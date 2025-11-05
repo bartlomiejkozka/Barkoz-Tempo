@@ -92,21 +92,7 @@ private:
     [[nodiscard]] const MoveType encodeKingKnightMoveTypePure(int targetSq);
 
     // King Castling -------------
-    [[nodiscard]] const MoveType encodeCastling(int targetSq)
-    {
-        if ( bitBoardSet(targetSq) & KDest[static_cast<size_t>(_board.sideToMove)] )
-        {
-            return MoveType::KING_CASTLE;
-        }
-        else if ( bitBoardSet(targetSq) & QDest[static_cast<size_t>(_board.sideToMove)] )
-        {
-            return MoveType::QUEEN_CASTLE;
-        }
-        else
-        {
-            // return sth
-        }
-    }
+    [[nodiscard]] const MoveType encodeCastling(int targetSq);
 
     // ---------------------------
     // King Move
