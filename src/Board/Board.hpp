@@ -130,7 +130,7 @@ struct Board
     */
     std::array<uint64_t, bitboardCount> bitboards = {}; //indexed by PieceDescriptor enum
     uint64_t zobristHash = 0;
-    int sideToMove = static_cast<int>(pColor::White);
+    pColor sideToMove = pColor::White;
 
     std::unordered_map<uint64_t, uint8_t> repetitions = {}; // hash -> count
     uint8_t halfMoveClock = 0;

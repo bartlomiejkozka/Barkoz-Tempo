@@ -22,7 +22,7 @@
 
 [[nodiscard]] const uint64_t ChessRules::getCastlingMoves() const
 {
-    const size_t s = static_cast<int>(_board.sideToMove);
+    const size_t s = static_cast<size_t>(_board.sideToMove);
     
     const bool canK = (_board.castlingRights & KRight[s]) != 0;
     const bool canQ = (_board.castlingRights & QRight[s]) != 0;
@@ -59,7 +59,7 @@
         | (KnightPattern::attacksTo[sq] & _board.bitboards[PieceDescriptor::wKnight + attackedPColor]);
 }
 
-[[nodiscard]] const bool ChessRules::isAttackedTo(const int sq, const pColor movePColor) const
+[[nodiscard]] const bool ChessRules::isAttackedTo(const int sq, const pColor attackedPColor) const
 {
     const uint64_t queen = QueenMap::getMoves(sq, _board.bitboards[PieceDescriptor::bQueen - attackedPColor],  _board.bitboards[PieceDescriptor::bQueen + attackedPColor]);
     if (queen) return true;
@@ -104,8 +104,8 @@
 // Move Type Helpers
 // ---------------------------
 
-// King - Knight -------------
-[[nodiscard]] const MoveType ChessRules::encodeKingKnightMoveTypePure(int targetSq)
+// King - Knight - Sliders (Rook, Bishop, Queen) -------------
+[[nodiscard]] const MoveType ChessRules::encodeIsCapture(int targetSq) const
 {
     if ( bitBoardSet(targetSq) & _board.bbThem() )
     {
@@ -116,7 +116,7 @@
 }
 
 // King Castling -------------
-[[nodiscard]] const MoveType ChessRules::encodeCastling(int targetSq)
+[[nodiscard]] const MoveType ChessRules::encodeCastling(int targetSq) const
 {
     if ( bitBoardSet(targetSq) & KDest[static_cast<size_t>(_board.sideToMove)] )
     {
@@ -138,7 +138,7 @@
 // King Move
 // ---------------------------
 
-Move* ChessRules::getKingMove(Move *moves) const
+[[nodiscard]] Move* ChessRules::getKingMove(Move *moves) const
 {
     const int kingSq = count_1s(_board.bbUs(Piece::King));
 
@@ -161,4 +161,12 @@ Move* ChessRules::getKingMove(Move *moves) const
     }
 
     return moves;
+}
+
+[[nodiscard]] const MoveType encodeIsDblPush(int originSq, int targetSq) const
+{
+    if (originSq & PawnDblPushOriginRow[static_cast<size_t>(_board.sideToMove)])
+    {
+        return MoveTyp::DOUBLE_PUSH;
+    }
 }

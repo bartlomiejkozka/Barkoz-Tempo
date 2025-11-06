@@ -43,7 +43,10 @@ public:
     constexpr std::array<uint64_t,2> QBlockers{ /* W */ (1ull<<1)|(1ull<<2)|(1ull<<3), /* B */ (1ull<<57)|(1ull<<58)|(1ull<<59) };
     constexpr std::array<uint64_t,2> KDest    { /* W */ (1ull<<6), /* B */ (1ull<<62) };
     constexpr std::array<uint64_t,2> QDest    { /* W */ (1ull<<2), /* B */ (1ull<<58) };
-
+    // ----------------------
+    // Pawn helpers bit masks
+    // ----------------------
+    constexpr std::array<uint64_t, 2> PawnDblPushOriginRow { 0xFFULL << 8, 0xFFULL << (6*8) };
 
     // --------------------
     // Initializators
@@ -88,18 +91,27 @@ private:
     // Move Type Helpers
     // ---------------------------
 
-    // King - Knight -------------
-    [[nodiscard]] const MoveType encodeKingKnightMoveTypePure(int targetSq);
+    // King - Knight - Sliders (Rook, Bishop, Queen) -------------
+    [[nodiscard]] const MoveType encodeIsCapture(int targetSq) const;
 
     // King Castling -------------
-    [[nodiscard]] const MoveType encodeCastling(int targetSq);
+    [[nodiscard]] const MoveType encodeCastling(int targetSq) const;
+
+    // Pawn ----------------------
+    [[nodiscard]] const MoveType encodeIsDblPush(int originSq, int targetSq) const;
+
+    [[nodiscard]] const MoveType encodeIsEp(int originSq, int targetSq) const;
+
+    [[nodiscard]] const MoveType encodeIsPromotion(int originSq, int targetSq) const;
 
     // ---------------------------
     // King Move
     // ---------------------------
 
     // Regular legal king moves + castlings 
-    uint64_t getKingMove() const;
+    [[nodiscard]] uint64_t getKingMove() const;
+
+    [[nodiscard]] const bool isCheck() const { return isAttackedTo(_board.bbUs(Piece::King), _board.sideToMove); }
 };
 
 
