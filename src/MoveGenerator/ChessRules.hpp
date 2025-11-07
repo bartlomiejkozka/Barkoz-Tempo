@@ -51,14 +51,15 @@ public:
     // --------------------
     // Initializators
     // --------------------
+
     ChessRules(Board &board)
         : _board{board} {}
 
     // --------------------
     // Methods
     // --------------------
-    // without cheking is the King attacked
-    [[nodiscard]] const uint64_t getCastlingMoves() const;
+
+    [[nodiscard]] Move* getLegalMoves(int originSq, Move *moves) const;
         
 private:
     Board &_board;
@@ -108,7 +109,9 @@ private:
     // King Move
     // ---------------------------
 
-    // Regular legal king moves + castlings 
+    [[nodiscard]] const uint64_t getCastlingMoves() const;
+
+    // Regular legal king moves + castlings
     [[nodiscard]] uint64_t getKingMove() const;
 
     [[nodiscard]] const bool isCheck() const { return isAttackedTo(_board.bbUs(Piece::King), _board.sideToMove); }

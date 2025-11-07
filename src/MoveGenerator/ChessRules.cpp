@@ -15,6 +15,7 @@
 #include "RookMap.h"
 #include "QueenMap.h"
 #include "Move.hpp"
+#include "Board.hpp"
 
 #include <array>
 #include <utility>
@@ -132,35 +133,6 @@
 
     std::unreachable();
     return MoveType::QUIET; //  this is not valid response !!!
-}
-
-// ---------------------------
-// King Move
-// ---------------------------
-
-[[nodiscard]] Move* ChessRules::getKingMove(Move *moves) const
-{
-    const int kingSq = count_1s(_board.bbUs(Piece::King));
-
-    uint64_t movesR = KingPattern::getMoves(static_cast<size_t>(kingSq), _board.bbUs());
-    while (movesR)
-    {
-        int sq = pop_1st(movesR);
-        if ( !isAttackedTo(sq) )
-        {
-            *moves++ = Move(kingSq, sq, encodeKingKnightMoveTypePure(sq));
-        }
-    }
-
-    // add castling moves
-    uint64_t castlings = getCastlingMoves();
-    while (castlings)
-    {
-        int sq = pop_1st(castlings);
-        *moves++ = Move(kingSq, sq, encodeCastling(sq));
-    }
-
-    return moves;
 }
 
 [[nodiscard]] const MoveType encodeIsDblPush(int originSq, int targetSq) const
