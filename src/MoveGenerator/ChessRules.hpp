@@ -106,15 +106,22 @@ private:
     [[nodiscard]] const MoveType encodeIsPromotion(int originSq, int targetSq) const;
 
     // ---------------------------
-    // King Move
+    // King checks
     // ---------------------------
 
     [[nodiscard]] const uint64_t getCastlingMoves() const;
 
-    // Regular legal king moves + castlings
-    [[nodiscard]] uint64_t getKingMove() const;
-
     [[nodiscard]] const bool isCheck() const { return isAttackedTo(_board.bbUs(Piece::King), _board.sideToMove); }
+
+    [[nodiscard]] const bool isDoubleCheck() const 
+    {
+        uint64_t attackers = attacksTo(_board.bbUs(Piece::King), _board.sideToMove);
+        pop_1st(attackers);
+        return static_cast<bool>(attackers);
+    }
+
+    // return: first: King atackers, second: Evasion paths -> e.g. inBetween Rook -> King square
+    [[nodiscard]] std::pair<uint64_t, uint64_t> getEvasions() const;
 };
 
 

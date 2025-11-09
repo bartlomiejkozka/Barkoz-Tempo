@@ -16,6 +16,7 @@
 #include "QueenMap.h"
 #include "Move.hpp"
 #include "Board.hpp"
+#include "MoveUtils.hpp"
 
 #include <array>
 #include <utility>
@@ -84,7 +85,7 @@
 
 [[nodiscard]] const bool ChessRules:: isPathSafe(uint64_t pathSq, const pColor movePColor) const
 {
-    while (pathSq) 
+    while (pathSq)
     {
         int sq = pop_1st(pathSq);
         if (isAttacksTo(sq, movePColor))
@@ -99,4 +100,19 @@
 {
     return getPins<BishopMap::getMoves, Sliders::Bishop>(sq)
         | getPins<RookMap::getMoves, Sliders::Rook>(sq);
+}
+
+[[nodiscard]] std::pair<uint64_t, uint64_t> ChessRules::getEvasions() const
+{
+    std::pair<uint64_t, uint64_t> res = std::make_pair(attacksTo(_board.bbUs(Piece::King), _board.sideToMove), 0);  // only one attacker while signle check, in double check wwe should consider only King evasion
+
+    uint64_t sliderAttackers = res.first & _board.bbThemSliders();
+    int kingSq = count_1s(_board.bbUs(Piece::King));
+    while (sliderAttackers)     // for the check King evasion -> when slider only one Path to cover the King to evate check
+    {
+        int attSq = pop_1st(sliderAttackers);
+        res.second |= inBetween[attSq][kingSq];
+    }
+
+    return res;
 }

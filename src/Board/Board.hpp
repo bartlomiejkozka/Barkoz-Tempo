@@ -141,35 +141,42 @@ struct Board
     // Helpers
     // ---------------------------------
 
-    size_t bbUs() const
+    uint64_t bbUs() const
     {
         return bitboards[static_cast<size_t>(sideToMove)];
     }
-    size_t bbUsRQ() const
+    uint64_t bbUsRQ() const
     {
         return bitboards[static_cast<size_t>(PieceDescriptor::wRook) + static_cast<size_t>(sideToMove)]
             | bitboards[static_cast<size_t>(PieceDescriptor::wQueen) + static_cast<size_t>(sideToMove)];
     }
-    size_t bbUsBQ() const
+    uint64_t bbUsBQ() const
     {
         return bitboards[static_cast<size_t>(PieceDescriptor::wBishop) + static_cast<size_t>(sideToMove)]
             | bitboards[static_cast<size_t>(PieceDescriptor::wQueen) + static_cast<size_t>(sideToMove)];
     }
 
-    size_t bbThem() const
+    uint64_t bbThem() const
     {
         return static_cast<bool>(sideToMove) ? bitboards[static_cast<size_t>(sideToMove) - 1] : bitboards[static_cast<size_t>(sideToMove) + 1];
     }
-    size_t bbThemRQ() const
+    uint64_t bbThemRQ() const
     {
         return bitboards[static_cast<size_t>(PieceDescriptor::bRook) - static_cast<size_t>(sideToMove)]
             | bitboards[static_cast<size_t>(PieceDescriptor::bQueen) - static_cast<size_t>(sideToMove)];
     }
-    size_t bbThemBQ() const
+    uint64_t bbThemBQ() const
     {
         return bitboards[static_cast<size_t>(PieceDescriptor::bBishop) - static_cast<size_t>(sideToMove)]
             | bitboards[static_cast<size_t>(PieceDescriptor::bQueen) - static_cast<size_t>(sideToMove)];
     }
+    uint64_t bbThemSliders() const
+    {
+        return bitboards[static_cast<size_t>(PieceDescriptor::bBishop) - static_cast<size_t>(sideToMove)]
+            | bitboards[static_cast<size_t>(PieceDescriptor::bQueen) - static_cast<size_t>(sideToMove)]
+            | bitboards[static_cast<size_t>(PieceDescriptor::bRook) - static_cast<size_t>(sideToMove)];
+    }
+
 
     uint64_t bbUs(Piece pieceType) const
     {

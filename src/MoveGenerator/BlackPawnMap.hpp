@@ -30,22 +30,23 @@ class BlackPawnMap {
     // Moves defined by Chess rules
     //--------------------
 
-    [[nodiscard("PURE FUN")]] static constexpr uint64_t getPushTargets(const uint64_t originSq, const uint64_t fullBoard) { return originSq >> 8 & MoveUtils::empty(fullBoard); }
+    [[nodiscard("PURE FUN")]] static constexpr uint64_t getPushTargets(const int originSq, const uint64_t fullBoard) { return bitBoardSet(originSq) >> 8 & MoveUtils::empty(fullBoard); }
 
-    [[nodiscard("PURE FUN")]] static constexpr uint64_t getDblPushTargets(const uint64_t originSq, const uint64_t fullBoard) { return originSq >> 16 & MoveUtils::empty(fullBoard); }
+    [[nodiscard("PURE FUN")]] static constexpr uint64_t getDblPushTargets(const int originSq, const uint64_t fullBoard) { return bitBoardSet(originSq) >> 16 & MoveUtils::empty(fullBoard); }
 
-    [[nodiscard("PURE FUN")]] static constexpr uint64_t getWestAttackTargets(const uint64_t originSq, const uint64_t oponentPieces) { return originSq & notAFile >> 9 & oponentPieces; }
+    [[nodiscard("PURE FUN")]] static constexpr uint64_t getWestAttackTargets(const int originSq, const uint64_t oponentPieces) { return bitBoardSet(originSq) & notAFile >> 9 & oponentPieces; }
 
-    [[nodiscard("PURE FUN")]] static constexpr uint64_t getEastAttackTargets(const uint64_t originSq, const uint64_t oponentPieces) { return originSq & notHFile >> 7 & oponentPieces; }
+    [[nodiscard("PURE FUN")]] static constexpr uint64_t getEastAttackTargets(const int originSq, const uint64_t oponentPieces) { return bitBoardSet(originSq) & notHFile >> 7 & oponentPieces; }
 
-    [[nodiscard("PURE FUN")]] static constexpr uint64_t getAnyAttackTargets(const uint64_t originSq, const uint64_t oponentPieces) 
+    [[nodiscard("PURE FUN")]] static constexpr uint64_t getAnyAttackTargets(const int originSq, const uint64_t oponentPieces) 
     { 
-        return getEastAttackTargets(originSq, oponentPieces) | getWestAttackTargets(originSq, oponentPieces); 
+        return getEastAttackTargets(originSq, oponentPieces) | getWestAttackTargets(originSq, oponentPieces);
     }
 
-    [[nodiscard("PURE FUN")]] static constexpr uint64_t getEpAttackTarget(const uint64_t originSq, const int ep)
+    [[nodiscard("PURE FUN")]] static constexpr uint64_t getEpAttackTarget(const int originSq, const int ep)
     {
         if (0 == ep) return 0ULL;
+        originSq = bitBoardSet(originSq);
         return (( originSq >> 9) | (originSq >> 7)) & (static_cast<uint64_t>(1) << ep);
     }
 
