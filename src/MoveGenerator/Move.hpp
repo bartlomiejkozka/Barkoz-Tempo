@@ -3,8 +3,6 @@
 
 #include <cstdint>
 
-#include "Board.hpp"
-
 // TODO:
 // - class Move for packing packed_move and have the move method and unmove with Bitboards change
 // - on the fly move logic
@@ -79,6 +77,18 @@ public:
     */
 };
 
+
+// structure to save irrevesible attributes + packed move, necessary to unmake move
+struct Undo
+{
+    uint8_t castling;      // 0b00001(white kingside)1(white queenside)1(black kingside)1(balck queenside)
+    int8_t ep;             // enPassant Square, -1 - if no enPassant
+    uint8_t halfmove;
+    uint8_t capturedPiece; // type+color of captured piece, 0 if none
+    uint16_t move;         // packedMove
+};
+
+
 enum class MoveType : uint16_t 
 {
     QUIET        = 0, 
@@ -96,6 +106,7 @@ enum class MoveType : uint16_t
     R_PROM_CAP   = 14,
     Q_PROM_CAP   = 15
 };
+
 
 class Move 
 {
@@ -128,7 +139,7 @@ public:
 
     [[nodiscardd]] constexpr bool isQueenCastle() { return packed_move.getSpecials() == 3; }
 
-    [[nodiscardd]] constexpr bool isJustCapture() { return packed_move.getSpecials() == 4; }
+    [[nodiscardd]] constexpr bool isCapture() { return packed_move.getSpecials() == 4; }
 
     [[nodiscardd]] constexpr bool isEpCapture() { return packed_move.getSpecials() == 5; }
 
@@ -152,8 +163,8 @@ public:
 
     static constexpr uint16_t OriginSqFlag = 0x3F;
 
-    int OriginSq(Move m) { return m & OriginSqFlag; }
-    int TargetSq(Move m) { return (m >> 6) & OriginSqFlag; }
+    int OriginSq() { return packed_move & OriginSqFlag; }
+    int TargetSq() { return (packed_move >> 6) & OriginSqFlag; }
 };
 
 #endif

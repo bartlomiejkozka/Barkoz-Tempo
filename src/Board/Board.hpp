@@ -7,6 +7,7 @@
 #include <unordered_map>
 
 #include "BitOperation.hpp"
+#include "Move.hpp"
 
 
 /******************************************************************************
@@ -84,6 +85,8 @@ struct Board
     static constexpr size_t enPassantCount = 2; // for white and black pawns
     static constexpr size_t castlingCount = 4; // for white and black kings and rooks
 
+    static constexpr size_t MAXMoveHistory = 256;
+
     //==================================
     //======Deafult starting bitboards==
     //==================================
@@ -131,11 +134,32 @@ struct Board
     std::array<uint64_t, bitboardCount> bitboards = {}; //indexed by PieceDescriptor enum
     uint64_t zobristHash = 0;
     pColor sideToMove = pColor::White;
-
     std::unordered_map<uint64_t, uint8_t> repetitions = {}; // hash -> count
+
+    // ---------------------------------
+    // irreversible game attributes
+    // ---------------------------------
+
     uint8_t halfMoveClock = 0;
-    uint8_t enPassant = 0; // enPassant Square, 0 - if no enPassant
+    int8_t enPassant = -1;         // enPassant Square, -1 - if no enPassant
     uint8_t castlingRights = 0x0F; // 0b00001(white kingside)1(white queenside)1(black kingside)1(balck queenside)
+
+    std::array<Undo, MAXMoveHistory> history;
+
+    // ---------------------------------
+    // Move make
+    // ---------------------------------
+
+    void makeMove(Move &m);
+    void unmakeMove();
+
+    // ---------------------------------
+    // Move make Helpers
+    // ---------------------------------
+
+    const size_t getBitboard(const int sq) const;
+    void updateOriginBirboard(const int originSq, const int targetSq, const size_t bbN);
+    const int calcOpp() { return sideToMove ? -1 : 1; }
 
     // ---------------------------------
     // Helpers

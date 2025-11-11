@@ -9,6 +9,8 @@
 #include "ChessRules.hpp"
 #include "Board.hpp"
 
+#include <utility>
+
 struct MoveEncoder
 {
     [[nodiscard]] static const MoveType encodeCastling(Board _board, int targetSq) const
