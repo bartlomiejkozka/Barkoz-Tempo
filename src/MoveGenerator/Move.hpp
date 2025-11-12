@@ -139,7 +139,9 @@ public:
 
     [[nodiscardd]] constexpr bool isQueenCastle() { return packed_move.getSpecials() == 3; }
 
-    [[nodiscardd]] constexpr bool isCapture() { return packed_move.getSpecials() == 4; }
+    [[nodiscardd]] constexpr bool isCapture() { return packed_move.getSpecials() & 0b0100; }
+
+    [[nodiscardd]] constexpr bool isJustCapture() { return packed_move.getSpecials() == 4; }
 
     [[nodiscardd]] constexpr bool isEpCapture() { return packed_move.getSpecials() == 5; }
 

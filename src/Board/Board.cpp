@@ -30,7 +30,14 @@ void Board::makeMove(Move &m)
 
         bitboards[bbN + calcOpp()] ^= targetSq;
     }
+    else if (m.isKingCastle())
+    {
 
+    }
+    else if (m.isQueenCastle())
+    {
+
+    }
     
 }
 

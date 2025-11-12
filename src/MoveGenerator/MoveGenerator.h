@@ -100,7 +100,7 @@ private:
 // INLINE (TEMPLATES) DEFINITIONS
 // ------------------------------
 
-[[nodiscard]] static Move* generateLegalMoves(const ChessRules &rules, Move *moves);
+[[nodiscard]] static Move* MoveGen::generateLegalMoves(const ChessRules &rules, Move *moves);
 {
     if ( !rules.isCheck() )
     {
