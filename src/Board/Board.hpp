@@ -65,8 +65,9 @@ enum class pColor : int
  * The board is reprtesented by 14 bitboards, 12 for every cardinal piece type
  * and 2 for any piece of a color (white - bottom ranks / black - upper ranks)
  *******************************************************************************/
-struct Board
+class Board
 {
+public:
     //==================================
     //===========Contructtors===========
     //==================================
@@ -210,6 +211,17 @@ struct Board
     uint64_t bbThem(Piece pieceType) const
     {
         return bitboards[static_cast<size_t>(pieceType) + 1 - static_cast<size_t>(sideToMove)]
+    }
+
+private:
+    void setBbUs(Piece pieceType, uint64_t targetSq) const
+    {
+        bitboards[static_cast<size_t>(pieceType) + static_cast<size_t>(sideToMove)] ^= targetSq;
+    }
+
+    void setBbThem(Piece pieceType, uint64_t targetSq) const
+    {
+        bitboards[static_cast<size_t>(pieceType) + 1 - static_cast<size_t>(sideToMove)] ^= targetSq;
     }
 };
 

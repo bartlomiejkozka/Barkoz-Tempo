@@ -18,27 +18,48 @@ void Board::makeMove(Move &m)
 {
     const uint64_t originSq = m.OriginSq();
     const uint64_t targetSq = m.TargetSq();
-    const size_t bbN = getBitboard(originSq);
-    updateOriginBirboard(originSq, targetSq, bbN);
+    const size_t bb = getBitboard(originSq);
 
-    if ( m.isCapture() )
+    updateOriginBirboard(originSq, targetSq, bb);
+
+    if ( m.isQuiet() )
+    {
+        // already handled above
+    }
+    else if ( m.isCapture() )
     {
         if ( m.isEpCapture() )
         {
-            bitboards[bbN + calcOpp()] ^= (targetSq >> 8);
+            bitboards[bb + calcOpp()] ^= (targetSq >> 8);
+        }
+        else
+        {
+            bitboards[bb + calcOpp()] ^= targetSq;
+        }
+    }
+    else if ( m.isPromotion() )
+    {
+        // Promotion Capture
+        if ( m.isAnyCapture() )
+        {
+            bitboards[bb + calcOpp()] ^= targetSq;
         }
 
-        bitboards[bbN + calcOpp()] ^= targetSq;
+        // For now asume we do promotion only to Queen
+        bitboards[bb] ^= targetSq;
+        bitboards[PieceDescriptor::bQueen - (sideToMove ? 0 : 1)] ^= targetSq;
     }
-    else if (m.isKingCastle())
+    else if ( m.isQueenCastle )
     {
-
+        setBbUs(Piece::Rook, targetSq >> 3);
     }
-    else if (m.isQueenCastle())
+    else if ( m.isKingCastle() )
     {
-
+        setBbUs(Piece::Rook, targetSq << 2);
     }
-    
+
+    // update: en-passant, half-move clk, 
+    // TODO: add zobrist hash to Undo table and add game hist table
 }
 
 void Board::unmakeMove()

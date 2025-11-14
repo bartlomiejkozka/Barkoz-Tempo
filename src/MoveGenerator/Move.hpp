@@ -64,17 +64,6 @@ public:
     [[nodiscard]] constexpr uint16_t getTarget() { return (_packed_move & targetBits_mask) >> 4; }
 
     [[nodiscard]] constexpr uint16_t getSpecials() { return _packed_move & specialBits_mask; }
-
-    // unused for this logic implementation -> corresponding functions in Move class
-    /*
-    [[nodiscard]] constexpr bool isPromotion() { return (_packed_move & promotion_mask) != 0; }
-
-    [[nodiscard]] constexpr bool isCapture() { return (_packed_move & capture_mask) != 0; }
-
-    [[nodiscard]] constexpr bool isSpecial1() { return (_packed_move & special_1_mask) != 0; }
-
-    [[nodiscard]] constexpr bool isSpecial0() { return (_packed_move & special_0_mask) != 0; }
-    */
 };
 
 
@@ -117,9 +106,9 @@ public:
     static constexpr int OriginSq = 12;
     static constexpr int TargetSq = 6;
 
-    //--------------------
+    //------------------------------------
     // Initializers
-    //--------------------
+    //------------------------------------
 
     explicit Move(int origin, int target, MoveType type)
         : packedMove(static_cast<uint16_t>( (type << OriginSqOriginSq) | (target << TargetSq) | type )); 
@@ -127,41 +116,72 @@ public:
     explicit Move(int origin, int target, uint16_t type)
         : packedMove(static_cast<uint16_t>( (type << OriginSqOriginSq) | (target << TargetSq) | type ));
     
-    //--------------------
+    //------------------------------------
     // Typed of move
+    //------------------------------------
+
+    //--------------------
+    // Quiets
     //--------------------
 
-    [[nodiscard]] constexpr bool isQuiet() { return packed_move.getSpecials() == 0; }
+    [[nodiscard]] constexpr bool isClearQuiet() { return packed_move.getSpecials() == 0; }
 
-    [[nodiscardd]] constexpr bool isDoublePawnPush() { return packed_move.getSpecials() == 1; }
+    [[nodiscard]] constexpr bool isDoublePawnPush() { return packed_move.getSpecials() == 1; }
 
-    [[nodiscardd]] constexpr bool isKingCastle() { return packed_move.getSpecials() == 2; }
+    [[nodiscard]] constexpr bool isQuiet() { return isClearQuiet() | isDoublePawnPush(); }
 
-    [[nodiscardd]] constexpr bool isQueenCastle() { return packed_move.getSpecials() == 3; }
+    //--------------------
+    // Castles
+    //--------------------
 
-    [[nodiscardd]] constexpr bool isCapture() { return packed_move.getSpecials() & 0b0100; }
+    [[nodiscard]] constexpr bool isKingCastle() { return packed_move.getSpecials() == 2; }
 
-    [[nodiscardd]] constexpr bool isJustCapture() { return packed_move.getSpecials() == 4; }
+    [[nodiscard]] constexpr bool isQueenCastle() { return packed_move.getSpecials() == 3; }
 
-    [[nodiscardd]] constexpr bool isEpCapture() { return packed_move.getSpecials() == 5; }
+    //--------------------
+    // Captures
+    //--------------------
 
-    [[nodiscardd]] constexpr bool isKnighPromo() { return packed_move.getSpecials() == 8; }
+    // without promo captures - only clear captures & en-passant captures
+    [[nodiscard]] constexpr bool isCapture() { return (packed_move.getSpecials() & 0b1100) == 4; }
 
-    [[nodiscardd]] constexpr bool isBishopPromo() { return packed_move.getSpecials() == 9; }
+    [[nodiscard]] constexpr bool isJustCapture() { return packed_move.getSpecials() == 4; }
 
-    [[nodiscardd]] constexpr bool isRokkPromo() { return packed_move.getSpecials() == 10; }
+    [[nodiscard]] constexpr bool isEpCapture() { return packed_move.getSpecials() == 5; }
 
-    [[nodiscardd]] constexpr bool isQueenPromo() { return packed_move.getSpecials() == 11; }
+    //--------------------
+    // Promotions
+    //--------------------
 
-    [[nodiscardd]] constexpr bool isKnightPromoCapture() { return packed_move.getSpecials() == 12; }
+    // already with check is Promotion-Capture
+    [[nodiscard]] constexpr bool isPromotion() { return (packed_move.getSpecials() & 0b1000) == 8; }
 
-    [[nodiscardd]] constexpr bool isBishopPromoCapture() { return packed_move.getSpecials() == 13; }
+    [[nodiscard]] constexpr bool isKnighPromo() { return packed_move.getSpecials() == 8; }
 
-    [[nodiscardd]] constexpr bool isRookPromoCapture() { return packed_move.getSpecials() == 14; }
+    [[nodiscard]] constexpr bool isBishopPromo() { return packed_move.getSpecials() == 9; }
 
-    [[nodiscardd]] constexpr bool isQueenPromoCapture() { return packed_move.getSpecials() == 15; }
+    [[nodiscard]] constexpr bool isRokkPromo() { return packed_move.getSpecials() == 10; }
 
-    //--------Getters------
+    [[nodiscard]] constexpr bool isQueenPromo() { return packed_move.getSpecials() == 11; }
+
+
+    //--------------------
+    // Promotion-Captures
+    //--------------------
+     
+    [[nodiscard]] constexpr bool isAnyCapture() { return packed_move.getSpecials() & 0b0100; }
+
+    [[nodiscard]] constexpr bool isKnightPromoCapture() { return packed_move.getSpecials() == 12; }
+
+    [[nodiscard]] constexpr bool isBishopPromoCapture() { return packed_move.getSpecials() == 13; }
+
+    [[nodiscard]] constexpr bool isRookPromoCapture() { return packed_move.getSpecials() == 14; }
+
+    [[nodiscard]] constexpr bool isQueenPromoCapture() { return packed_move.getSpecials() == 15; }
+
+    //------------------------------------
+    // Getters
+    //------------------------------------
 
     static constexpr uint16_t OriginSqFlag = 0x3F;
 
