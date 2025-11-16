@@ -75,6 +75,7 @@ struct Undo
     uint8_t halfmove;
     uint8_t capturedPiece; // type+color of captured piece, 0 if none
     uint16_t move;         // packedMove
+    uint64_t moveHash;
 };
 
 

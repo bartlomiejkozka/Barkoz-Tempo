@@ -159,7 +159,7 @@ public:
     // ---------------------------------
 
     const size_t getBitboard(const int sq) const;
-    void updateOriginBirboard(const int originSq, const int targetSq, const size_t bbN);
+    void updateOriginBirboard(const int originSq, const int targetSq, const size_t bbN, uint64_t &poshHash);
     const int calcOpp() { return sideToMove ? -1 : 1; }
 
     // ---------------------------------

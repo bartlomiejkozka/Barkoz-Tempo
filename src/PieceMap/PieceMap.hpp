@@ -20,52 +20,35 @@
 
 struct PieceMap
 {
+    static constexpr int pieceMapsCount = Board::bitboardCount - 2;
+    static constexpr int castlingRighstCount = 4;
+    static constexpr int enPassantFilesCount = 4;
+
     //----------Zobrsit hash tabele----------
-    std::array<std::array<uint64_t, Board::boardSize>, 12> pieceMap = [] () {
-        std::array<std::array<uint64_t, Board::boardSize>, 12> pieceMap;
-        std::mt19937_64 rng(416587);
-        std::uniform_int_distribution<uint64_t> dist(0, UINT64_MAX);
 
-        std::unordered_set<uint64_t> uniqueHashes;
-        for (size_t i = 0; i < pieceMap.size(); ++i)
-        {
-            for (size_t j = 0; j < Board::boardSize; ++j)
-            {
-                uint64_t rd_num;
-                do
-                {
-                    rd_num = dist(rng); 
-                } while (!uniqueHashes.insert(rd_num).second);
-                pieceMap[i][j] = rd_num;
-            }
-        }
-
-        return pieceMap;
-    }();
+    // One number for each piece at each square 
+    static std::array<std::array<uint64_t, Board::boardSize>, pieceMapsCount> pieceMap;
     
-    //------------Constructors-------------
-    PieceMap() = default;
-    ~PieceMap() = default;
-    PieceMap(const PieceMap&) = default;
-    PieceMap& operator=(const PieceMap&) = default;
+    // One number to indicate the side to move is black
+    static uint64_t blackSideToMove;
 
-    //------------Methods-----------------
-    const uint64_t generatePosHash(const std::array<uint64_t, Board::boardSize>& bitBoards)
-    {
-        uint64_t posHash = 0;
-        for (size_t i = 2; i < Board::bitboardCount; ++i)
-        {
-            uint64_t board = bitBoards[i];
-            while (board)   // till any bit is set
-            {
-                uint8_t idx = std::countr_zero(board);
-                posHash ^= pieceMap[i][idx];
-                board &= (board - 1);
-            }
-        }
+    // Four numbers to indicate the castling rights, though usually 16 (2^4) are used for speed
+    static std::array<uint64_t, castlingRighstCount> castlingRightsMap;   // WK, WQ, BK, BQ - revers
 
-        return posHash;
-    }
+    // Eight numbers to indicate the file of a valid En passant square, if any
+    static std::array<uint64_t, enPassantFilesCount> enPassantsMap;   // A -> H file
+
+    // ------------------------
+    // Initialization
+    // ------------------------
+
+    static void init();
+
+    // ------------------------
+    // Generation
+    // ------------------------
+
+    const uint64_t generatePosHash(const std::array<uint64_t, Board::boardSize>& bitBoards, Board board);
 };
 
 #endif

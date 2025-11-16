@@ -6,7 +6,6 @@
 #include <cmath>
 
 #include "Board.hpp"
-#include "BitOperation.hpp"
 
 /* 
 * Usage of inline static varaible is neccessary to avoid the linkage error.
@@ -33,11 +32,6 @@ struct MoveUtils {
     // right shift : negatives
     [[nodiscard("PURE FUN")]] static constexpr uint64_t shift(uint64_t x, int shiftBy) { return shiftBy < 0 ? (x >> shiftBy) : (x << shiftBy); } 
 
-    // -------------------
-    // All Use
-    // -------------------
-
-    [[nodiscard]] static constexpr uint64_t bitBoardSet(int square) { return minBitSet << square; }
 
     // -------------------
     // King/Knight Use
@@ -72,7 +66,7 @@ struct MoveUtils {
 
     * For the not hirozontal, vertical or diagonal squares array value is set to zeros bit board
     */
-    inline static constexpr std::array<std::array<uint64_t, Board::boardSize>, Board::boardSize> inBetween = [] () constexpr
+    inline static constex std::array<std::array<uint64_t, Board::boardSize>, Board::boardSize> inBetween = [] () constexpr
     {
         std::array<std::array<uint64_t, Board::boardSize>, Board::boardSize> tab = {};
 
