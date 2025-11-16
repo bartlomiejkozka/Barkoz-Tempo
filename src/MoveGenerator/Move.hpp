@@ -3,6 +3,8 @@
 
 #include <cstdint>
 
+#include "Board.hpp"
+
 // TODO:
 // - class Move for packing packed_move and have the move method and unmove with Bitboards change
 // - on the fly move logic
@@ -70,11 +72,11 @@ public:
 // structure to save irrevesible attributes + packed move, necessary to unmake move
 struct Undo
 {
-    uint8_t castling;      // 0b00001(white kingside)1(white queenside)1(black kingside)1(balck queenside)
-    int8_t ep;             // enPassant Square, -1 - if no enPassant
+    uint8_t castling;              // 0b00001(white kingside)1(white queenside)1(black kingside)1(balck queenside)
+    int8_t ep;                     // enPassant Square, -1 - if no enPassant
     uint8_t halfmove;
-    uint8_t capturedPiece; // type+color of captured piece, 0 if none
-    uint16_t move;         // packedMove
+    PieceDescriptor capturedPiece; // type+color of captured piece, 0 if none
+    uint16_t move;                 // packedMove
     uint64_t moveHash;
 };
 

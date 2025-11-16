@@ -7,76 +7,183 @@
 
 #include "Board.hpp"
 #include "MoveUtils.hpp"
+#include "BitOperation.hpp"
+#include "PieceMap.hpp"
 
 #include <utility>
+
+
+// ---------------------------------
+// Initilizator
+// ---------------------------------
+
+void Board::init()
+{
+    // Bitboards init
+    static const std::array<uint64_t, 2> defaultKingBitboards = {
+        minBitSet << 4,
+        maxBitSet >> 3
+    };
+    static const std::array<uint64_t, 2> defaultQueenBitboards = {
+        minBitSet << 3,
+        maxBitSet >> 4
+    };
+    static const std::array<uint64_t, 2> defaultRookBitboards = {
+        (minBitSet << 7) | minBitSet,
+        (maxBitSet >> 7) | maxBitSet
+    };
+    static const std::array<uint64_t, 2> defaultBishopBitboards = {
+        (minBitSet << 5) | (minBitSet << 2),
+        (maxBitSet >> 5) | (maxBitSet >> 2)
+    };
+    static const std::array<uint64_t, 2> defaultKnightBitboards = {
+        (minBitSet << 6) | (minBitSet << 1),
+        (maxBitSet >> 6) | (maxBitSet >> 1)
+    };
+    static const std::array<uint64_t, 2> defaultPawnBitboards = {
+        0xFFULL << 8,
+        0xFFULL << convertFromMinBitSetToMaxBitSet(16)
+    };
+
+    static const std::array<const std::array<uint64_t,2>*, 14> initMap = {
+        nullptr,                       // nWhite
+        nullptr,                       // nBlack
+        &defaultPawnBitboards,         // wPawn
+        &defaultPawnBitboards,         // bPawn
+        &defaultKnightBitboards,       // wKnight
+        &defaultKnightBitboards,       // bKnight
+        &defaultBishopBitboards,       // wBishop
+        &defaultBishopBitboards,       // bBishop
+        &defaultRookBitboards,         // wRook
+        &defaultRookBitboards,         // bRook
+        &defaultQueenBitboards,        // wQueen
+        &defaultQueenBitboards,        // bQueen
+        &defaultKingBitboards,         // wKing
+        &defaultKingBitboards          // bKing
+    };
+
+    recomputeSideOccupancies();
+
+    for (size_t i = 0; i < bitboards.size(); ++i)
+    {
+        if (initMap[i] == nullptr) {
+            bitboards[i] = 0;
+            continue;
+        }
+
+        const bool isWhite = (i % 2 == 0);
+        bitboards[i] = (*initMap[i])[isWhite ? 0 : 1];
+    }
+
+    // Logic Atributes Init
+    sideToMove = pColor::White;
+    enPassant = -1;
+    castlingRights = 0b1111;
+    halfMoveClock = 0;
+    ply = 0;
+}
 
 // ---------------------------------
 // Move make
 // ---------------------------------
 
-void Board::makeMove(const Move &m, uint64_t &newPoshHash)
+void Board::makeMove(const Move &m)
 {
-    const uint64_t originSq = m.OriginSq();
-    const uint64_t targetSq = m.TargetSq();
+    enPassant = -1;
+    halfMoveClock++;
+    ply++;
+    
+    uint64_t newPoshHash = history[ply - 1].moveHash ^ (sideToMove ? PieceMap::blackSideToMove : 0);
+    PieceDescriptor captured = static_cast<PieceDescriptor>(0); // 0 - no capture
+
+    const uint64_t originSq = minBitSet << m.OriginSq();
+    const uint64_t targetSq = minBitSet << m.TargetSq();
+
     const size_t bb = getBitboard(originSq);
+    const size_t bbCaptured = m.isAnyCapture() ? getBitboard(targetSq) : 0;
+
+    const size_t WM = sideToMove ? 0 : 1;   // is white to move -? when yes bbIdx = bbIdx - 1
 
     updateOriginBirboard(originSq, targetSq, bb, newPoshHash);
 
     if ( m.isQuiet() )
     {
-        // already handled above
+        PieceDescriptor piece = static_cast<PieceDescriptor>(bb);
+        if ( piece == PieceDescriptor::bPawn || piece == PieceDescriptor::wPawn )
+        {
+            halfMoveClock = 0;
+        }
+
+        // Chek if en-Passant activated?
+        if ( m.isDoublePawnPush() )
+        {
+            uint64_t mask = (targetSq << 1) | (targetSq >> 1);
+            if ( bbThem(Piece::Pawn) & mask )
+            {
+                enPassant = m.TargetSq() + (sideToMove ? 8 : -8 );  
+            }
+        }
     }
     else if ( m.isCapture() )
     {
-        newPoshHash ^= bitboards[bb + calcOpp()];
+        halfMoveClock = 0;
 
         if ( m.isEpCapture() )
         {
-            bitboards[bb + calcOpp()] ^= (targetSq >> 8);
+            bitboards[bbCaptured] ^= minBitSet << ( m.TargetSq() + (sideToMove ? 8 : -8 ) );
         }
         else
         {
-            bitboards[bb + calcOpp()] ^= targetSq;
+            bitboards[bbCaptured] ^= targetSq;
         }
 
-        newPoshHash ^= bitboards[bb + calcOpp()];
+        newPoshHash ^= PieceMap::pieceMap[bbCaptured - align][targetSq];
+        captured = static_cast<PieceDescriptor>(bbCaptured);
     }
     else if ( m.isPromotion() )
     {
-        newPoshHash ^= bitboards[bb];
+        newPoshHash ^= PieceMap::pieceMap[bb - align][targetSq];
 
         // Promotion Capture
         if ( m.isAnyCapture() )
         {
-            newPoshHash ^= bitboards[bb + calcOpp()];
-            bitboards[bb + calcOpp()] ^= targetSq;
-            newPoshHash ^= bitboards[bb + calcOpp()];
+            halfMoveClock = 0;
+
+            newPoshHash ^= PieceMap::pieceMap[bbCaptured - align][targetSq];
+            bitboards[bbCaptured] ^= targetSq;
+            captured = static_cast<PieceDescriptor>(bbCaptured);
         }
 
         // For now asume we do promotion only to Queen
         bitboards[bb] ^= targetSq;
-
-        size_t idx = PieceDescriptor::bQueen - (sideToMove ? 0 : 1);
-        newPoshHash ^= bitboards[idx];
-        bitboards[idx] ^= targetSq;
-        newPoshHash ^= bitboards[idx];
-
-        newPoshHash ^= bitboards[bb];
+        bitboards[PieceDescriptor::bQueen - WM] ^= targetSq;
+        newPoshHash ^= PieceMap::pieceMap[PieceDescriptor::bQueen - WM - align][targetSq];
     }
     else if ( m.isQueenCastle )
     {
-        size_t idx = PieceDescriptor::bRook - (sideToMove ? 0 : 1);
-        newPoshHash ^= bitboards[idx];
-        setBbUs(Piece::Rook, targetSq >> 3);
-        newPoshHash ^= bitboards[idx] ^ ;
+        newPoshHash ^= PieceMap::pieceMap[PieceDescriptor::bRook - WM - align][targetSq >> 2];
+        setBbUs(Piece::Rook, targetSq << 3);
+        newPoshHash ^= PieceMap::pieceMap[PieceDescriptor::bRook - WM - align][targetSq << 3];
+
+        castlingRights ^= sideToMove ? 0x01 : 0x04;
     }
     else if ( m.isKingCastle() )
     {
-        setBbUs(Piece::Rook, targetSq << 2);
+        newPoshHash ^= PieceMap::pieceMap[PieceDescriptor::bRook - WM - align][targetSq << 1];
+        setBbUs(Piece::Rook, targetSq >> 2);
+        newPoshHash ^= PieceMap::pieceMap[PieceDescriptor::bRook - WM - align][targetSq >> 2];
+    
+        castlingRights ^= sideToMove ? 0x02 : 0x08;
     }
 
-    // update: en-passant, half-move clk, 
-    // TODO: add zobrist hash to Undo table and add game hist table
+    recomputeSideOccupancies();
+
+    history[ply].moveHash      = newPoshHash;
+    history[ply].capturedPiece = captured;
+    history[ply].castling      = castlingRights;
+    history[ply].ep            = enPassant;
+    history[ply].halfmove      = halfMoveClock;
+    history[ply].move          = static_cast<uint16_t>(m);
 }
 
 void Board::unmakeMove()
@@ -95,7 +202,7 @@ const size_t Board::getBitboard(const uint64_t sq)
         if ( sq & bitboards[i] ) return i;
     }
 
-    std::unreachable();
+    // std::unreachable();
     return 0;
 }
 
@@ -103,11 +210,28 @@ void Board::updateOriginBirboard(const uint64_t originSq, const uint64_t targetS
 {
     const uint64_t fromToBB = originSq ^ targetSq;
     
-    posHash ^= PieceMap::pieceMap[bbN - 2][originSq];
-    posHash ^= PieceMap::pieceMap[bbN - 2][targetSq];
+    posHash ^= PieceMap::pieceMap[bbN - align][originSq];
 
     bitboards[bbN] ^= fromToBB;
 
-    posHash ^= PieceMap::pieceMap[bbN - 2][originSq];
-    posHash ^= PieceMap::pieceMap[bbN - 2][targetSq];
+    posHash ^= PieceMap::pieceMap[bbN - align][targetSq];
+}
+
+void Board::recomputeSideOccupancies() 
+{
+    bitboards[static_cast<size_t>(PieceDescriptor::nWhite)] =
+        bitboards[static_cast<size_t>(PieceDescriptor::wPawn)]   |
+        bitboards[static_cast<size_t>(PieceDescriptor::wKnight)] |
+        bitboards[static_cast<size_t>(PieceDescriptor::wBishop)] |
+        bitboards[static_cast<size_t>(PieceDescriptor::wRook)]   |
+        bitboards[static_cast<size_t>(PieceDescriptor::wQueen)]  |
+        bitboards[static_cast<size_t>(PieceDescriptor::wKing)];
+
+    bitboards[static_cast<size_t>(PieceDescriptor::nBlack)] =
+        bitboards[static_cast<size_t>(PieceDescriptor::bPawn)]   |
+        bitboards[static_cast<size_t>(PieceDescriptor::bKnight)] |
+        bitboards[static_cast<size_t>(PieceDescriptor::bBishop)] |
+        bitboards[static_cast<size_t>(PieceDescriptor::bRook)]   |
+        bitboards[static_cast<size_t>(PieceDescriptor::bQueen)]  |
+        bitboards[static_cast<size_t>(PieceDescriptor::bKing)];
 }

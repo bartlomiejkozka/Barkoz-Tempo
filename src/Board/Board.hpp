@@ -2,6 +2,7 @@
 #define BOARD_H
 
 #include <array>
+#include <vector>
 #include <cstddef>
 #include <cstdint>
 #include <unordered_map>
@@ -16,7 +17,7 @@
  *******************************************************************************/
 enum class PieceDescriptor : size_t
 {
-    nWhite, // side to move color indicator
+    nWhite, // side to move color indicator // in captures Undo Structure this idx means "no capure"
     nBlack, // side to move color indicator
     wPawn,
     bPawn,
@@ -77,6 +78,12 @@ public:
     Board(const Board&)            = default;
     Board &operator=(const Board&) = default;
 
+    // ---------------------------------
+    // Initilizator
+    // ---------------------------------
+
+    void init();
+
     //==================================
     //==========Board Predefinitions====
     //==================================
@@ -88,31 +95,8 @@ public:
 
     static constexpr size_t MAXMoveHistory = 256;
 
-    //==================================
-    //======Deafult starting bitboards==
-    //==================================
-
-    std::array<uint64_t, 2> defaultKingBitboards = {
-        minBitSet << 4, maxBitSet >> 3
-    };
-    std::array<uint64_t, 2> defaultQueenBitboards = {
-        minBitSet << 3, maxBitSet >> 4
-    };
-    std::array<uint64_t, 2> defaultRookBitboards = {
-        minBitSet << 7 | minBitSet,
-        maxBitSet >> 7 | maxBitSet
-    };
-    std::array<uint64_t, 2> defaultBishopBitboards = {
-        minBitSet << 5 | minBitSet << 2,
-        maxBitSet >> 5 | maxBitSet >> 2
-    };
-    std::array<uint64_t, 2> defaultKnightBitboards = {
-        minBitSet << 6 | minBitSet << 1,
-        maxBitSet >> 6 | maxBitSet >> 1
-    };
-    std::array<uint64_t, 2> defaultPawnBitboards = {
-        0xFFUL << 8, 0xFFUL << convertFromMinBitSetToMaxBitSet(16)
-    };
+    // e.g. in PieceMap indexing we have to subtract 2, becase Piece's bitboards start from third idx.
+    static constexpr size_t align = 2;
     
     // ---------------------------------
     // getters
@@ -145,7 +129,10 @@ public:
     int8_t enPassant = -1;         // enPassant Square, -1 - if no enPassant
     uint8_t castlingRights = 0x0F; // 0b00001(white kingside)1(white queenside)1(black kingside)1(balck queenside)
 
-    std::array<Undo, MAXMoveHistory> history;
+    std::array<Undo, MAXMoveHistory> history;   // MAXMoveHistory should be as big as the most depth search
+    size_t ply = 0;                             // half move idx of history array;
+
+    std::vector<Undo> gameHistory;  // all game move history
 
     // ---------------------------------
     // Move make
@@ -159,8 +146,8 @@ public:
     // ---------------------------------
 
     const size_t getBitboard(const int sq) const;
-    void updateOriginBirboard(const int originSq, const int targetSq, const size_t bbN, uint64_t &poshHash);
-    const int calcOpp() { return sideToMove ? -1 : 1; }
+    void updateOriginBirboard(const uint64_t originSq, const uint64_t targetSq, const size_t bbN, uint64_t &poshHash);
+    void recomputeSideOccupancies();
 
     // ---------------------------------
     // Helpers
