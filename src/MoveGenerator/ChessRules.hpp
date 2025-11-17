@@ -61,6 +61,9 @@ public:
 
     [[nodiscard]] Move* getLegalMoves(int originSq, Move *moves) const;
         
+    bool isHalfMoveClkExtended() const { return _board.halfMoveClock >= 50; }
+    // TODO: [Urgent] IMPLEMENT THREEFOLD RULE CHECK !
+
 private:
     Board &_board;
 
@@ -142,7 +145,7 @@ template <uint64_t (*Attacks)(const int, const uint64_t, const uint64_t)>
 template <uint64_t (*Attacks)(const int, const uint64_t, const uint64_t), Sliders slider>
 [[nodiscard]] uint64_t ChessRules::getPins(/*kingSq*/int sq) const
 {
-    const uint64_t sliderOpp = slider ? _board.bbThemRQ() : _board.bbUsBQ();
+    const uint64_t sliderOpp = slider ? _board.bbThemRQ() : _board.bbThemBQ();
     uint64_t pinned = 0;
     pinner = xrayAttacks<Attacks>(sq, _board.bbUs(), _board.bbThem()) & sliderOpp;
     while (pinner)

@@ -19,10 +19,12 @@
 #include "BlackPawnMap.hpp"
 #include "WhitePawnMap.hpp"
 #include "ChessRules.hpp"
+#include "MoveUtils.hpp"
 
 #include <utility>
 #include <array>
 #include <type_traits>
+#include <bit>
 
 
 enum class Gen : size_t
@@ -170,11 +172,36 @@ template<Gen G, Piece P
                          PostFn post = nullptr)
 {
     uint64_t piecesBB = rules._board.bbUs(P);
+    const int kingSq = countr_zero(rules._board.bbUs(Piece::King));
+
+    if constexpr (GenTraits<G>::Captures || GenTraits<G>::Quiets)
+    {
+        const uint64_t pinned = rules.getAllPins(kingSq);
+    }
 
     while (piecesBB)
     {
         int fromSq = pop_1st(piecesBB);
         uint64_t targets = getMoves(fromSq);
+
+        if constexpr (GenTraits<G>::Captures || GenTraits<G>::Quiets)
+        {
+            if ( (minBitSet << fromSq) & pinned )
+            {
+                uint64_t legalTargets = 0;
+                while ( targets )
+                {
+                    uint64_t targetSq = minBitSet << pop_1st(targets);
+                    int pinner = countr_zero(rules.xrayAttacks<BishopMap::getMoves>(kingSq, (minBitSet<<kingSq)|targetSq, rules._board.bbThem()));
+                    uint64_t legalSquares = MoveUtils.inBetween[kingSq][pinner];
+                    if ( targetSq & legalSquares )
+                    {
+                        legalTargets |= targetSq;
+                    }
+                }
+                targets = legalTargets;
+            }
+        }
 
         if constexpr (GenTraits<G>::Captures)
         {
