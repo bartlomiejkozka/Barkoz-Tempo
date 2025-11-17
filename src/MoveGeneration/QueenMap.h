@@ -10,6 +10,7 @@
 
 #include <cstdint>
 #include <array>
+
 #include "BishopMap.h"
 #include "RookMap.h"
 

@@ -2,6 +2,7 @@
 #define WHITE_PAWN_HPP
 
 #include <cstdint>
+
 #include "MoveUtils.hpp"
 #include "BlackPawnMap.hpp"
 

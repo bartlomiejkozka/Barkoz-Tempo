@@ -22,7 +22,7 @@ struct PieceMap
 {
     static constexpr int pieceMapsCount = Board::bitboardCount - 2;
     static constexpr int castlingRighstCount = 4;
-    static constexpr int enPassantFilesCount = 4;
+    static constexpr int enPassantFilesCount = 8;
 
     //----------Zobrsit hash tabele----------
 
@@ -48,7 +48,7 @@ struct PieceMap
     // Generation
     // ------------------------
 
-    const uint64_t generatePosHash(const std::array<uint64_t, Board::boardSize>& bitBoards, Board board);
+    const uint64_t generatePosHash(const std::array<uint64_t, Board::boardSize>& bitBoards, Board &board);
 };
 
 #endif

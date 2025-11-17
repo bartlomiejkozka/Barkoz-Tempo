@@ -12,6 +12,7 @@
 #include <array>
 #include <utility>
 #include <bit>
+
 #include "MoveUtils.hpp"
 #include "BitOperation.hpp"
 

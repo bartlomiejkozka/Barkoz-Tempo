@@ -44,13 +44,16 @@ struct MoveUtils {
     template<size_t N>
     static consteval std::array<uint64_t, Board::boardSize> genStaticMoves(const std::array<int, N> &relativeMoves, const std::array<uint64_t, N> &notBoardMaps)
     {
-        constexpr std::array<uint64_t, Board::boardSize> moves = {};
-        moves.fill(1);
+        std::array<uint64_t, Board::boardSize> moves = {};
+        for (size_t i = 0; i < Board::boardSize; ++i)
+        {
+            moves[i] = 1;
+        }
 
         for (size_t i = 0; i < Board::boardSize; ++i)
         {
             moves[i] <<= i;
-            for (size_t j = 0; i < N; ++i)
+            for (size_t j = 0; j < N; ++j)
             {
                 moves[i] |= (shift(moves[i], relativeMoves[j]) & notBoardMaps[j]);
             }
@@ -66,7 +69,7 @@ struct MoveUtils {
 
     * For the not hirozontal, vertical or diagonal squares array value is set to zeros bit board
     */
-    inline static constex std::array<std::array<uint64_t, Board::boardSize>, Board::boardSize> inBetween = [] () constexpr
+    inline static constexpr std::array<std::array<uint64_t, Board::boardSize>, Board::boardSize> inBetween = [] () constexpr
     {
         std::array<std::array<uint64_t, Board::boardSize>, Board::boardSize> tab = {};
 
@@ -133,7 +136,7 @@ struct MoveUtils {
             uint64_t result = 0ULL;
             for(int i = 0; i < bits; i++)
             {
-                int j = pop_1st(&mask);
+                int j = pop_1st(mask);
                 if (index & (1 << i))
                 {
                     result |= (1ULL << j);
@@ -144,11 +147,11 @@ struct MoveUtils {
 
         static constexpr int transform(const uint64_t occupancieMask, const uint64_t magic, const int bits)
         {
-            return (int)((mask * magic) >> (64 - bits));
+            return (int)((occupancieMask * magic) >> (64 - bits));
         }
         static constexpr int transform(const uint64_t occupancieMask, const std::pair<uint64_t, int> magic)
         {
-            return (int)((mask * magic.first) >> (64 - magic.second));
+            return (int)((occupancieMask * magic.first) >> (64 - magic.second));
         }
     };
 

@@ -3,6 +3,7 @@
 
 #include <cstdint>
 #include <array>
+
 #include "MoveUtils.hpp"
 #include "Board.hpp"
 

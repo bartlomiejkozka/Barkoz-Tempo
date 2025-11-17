@@ -5,11 +5,13 @@
 #include "Board.hpp"
 #include "StateInfo.hpp"
 #include "PieceMap.hpp"
-#include "MoveGenerator/BlackPawnMap.hpp"
+#include "MoveGeneration/BlackPawnMap.hpp"
 
 int main()
 {
-    
+    Board board();
+    board.init();
+
 
     return 0;
 }

@@ -10,7 +10,7 @@
 // without en passant captures, castling, ...
 
 #ifndef CHESS_RULES_HPP
-#define ChESS_RULES_HPP
+#define CHESS_RULES_HPP
 
 #include <cstdint>
 #include <utility>
@@ -37,16 +37,16 @@ public:
     // --------------------
     // Castling bit masks
     // --------------------
-    constexpr std::array<uint64_t,2> KRight   { /* W */ 1ull<<3, /* B */ 1ull<<1 };
-    constexpr std::array<uint64_t,2> QRight   { /* W */ 1ull<<2, /* B */ 1ull<<0 };
-    constexpr std::array<uint64_t,2> KBlockers{ /* W */ (1ull<<5)|(1ull<<6), /* B */ (1ull<<61)|(1ull<<62) };
-    constexpr std::array<uint64_t,2> QBlockers{ /* W */ (1ull<<1)|(1ull<<2)|(1ull<<3), /* B */ (1ull<<57)|(1ull<<58)|(1ull<<59) };
-    constexpr std::array<uint64_t,2> KDest    { /* W */ (1ull<<6), /* B */ (1ull<<62) };
-    constexpr std::array<uint64_t,2> QDest    { /* W */ (1ull<<2), /* B */ (1ull<<58) };
+    static constexpr std::array<uint64_t,2> KRight   { /* W */ 1ull<<3, /* B */ 1ull<<1 };
+    static constexpr std::array<uint64_t,2> QRight   { /* W */ 1ull<<2, /* B */ 1ull<<0 };
+    static constexpr std::array<uint64_t,2> KBlockers{ /* W */ (1ull<<5)|(1ull<<6), /* B */ (1ull<<61)|(1ull<<62) };
+    static constexpr std::array<uint64_t,2> QBlockers{ /* W */ (1ull<<1)|(1ull<<2)|(1ull<<3), /* B */ (1ull<<57)|(1ull<<58)|(1ull<<59) };
+    static constexpr std::array<uint64_t,2> KDest    { /* W */ (1ull<<6), /* B */ (1ull<<62) };
+    static constexpr std::array<uint64_t,2> QDest    { /* W */ (1ull<<2), /* B */ (1ull<<58) };
     // ----------------------
     // Pawn helpers bit masks
     // ----------------------
-    constexpr std::array<uint64_t, 2> PawnDblPushOriginRow { 0xFFULL << 8, 0xFFULL << (6*8) };
+    static constexpr std::array<uint64_t, 2> PawnDblPushOriginRow { 0xFFULL << 8, 0xFFULL << (6*8) };
 
     // --------------------
     // Initializators
@@ -84,10 +84,29 @@ private:
     // blockers: by default it is attacked pieces bitboard
     // use example to get pinners: xrayAttacks() & bbThem;
     template <uint64_t (*Attacks)(const int, const uint64_t, const uint64_t)>
-    [[nodiscard]] uint64_t ChessRules::xrayAttacks(int sq, uint64_t bbUs, uint64_t bbThem) const;
+    [[nodiscard]] uint64_t xrayAttacks(int sq, uint64_t bbUs, uint64_t bbThem) const
+    {
+        uint64_t attacks = Attacks(sq, bbThem, bbUs);
+        uint64_t blockers = bbThem & attacks;
+
+        // retuns the attacks behind the pin when there was a pinner
+        return attacks ^ Attacks(sq, bbUs, bbThem ^ blockers);
+    }
 
     template <uint64_t (*Attacks)(const int, const uint64_t, const uint64_t), Sliders slider>
-    [[nodiscard]] uint64_t getPins(/*kingSq*/int sq) const;
+    [[nodiscard]] uint64_t getPins(/*kingSq*/int sq) const
+    {
+        const uint64_t sliderOpp = static_cast<bool>(slider) ? _board.bbThemRQ() : _board.bbThemBQ();
+        uint64_t pinned = 0;
+        uint64_t pinner = xrayAttacks<Attacks>(sq, _board.bbUs(), _board.bbThem()) & sliderOpp;
+        while (pinner)
+        {
+            int sqP = pop_1st(pinner);
+            pinned |= MoveUtils::inBetween[sqP][sq] & _board.bbUs();
+        }
+
+        return pinned;
+    }
 
     [[nodiscard]] uint64_t getAllPins(int sq) const;
 
@@ -127,34 +146,5 @@ private:
     [[nodiscard]] std::pair<uint64_t, uint64_t> getEvasions() const;
 };
 
-
-// ---------------------
-// Functions definitions
-// ---------------------
-
-template <uint64_t (*Attacks)(const int, const uint64_t, const uint64_t)>
-[[nodiscard]] uint64_t ChessRules::xrayAttacks(int sq, uint64_t bbUs, uint64_t bbThem) const
-{
-    uint64_t attacks = Attacks(sq, bbThem, bbUs);
-    uint64_t blockers = bbThem & attacks;
-
-    // retuns the attacks behind the pin when there was a pinner
-    return attacks ^ Attacks(sq, bbUs, bbThem ^ blockers);
-}
-
-template <uint64_t (*Attacks)(const int, const uint64_t, const uint64_t), Sliders slider>
-[[nodiscard]] uint64_t ChessRules::getPins(/*kingSq*/int sq) const
-{
-    const uint64_t sliderOpp = slider ? _board.bbThemRQ() : _board.bbThemBQ();
-    uint64_t pinned = 0;
-    pinner = xrayAttacks<Attacks>(sq, _board.bbUs(), _board.bbThem()) & sliderOpp;
-    while (pinner)
-    {
-        int sqP = pop_1st(pinner);
-        pinned |= inBetween[sqP][sq] & _board.bbUs();
-    }
-
-    return pinned;
-}
 
 #endif

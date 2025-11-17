@@ -6,8 +6,7 @@
 /*************************************************/
 
 #include "Board.hpp"
-#include "MoveUtils.hpp"
-#include "BitOperation.hpp"
+#include "MoveGeneration/MoveUtils.hpp"
 #include "PieceMap.hpp"
 
 #include <utility>

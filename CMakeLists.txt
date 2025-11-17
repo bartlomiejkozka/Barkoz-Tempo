@@ -2,9 +2,11 @@ cmake_minimum_required(VERSION 3.10)
 
 project(Barkoz-Tempo)
 
-set(CMAKE_CXX_STANDARD 23)
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
+
+add_compile_definitions(_GLIBCXX_DEBUG=0)
 
 add_executable(Barkoz-Tempo src/main.cpp)
 
@@ -15,35 +17,38 @@ add_executable(Barkoz-Tempo src/main.cpp)
 # )
 
 set(MODULE_DIRS
-  src/BitOperation
-  src/Board
-  src/BoardUtils
-  src/PieceMap
-  src/StateInfo
-  src/Shared
-  src/Debug
-  src/MoveGenerator
+	src/BitOperation
+	src/Board
+	src/BoardUtils
+	src/Debug
+	src/MoveGeneration
+	src/PieceMap
+	src/Shared
+	src/StateInfo
 )
 
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src)
+
 foreach(d IN LISTS MODULE_DIRS)
-  add_subdirectory(${d})
+	add_subdirectory(${d})
 endforeach()
 
 target_link_libraries(Barkoz-Tempo
     PRIVATE
         BitOperation
         Board
-        StateInfo
-        PieceMap
-        MoveGenerator
+        MoveGeneration
 )
 
-# tests
+
+# -------------------------------------------
+# TESTS
+# -------------------------------------------
 
 include(FetchContent)
 FetchContent_Declare(
-  googletest
-  URL https://github.com/google/googletest/archive/03597a01ee50ed33e9dfd640b249b4be3799d395.zip
+	googletest
+	URL https://github.com/google/googletest/archive/03597a01ee50ed33e9dfd640b249b4be3799d395.zip
 )
 
 FetchContent_MakeAvailable(googletest)
@@ -51,13 +56,13 @@ FetchContent_MakeAvailable(googletest)
 enable_testing()
 
 add_executable(
-  moveUtility_test
-  tests/unit_tests/moveUtility_test.cc
+	moveUtility_test
+	tests/unit_tests/moveUtility_test.cc
 )
 target_link_libraries(
-  moveUtility_test
-  GTest::gtest_main
-  MoveGenerator
+	moveUtility_test
+	GTest::gtest_main
+	MoveGenerator
 )
 
 include(GoogleTest)

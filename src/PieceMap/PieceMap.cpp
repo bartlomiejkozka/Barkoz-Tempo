@@ -8,7 +8,8 @@
 #include "PieceMap.hpp"
 #include "BitOperation.hpp"
 
-static void PieceMap::init()
+
+void PieceMap::init()
 {
     std::unordered_set<uint64_t> uniqueHashes;
     std::mt19937_64 rng(416587);
@@ -36,20 +37,21 @@ static void PieceMap::init()
 
     blackSideToMove = [&] ()
     {
+        uint64_t rd_num;
         do
         {
-            uint64_t rd_num = dist(rng);
+            rd_num = dist(rng);
         } while ( !uniqueHashes.insert(rd_num).second );
 
         return rd_num;
     }();
 
-    auto genHashMap = [&] ( const int size )
+    castlingRightsMap = [&] ()
     {
-        std::array<uint64_t, size> res;
+        std::array<uint64_t, castlingRighstCount> res;
         uint64_t rd_num;
 
-        for (size_t i = 0; i < size; ++i)
+        for (size_t i = 0; i < castlingRighstCount; ++i)
         {
             do
             {
@@ -59,11 +61,46 @@ static void PieceMap::init()
         }
 
         return res;
-    }    
+    }();
 
-    castlingRightsMap = genHashMap(castlingRighstCount);
+    enPassantsMap = [&] ()
+    {
+        std::array<uint64_t, enPassantFilesCount> res;
+        uint64_t rd_num;
 
-    enPassantsMap = genHashMap(enPassantFilesCount);
+        for (size_t i = 0; i < enPassantFilesCount; ++i)
+        {
+            do
+            {
+                rd_num = dist(rng);
+            } while (!uniqueHashes.insert(rd_num).second);
+            res[i] = rd_num;
+        }
+
+        return res;
+    }();
+
+    // TODO: Mingw does not see the lambda template, change to MSVC
+
+    // auto genHashMap = [&] <int size> ()
+    // {
+    //     std::array<uint64_t, size> res;
+    //     uint64_t rd_num;
+
+    //     for (size_t i = 0; i < size; ++i)
+    //     {
+    //         do
+    //         {
+    //             rd_num = dist(rng);
+    //         } while (!uniqueHashes.insert(rd_num).second);
+    //         res[i] = rd_num;
+    //     }
+
+    //     return res;
+    // };
+
+    // castlingRightsMap = genHashMap<castlingRighstCount>();
+    // enPassantsMap = genHashMap<enPassantFilesCount>();
 }
 
 const uint64_t PieceMap::generatePosHash(const std::array<uint64_t, Board::boardSize>& bitBoards, Board &board)
@@ -80,11 +117,12 @@ const uint64_t PieceMap::generatePosHash(const std::array<uint64_t, Board::board
         }
     }
 
-    posHash ^= board.sideToMove ? blackSideToMove : 0;
+    posHash ^= static_cast<bool>(board.sideToMove) ? blackSideToMove : 0;
 
-    for ( uint8_t cast = board.castlingRights; cast != 0; )
+    uint64_t cast = static_cast<uint64_t>(board.castlingRights);
+    while (cast)
     {
-        int idx = pop_1st(cast);
+        int idx = pop_1st(cast); // teraz OK, lvalue 64-bit
         posHash ^= castlingRightsMap[idx];
     }
 

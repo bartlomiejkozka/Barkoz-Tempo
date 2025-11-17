@@ -8,7 +8,7 @@
 #include <unordered_map>
 
 #include "BitOperation.hpp"
-#include "Move.hpp"
+#include "MoveGeneration/Move.hpp"
 
 
 /******************************************************************************
@@ -51,8 +51,18 @@ enum class pColor : int
 {
     White,
     Black
-}
+};
 
+// structure to save irrevesible attributes + packed move, necessary to unmake move
+struct Undo
+{
+    uint8_t castling;              // 0b00001(white kingside)1(white queenside)1(black kingside)1(balck queenside)
+    int8_t ep;                     // enPassant Square, -1 - if no enPassant
+    uint8_t halfmove;
+    PieceDescriptor capturedPiece; // type+color of captured piece, 0 if none
+    uint16_t move;                 // packedMove
+    uint64_t moveHash;
+};
 
 // TODO:
 // - add castling bitboards
@@ -104,7 +114,7 @@ public:
 
     const uint64_t fullBoard() const 
     { 
-        return bitboards[PieceDescriptor::nWhite] & bitboards[PieceDescriptor::nBlack]; 
+        return bitboards[static_cast<size_t>(PieceDescriptor::nWhite)] & bitboards[static_cast<size_t>(PieceDescriptor::nBlack)]; 
     }
 
     //==================================
@@ -192,21 +202,21 @@ public:
 
     uint64_t bbUs(Piece pieceType) const
     {
-        return bitboards[static_cast<size_t>(pieceType) + static_cast<size_t>(sideToMove)] 
+        return bitboards[static_cast<size_t>(pieceType) + static_cast<size_t>(sideToMove)];
     }
 
     uint64_t bbThem(Piece pieceType) const
     {
-        return bitboards[static_cast<size_t>(pieceType) + 1 - static_cast<size_t>(sideToMove)]
+        return bitboards[static_cast<size_t>(pieceType) + 1 - static_cast<size_t>(sideToMove)];
     }
 
 private:
-    void setBbUs(Piece pieceType, uint64_t targetSq) const
+    void setBbUs(Piece pieceType, uint64_t targetSq)
     {
         bitboards[static_cast<size_t>(pieceType) + static_cast<size_t>(sideToMove)] ^= targetSq;
     }
 
-    void setBbThem(Piece pieceType, uint64_t targetSq) const
+    void setBbThem(Piece pieceType, uint64_t targetSq)
     {
         bitboards[static_cast<size_t>(pieceType) + 1 - static_cast<size_t>(sideToMove)] ^= targetSq;
     }
