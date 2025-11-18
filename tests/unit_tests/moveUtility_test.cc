@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
 
-#include "MoveUtils.hpp"
+#include "MoveGeneration/MoveUtils.hpp"
 
 
 TEST(MoveGeneartorTest, HorizontalPositions) 
