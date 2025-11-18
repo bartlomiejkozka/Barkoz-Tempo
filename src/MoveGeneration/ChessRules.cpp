@@ -49,35 +49,39 @@
 
 [[nodiscard]] uint64_t ChessRules::attacksTo(const int sq, const pColor attackedPColor) const
 {
-    const uint64_t pawns = static_cast<bool>(attackedPColor) ? BlackPawnMap::attacksTo[sq] & _board.bitboards[PieceDescriptor::wPawn + attackedPColor]
-        : WhitePawnMap::attacksTo[sq] & _board.bitboards[PieceDescriptor::wPawn + attackedPColor];
+    const size_t attPColor = static_cast<size_t>(attackedPColor); 
 
-    const uint64_t bishop = BishopMap::getMoves(sq, _board.bitboards[PieceDescriptor::bBishop - attackedPColor],  _board.bitboards[PieceDescriptor::bBishop + attackedPColor]);
-    const uint64_t rook = RookMap::getMoves(sq, _board.bitboards[PieceDescriptor::bRook - attackedPColor],  _board.bitboards[PieceDescriptor::bRook + attackedPColor]);
-    const uint64_t queen = QueenMap::getMoves(sq, _board.bitboards[PieceDescriptor::bQueen - attackedPColor],  _board.bitboards[PieceDescriptor::bQueen + attackedPColor]);
+    const uint64_t pawns = static_cast<bool>(attackedPColor) ? BlackPawnMap::attacksTo[sq] & _board.bitboards[static_cast<size_t>(PieceDescriptor::wPawn) + attPColor]
+        : WhitePawnMap::attacksTo[sq] & _board.bitboards[static_cast<size_t>(PieceDescriptor::wPawn) + attPColor];
+
+    const uint64_t bishop = Bishop::getMoves(sq, _board.bitboards[static_cast<size_t>(PieceDescriptor::bBishop) - attPColor],  _board.bitboards[static_cast<size_t>(PieceDescriptor::bBishop) + attPColor]);
+    const uint64_t rook = Rook::getMoves(sq, _board.bitboards[static_cast<size_t>(PieceDescriptor::bRook) - attPColor],  _board.bitboards[static_cast<size_t>(PieceDescriptor::bRook) + attPColor]);
+    const uint64_t queen = Queen::getMoves(sq, _board.bitboards[static_cast<size_t>(PieceDescriptor::bQueen) - attPColor],  _board.bitboards[static_cast<size_t>(PieceDescriptor::bQueen) + attPColor]);
 
     return pawns | bishop | rook | queen
-        | (KingPattern::attacksTo[sq] & _board.bitboards[PieceDescriptor::wKing + attackedPColor])
-        | (KnightPattern::attacksTo[sq] & _board.bitboards[PieceDescriptor::wKnight + attackedPColor]);
+        | (KingPattern::attacksTo[sq] & _board.bitboards[static_cast<size_t>(PieceDescriptor::wKing) + attPColor])
+        | (KnightPattern::attacksTo[sq] & _board.bitboards[static_cast<size_t>(PieceDescriptor::wKnight) + attPColor]);
 }
 
 [[nodiscard]] const bool ChessRules::isAttackedTo(const int sq, const pColor attackedPColor) const
 {
-    const uint64_t queen = QueenMap::getMoves(sq, _board.bitboards[PieceDescriptor::bQueen - attackedPColor],  _board.bitboards[PieceDescriptor::bQueen + attackedPColor]);
+    const size_t attPColor = static_cast<size_t>(attackedPColor); 
+
+    const uint64_t queen = Queen::getMoves(sq, _board.bitboards[static_cast<size_t>(PieceDescriptor::bQueen) - attPColor],  _board.bitboards[static_cast<size_t>(PieceDescriptor::bQueen) + attPColor]);
     if (queen) return true;
 
-    const uint64_t bishop = BishopMap::getMoves(sq, _board.bitboards[PieceDescriptor::bBishop - attackedPColor],  _board.bitboards[PieceDescriptor::bBishop + attackedPColor]);
+    const uint64_t bishop = Bishop::getMoves(sq, _board.bitboards[static_cast<size_t>(PieceDescriptor::bBishop) - attPColor],  _board.bitboards[static_cast<size_t>(PieceDescriptor::bBishop) + attPColor]);
     if (bishop) return true;
 
-    const uint64_t rook = RookMap::getMoves(sq, _board.bitboards[PieceDescriptor::bRook - attackedPColor],  _board.bitboards[PieceDescriptor::bRook + attackedPColor]);
+    const uint64_t rook = Rook::getMoves(sq, _board.bitboards[static_cast<size_t>(PieceDescriptor::bRook) - attPColor],  _board.bitboards[static_cast<size_t>(PieceDescriptor::bRook) + attPColor]);
     if (rook) return true;
 
-    if (KnightPattern::attacksTo[sq] & _board.bitboards[PieceDescriptor::wKnight + attackedPColor]) return true;    
+    if (KnightPattern::attacksTo[sq] & _board.bitboards[static_cast<size_t>(PieceDescriptor::wKnight) + attPColor]) return true;    
 
-    if (KingPattern::attacksTo[sq] & _board.bitboards[PieceDescriptor::wKing + attackedPColor]) return true;
+    if (KingPattern::attacksTo[sq] & _board.bitboards[static_cast<size_t>(PieceDescriptor::wKing) + attPColor]) return true;
 
-    const uint64_t pawns = attackedPColor ? BlackPawnMap::attacksTo[sq] & _board.bitboards[PieceDescriptor::wPawn + attackedPColor]
-        : WhitePawnMap::attacksTo[sq] & _board.bitboards[PieceDescriptor::wPawn + attackedPColor];
+    const uint64_t pawns = static_cast<bool>(attackedPColor) ? BlackPawnMap::attacksTo[sq] & _board.bitboards[static_cast<size_t>(PieceDescriptor::wPawn) + attPColor]
+        : WhitePawnMap::attacksTo[sq] & _board.bitboards[static_cast<size_t>(PieceDescriptor::wPawn) + attPColor];
     if (pawns) return true;
     
     return false;
@@ -88,7 +92,7 @@
     while (pathSq)
     {
         int sq = pop_1st(pathSq);
-        if (isAttacksTo(sq, movePColor))
+        if (isAttackedTo(sq, movePColor))
         {
             return false;
         }
@@ -98,8 +102,8 @@
 
 [[nodiscard]] uint64_t ChessRules::getAllPins(int sq) const
 {
-    return getPins<BishopMap::getMoves, Sliders::Bishop>(sq)
-        | getPins<RookMap::getMoves, Sliders::Rook>(sq);
+    return getPins<Bishop::getMoves, Sliders::Bishop>(sq)
+        | getPins<Rook::getMoves, Sliders::Rook>(sq);
 }
 
 [[nodiscard]] std::pair<uint64_t, uint64_t> ChessRules::getEvasions() const
@@ -111,7 +115,7 @@
     while (sliderAttackers)     // for the check King evasion -> when slider only one Path to cover the King to evate check
     {
         int attSq = pop_1st(sliderAttackers);
-        res.second |= inBetween[attSq][kingSq];
+        res.second |= MoveUtils::inBetween[attSq][kingSq];
     }
 
     return res;

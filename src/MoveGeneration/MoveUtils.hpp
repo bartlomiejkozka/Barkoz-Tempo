@@ -30,8 +30,7 @@ struct MoveUtils {
     // recomended shift funciton when dealing with negative shift values (i.e. in relative moves)
     // left shift  : positives
     // right shift : negatives
-    [[nodiscard("PURE FUN")]] static constexpr uint64_t shift(uint64_t x, int shiftBy) { return shiftBy < 0 ? (x >> shiftBy) : (x << shiftBy); } 
-
+    [[nodiscard("PURE FUN")]] static constexpr uint64_t shift(uint64_t x, int shiftBy) { return (shiftBy < 0) ? (x >> -shiftBy) : (x << shiftBy); } 
 
     // -------------------
     // King/Knight Use

@@ -1,10 +1,10 @@
-#ifndef WHITW_PAWN_HPP
+#ifndef WHITE_PAWN_HPP
 #define WHITE_PAWN_HPP
 
 #include <cstdint>
+#include <bit>
 
 #include "MoveUtils.hpp"
-#include "BlackPawnMap.hpp"
 
 
 // TODO:
@@ -17,41 +17,50 @@
 */
 
 class WhitePawnMap {
+    private:
+    //--------------------
+    // Helpers for attacking moves
+    //--------------------
+
+    static constexpr uint64_t notAFile = 0x7F7F7F7F7F7F7F7F;
+    static constexpr uint64_t notHFile = 0xFEFEFEFEFEFEFEFE;
+
     public:
     //--------------------
     // Initilizers
     //--------------------
     
-    WhitePawnMap() = delete;s
+    WhitePawnMap() = delete;
 
     //--------------------
     // Moves defined by Chess rules
     //--------------------
 
-    [[nodiscard("PURE FUN")]] static constexpr uint64_t getPushTargets(const uint64_t originSq, const uint64_t fullBoard) { return originSq << 8 & MoveUtils::empty(fullBoard); }
+    [[nodiscard("PURE FUN")]] static constexpr uint64_t getPushTargets(const int originSq, const uint64_t fullBoard) { return bitBoardSet(originSq) << 8 & MoveUtils::empty(fullBoard); }
 
-    [[nodiscard("PURE FUN")]] static constexpr uint64_t getDblPushTargets(const uint64_t originSq, const uint64_t fullBoard) { return originSq << 16 & MoveUtils::empty(fullBoard); }
+    [[nodiscard("PURE FUN")]] static constexpr uint64_t getDblPushTargets(const int originSq, const uint64_t fullBoard) { return bitBoardSet(originSq) << 16 & MoveUtils::empty(fullBoard); }
 
-    [[nodiscard("PURE FUN")]] static constexpr uint64_t getWestAttackTargets(const uint64_t originSq, const uint64_t oponentPieces) { return originSq & notAFile << 9 & oponentPieces; }
+    [[nodiscard("PURE FUN")]] static constexpr uint64_t getWestAttackTargets(const int originSq, const uint64_t oponentPieces) { return bitBoardSet(originSq) & notAFile << 9 & oponentPieces; }
 
-    [[nodiscard("PURE FUN")]] static constexpr uint64_t getEastAttackTargets(const uint64_t originSq, const uint64_t oponentPieces) { return originSq & notHFile << 7 & oponentPieces; }
+    [[nodiscard("PURE FUN")]] static constexpr uint64_t getEastAttackTargets(const int originSq, const uint64_t oponentPieces) { return bitBoardSet(originSq) & notHFile << 7 & oponentPieces; }
 
-    [[nodiscard("PURE FUN")]] static constexpr uint64_t getAnyAttackTargets(const uint64_t originSq, const uint64_t oponentPieces) 
+    [[nodiscard("PURE FUN")]] static constexpr uint64_t getAnyAttackTargets(const int originSq, const uint64_t oponentPieces) 
     { 
-        return getEastAttackTargets(oponentPieces) | getWestAttackTargets(oponentPieces); 
+        return getEastAttackTargets(originSq, oponentPieces) | getWestAttackTargets(originSq, oponentPieces);
     }
 
-    [[nodiscard("PURE FUN")]] static constexpr uint64_t getEpAttackTarget(const uint64_t originSq, const int ep) 
+    [[nodiscard("PURE FUN")]] static constexpr uint64_t getEpAttackTarget(const int originSq, const int ep) 
     { 
         if (0 == ep) return 0ULL;
+        uint64_t fromSq = bitBoardSet(originSq);
         return (( originSq >> 9) | (originSq >> 7)) & (static_cast<uint64_t>(1) << ep);
     }
 
     // may be used in future by evaluation function
 
-    [[nodiscard("PURE FUN")]] static constexpr uint64_t getDblAttackTargets(const uint64_t originSq, const uint64_t oponentPieces) { return getEastAttackTargets & getWestAttackTargets; }
+    [[nodiscard("PURE FUN")]] static constexpr uint64_t getDblAttackTargets(const uint64_t originSq, const uint64_t oponentPieces) { return getEastAttackTargets(originSq, oponentPieces) & getWestAttackTargets(originSq, oponentPieces); }
  
-    [[nodiscard("PURE FUN")]] static constexpr uint64_t getSingleAttackTargets(const uint64_t originSq, const uint64_t oponentPieces) { return getEastAttackTargets ^ getWestAttackTargets; }
+    [[nodiscard("PURE FUN")]] static constexpr uint64_t getSingleAttackTargets(const uint64_t originSq, const uint64_t oponentPieces) { return getEastAttackTargets(originSq, oponentPieces) ^ getWestAttackTargets(originSq, oponentPieces); }
     
     //------------------s
     // Main API function
@@ -67,26 +76,20 @@ class WhitePawnMap {
     //--------------------------
 
     // Ep exluded -> in general case (King check) Ep not used
-    constexpr std::array<uint64_t, Board::boardSize> attacksTo = [] constexpr
+    static constexpr std::array<uint64_t, Board::boardSize> attacksTo = [] constexpr
     {
-        constexpr std::array<uint64_t, Board::boardSize> res{};
+        std::array<uint64_t, Board::boardSize> res{};
         constexpr uint64_t oPieces = 0xFFFFFFFFFFFFFFFF;
 
-        for (int i = 0, uint64_t pos = 1; i < Board::boardSize; pos <<= 1, ++i)
+        for (int i = 0; i < Board::boardSize; ++i)
         {
-            res[i] = BlackPawnMap::getAnyAttackTargets(pos, oPieces);
+            uint64_t pos = 1ULL << i;
+            // res[i] = getAnyAttackTargets(std::countr_zero(pos), oPieces) >> 16;
+            res[i] = ( (bitBoardSet(std::countr_zero(pos)) & notHFile << 7 & oPieces) | (bitBoardSet(std::countr_zero(pos)) & notAFile << 9 & oPieces) ) >> 16;
         }
 
         return res;
     }();
-
-    private:
-    //--------------------
-    // Helpers for attacking moves
-    //--------------------
-
-    static constexpr uint64_t notAFile = 0x7F7F7F7F7F7F7F7F;
-    static constexpr uint64_t notHFile = 0xFEFEFEFEFEFEFEFE;
 };
 
 #endif 

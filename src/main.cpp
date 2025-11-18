@@ -1,15 +1,11 @@
-#include <array>
-#include <cstdint>
-#include <iostream>
-
 #include "Board.hpp"
-#include "StateInfo.hpp"
 #include "PieceMap.hpp"
-#include "MoveGeneration/BlackPawnMap.hpp"
 
 int main()
 {
-    Board board();
+    PieceMap::init();
+    Board board{};
+ 
     board.init();
 
 

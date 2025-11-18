@@ -64,9 +64,6 @@ public:
     bool isHalfMoveClkExtended() const { return _board.halfMoveClock >= 50; }
     // TODO: [Urgent] IMPLEMENT THREEFOLD RULE CHECK !
 
-private:
-    Board &_board;
-
     // --------------------
     // Methods - helpers
     // --------------------
@@ -144,6 +141,9 @@ private:
 
     // return: first: King atackers, second: Evasion paths -> e.g. inBetween Rook -> King square
     [[nodiscard]] std::pair<uint64_t, uint64_t> getEvasions() const;
+
+private:
+    Board &_board;
 };
 
 

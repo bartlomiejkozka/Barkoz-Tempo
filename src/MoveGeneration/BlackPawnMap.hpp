@@ -2,10 +2,11 @@
 #define BLACK_PAWN_HPP
 
 #include <cstdint>
+#include <bit>
 
 #include "MoveUtils.hpp"
 #include "Board.hpp"
-#include "WhitePawnMap.hpp"
+#include "BitOperation.hpp"
 
 /*
 * Basic Lowest Level Component of Legal Moves
@@ -20,6 +21,13 @@
 */
 
 class BlackPawnMap {
+    private:
+    //----------------------------
+    // Helpers for attacking moves
+    //----------------------------
+    static constexpr uint64_t notAFile = 0x7F7F7F7F7F7F7F7F;
+    static constexpr uint64_t notHFile = 0xFEFEFEFEFEFEFEFE;
+
     public:
     //--------------------
     // Initilizers
@@ -32,7 +40,7 @@ class BlackPawnMap {
     //--------------------
 
     [[nodiscard("PURE FUN")]] static constexpr uint64_t getPushTargets(const int originSq, const uint64_t fullBoard) { return bitBoardSet(originSq) >> 8 & MoveUtils::empty(fullBoard); }
-
+   
     [[nodiscard("PURE FUN")]] static constexpr uint64_t getDblPushTargets(const int originSq, const uint64_t fullBoard) { return bitBoardSet(originSq) >> 16 & MoveUtils::empty(fullBoard); }
 
     [[nodiscard("PURE FUN")]] static constexpr uint64_t getWestAttackTargets(const int originSq, const uint64_t oponentPieces) { return bitBoardSet(originSq) & notAFile >> 9 & oponentPieces; }
@@ -47,8 +55,8 @@ class BlackPawnMap {
     [[nodiscard("PURE FUN")]] static constexpr uint64_t getEpAttackTarget(const int originSq, const int ep)
     {
         if (0 == ep) return 0ULL;
-        originSq = bitBoardSet(originSq);
-        return (( originSq >> 9) | (originSq >> 7)) & (static_cast<uint64_t>(1) << ep);
+        uint64_t fromSq = bitBoardSet(originSq);
+        return (( fromSq >> 9) | (fromSq >> 7)) & (static_cast<uint64_t>(1) << ep);
     }
 
     // may be used in future by evaluation function
@@ -72,26 +80,20 @@ class BlackPawnMap {
     //--------------------------
 
     // Ep exluded -> in general case (King check) Ep not used
-    constexpr std::array<uint64_t, Board::boardSize> attacksTo = [] constexpr
+    static constexpr std::array<uint64_t, Board::boardSize> attacksTo = [] constexpr
     {
         std::array<uint64_t, Board::boardSize> res{};
         constexpr uint64_t oPieces = 0xFFFFFFFFFFFFFFFF;
 
         for (int i = 0; i < Board::boardSize; ++i)
         {
-            uint64_t pos = 1UL << i;
-            res[i] = WhitePawnMap::getAnyAttackTargets(pos, oPieces);
+            uint64_t pos = 1ULL << i;
+            // res[i] = getAnyAttackTargets(std::countr_zero(pos), oPieces) << 16;
+            res[i] = ( (bitBoardSet(std::countr_zero(pos)) & notHFile >> 7 & oPieces) | (bitBoardSet(std::countr_zero(pos)) & notAFile >> 9 & oPieces) ) >> 16;
         }
 
         return res;
     }();
-
-    private:
-    //----------------------------
-    // Helpers for attacking moves
-    //----------------------------
-    static constexpr uint64_t notAFile = 0x7F7F7F7F7F7F7F7F;
-    static constexpr uint64_t notHFile = 0xFEFEFEFEFEFEFEFE;
 };
 
 #endif 

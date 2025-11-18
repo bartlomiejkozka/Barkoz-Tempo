@@ -155,8 +155,8 @@ public:
     // Move make Helpers
     // ---------------------------------
 
-    const size_t getBitboard(const int sq) const;
-    void updateOriginBirboard(const uint64_t originSq, const uint64_t targetSq, const size_t bbN, uint64_t &poshHash);
+    const size_t getBitboard(const uint64_t sq) const;
+    void updateOriginBirboard(const uint64_t originSq, const uint64_t targetSq, const size_t bbN, uint64_t &posHash);
     void recomputeSideOccupancies();
 
     // ---------------------------------

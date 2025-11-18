@@ -8,6 +8,11 @@
 #include "PieceMap.hpp"
 #include "BitOperation.hpp"
 
+// have to be here repeated becasue of linker err.
+std::array<std::array<uint64_t, Board::boardSize>, PieceMap::pieceMapsCount> PieceMap::pieceMap;
+uint64_t PieceMap::blackSideToMove;
+std::array<uint64_t, PieceMap::castlingRighstCount> PieceMap::castlingRightsMap;
+std::array<uint64_t, PieceMap::enPassantFilesCount> PieceMap::enPassantsMap;
 
 void PieceMap::init()
 {

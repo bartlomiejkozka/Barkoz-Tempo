@@ -20,17 +20,17 @@ struct KnightPattern
     static constexpr uint64_t notGHFile = 0xFCFCFCFCFCFCFCFC;
 
 private:
-    static constexpr std::array<int, maxPosPosibilities> relativeMoves = { 6, 15, 17, 10, -6, -15, -17, -10 }
-    static constexpr std::array<uint64_t, maxPosPosibilities> notBoardMaps = { notGHFile, notHFile, notAFile, notABFile, notABFile, notAFile, notHFile, notGHFile }
+    static constexpr std::array<int, maxPosPosibilities> relativeMoves = { 6, 15, 17, 10, -6, -15, -17, -10 };
+    static constexpr std::array<uint64_t, maxPosPosibilities> notBoardMaps = { notGHFile, notHFile, notAFile, notABFile, notABFile, notAFile, notHFile, notGHFile };
 
 public:
     //---------------------
     // API function - Moves
     //---------------------
 
-    static const uint64_t getMoves(const size_t originSq, const uint64_t bbUs) 
+    [[nodiscard]] static const uint64_t getMoves(const size_t originSq, const uint64_t bbUs) 
     { 
-        MoveUtils::genStaticMoves<maxPosPosibilities>(relativeMoves, notBoardMaps)[originSq] & ~bbUs;
+        return MoveUtils::genStaticMoves<maxPosPosibilities>(relativeMoves, notBoardMaps)[originSq] & ~bbUs;
     }
 
     //----------------------

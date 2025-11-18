@@ -29,7 +29,7 @@ public:
 
     [[nodiscard("PURE FUN")]] static constexpr uint64_t getMoves(const int originSq, const uint64_t bbUs, const uint64_t bbThem)
     {
-        return BishopMap::getMoves(originSq, bbUs, bbThem) | RookMap::getMoves(originSq, bbUs, bbThem);
+        return Bishop::getMoves(originSq, bbUs, bbThem) | Rook::getMoves(originSq, bbUs, bbThem);
     }
 };
 

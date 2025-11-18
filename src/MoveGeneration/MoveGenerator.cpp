@@ -8,7 +8,7 @@
 #include "MoveGenerator.h"
 #include "Board.hpp"
 
-[[nodiscard]] static Move* MoveGen::generateLegalMoves(const ChessRules &rules, Move *moves);
+[[nodiscard]] Move* MoveGen::generateLegalMoves(ChessRules &rules, Move *moves)
 {
     if ( !rules.isCheck() )
     {

@@ -32,5 +32,9 @@ inline int count_1s(uint64_t mask)
     return i;
 }
 
+[[nodiscard]] inline constexpr uint64_t bitBoardSet(int sq)
+{
+    return minBitSet << sq;
+}
 
 #endif // BITOPERATION_HPP

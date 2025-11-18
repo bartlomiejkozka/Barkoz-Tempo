@@ -33,7 +33,7 @@ enum class Gen : size_t
     Quiets,
     Evasions,
     All     // -> Captures + Quiets
-}
+};
 
 template<Gen G>
 struct GenTraits;
@@ -51,23 +51,22 @@ public:
     // Main API move generation.
     // -------------------------
 
-    [[nodiscard]] static Move* generateLegalMoves(const ChessRules &rules, Move *moves);
+    [[nodiscard]] static Move* generateLegalMoves(ChessRules &rules, Move *moves);
 
     template<Gen GenMode>
-    [[nodiscard]] static Move* generate(const ChessRules &rules, Move *moves);
+    [[nodiscard]] static Move* generate(ChessRules &rules, Move *moves);
 
 private:
     template<typename EncodeFn, typename AllowFn>
-    [[nodiscard]] static addTargetsAsMove(uint64_t targets, int originSq, Move *moves, EncodeFn encode, AllowFn allow);
+    [[nodiscard]] static Move* addTargetsAsMove(uint64_t targets, int originSq, Move *moves, EncodeFn encode, AllowFn allow);
 
-    template<Gen G,
+    template<Gen G, Piece P,
          typename GetMovesFn,   
          typename EncodeFn,     
          typename AllowFn,    
          typename PostFn = std::nullptr_t>
     [[nodiscard]] static Move* generatePieceMoves(ChessRules &rules,
                             Move* moves,
-                            uint64_t piecesBB,
                             GetMovesFn getMoves,
                             AllowFn allow,
                             PostFn post = nullptr);
@@ -103,9 +102,9 @@ private:
 // ------------------------------
 
 template<Gen GenMode>
-[[nodiscard]] static Move* MoveGen::generate(const ChessRules &rules, Move *moves)
+[[nodiscard]] Move* MoveGen::generate(ChessRules &rules, Move *moves)
 {
-    std::array<Move*(*)(Board&, Move*), 6> getMoves = 
+    std::array<Move*(*)(ChessRules&, Move*), 6> getMoves = 
     { 
         getKingMoves<GenMode>, getKnightMoves<GenMode>, getPawnMoves<GenMode>,
         getBishopMoves<GenMode>, getRookMoves<GenMode>, getQueenMoves<GenMode> 
@@ -113,7 +112,7 @@ template<Gen GenMode>
 
     for (auto &getMove : getMoves)
     {
-        moves = getMove(rules._board, moves);
+        moves = getMove(rules, moves);
     }
 
     return moves;
@@ -124,37 +123,38 @@ template<Gen GenMode>
 // -------------------------
 
 template<typename EncodeFn, typename AllowFn>
-[[nodiscard]] static Move* MoveGen::addTargetsAsMove(uint64_t targets, int originSq, Move *moves, EncodeFn encode, AllowFn allow)
+[[nodiscard]] Move* MoveGen::addTargetsAsMove(uint64_t targets, int originSq, Move *moves, EncodeFn encode, AllowFn allow)
 {
     while (targets)
     {
         int sq = pop_1st(targets);
         if ( allow(sq) )
         {
-            *moves++ = Move(originSq, sq, encode());
+            *moves++ = Move(originSq, sq, encode(sq));
         }
     }
 
     return moves;
 }
 
-template<Gen G, Piece P
+template<Gen G, Piece P,
          typename GetMovesFn,   
          typename EncodeFn,     
          typename AllowFn,    
-         typename PostFn = std::nullptr_t>
-[[nodiscard]] static Move* MoveGen::generatePieceMoves(ChessRules &rules,
+         typename PostFn>
+[[nodiscard]] Move* MoveGen::generatePieceMoves(ChessRules &rules,
                          Move* moves,
                          GetMovesFn getMoves,
                          AllowFn allow,
-                         PostFn post = nullptr)
+                         PostFn post)
 {
     uint64_t piecesBB = rules._board.bbUs(P);
-    const int kingSq = countr_zero(rules._board.bbUs(Piece::King));
+    const int kingSq = std::countr_zero(rules._board.bbUs(Piece::King));
+    uint64_t pinned;
 
     if constexpr (GenTraits<G>::Captures || GenTraits<G>::Quiets)
     {
-        const uint64_t pinned = rules.getAllPins(kingSq);
+        pinned = rules.getAllPins(kingSq);
     }
 
     while (piecesBB)
@@ -170,8 +170,8 @@ template<Gen G, Piece P
                 while ( targets )
                 {
                     uint64_t targetSq = minBitSet << pop_1st(targets);
-                    int pinner = countr_zero(rules.xrayAttacks<BishopMap::getMoves>(kingSq, (minBitSet<<kingSq)|targetSq, rules._board.bbThem()));
-                    uint64_t legalSquares = MoveUtils.inBetween[kingSq][pinner];
+                    int pinner = std::countr_zero(rules.xrayAttacks<Bishop::getMoves>(kingSq, (minBitSet<<kingSq)|targetSq, rules._board.bbThem()));
+                    uint64_t legalSquares = MoveUtils::inBetween[kingSq][pinner];
                     if ( targetSq & legalSquares )
                     {
                         legalTargets |= targetSq;
@@ -183,14 +183,14 @@ template<Gen G, Piece P
 
         if constexpr (GenTraits<G>::Captures)
         {
-            uint64_t captures = targets & board.bbThem();
-            moves = addTargetsAsMove(captures, fromSq, moves, [](){ return return MoveType::CAPTURE; }, [](int sq){ return allow(sq); });
+            uint64_t captures = targets & rules._board.bbThem();
+            moves = addTargetsAsMove(captures, fromSq, moves, [](){ return MoveType::CAPTURE; }, [&](int sq){ return allow(sq); });
         }
 
         if constexpr (GenTraits<G>::Quiets)
         {
-            uint64_t quiets = targets & ~board.bbThem();
-            moves = addTargetsAsMove(quiets, fromSq, moves, [](){ return MoveType::QUIET; }, [](int sq){ return allow(sq); });
+            uint64_t quiets = targets & ~rules._board.bbThem();
+            moves = addTargetsAsMove(quiets, fromSq, moves, [](){ return MoveType::QUIET; }, [&](int sq){ return allow(sq); });
         }
 
         if constexpr (GenTraits<G>::Evasions)
@@ -198,21 +198,21 @@ template<Gen G, Piece P
             std::pair<uint64_t, uint64_t> AttackerAndEvasionPath = rules.getEvasions();    // in case of single check, there is only one King Attacker, in case of double check -> should condider only King evasion
 
             // capture
-            uint64_t capture = targets & board.bbThem() & AttackerAndEvasionPath.first;   
+            uint64_t capture = targets & rules._board.bbThem() & AttackerAndEvasionPath.first;
             *moves++ = Move(fromSq, capture, MoveType::CAPTURE);
 
             // covers King
             if (AttackerAndEvasionPath.second)
             {
-                uint64_t evasions = targets & ~board.bbThem() & AttackerAndEvasionPath.second;
-                moves = addTargetsAsMove(evasions, fromSq, moves, [](){ return return MoveType::QUIET; }, [](int sq){ return allow(sq); });
+                uint64_t evasions = targets & ~rules._board.bbThem() & AttackerAndEvasionPath.second;
+                moves = addTargetsAsMove(evasions, fromSq, moves, [](){ return MoveType::QUIET; }, [&](int sq){ return allow(sq); });
             }
         }
 
         // optional post-processing hook (e.g., castling, pawn double push)
         if constexpr (!std::is_same_v<PostFn, std::nullptr_t>)
         {
-            moves = post(fromSq, targetSq);
+            moves = post(fromSq);
         }
     }
 
@@ -233,15 +233,15 @@ template<Gen G>
         rules._board,
         moves,
         [&] (int fromSq) { return KingPattern::getMoves(static_cast<size_t>(fromSq), rules._board.bbUs()); },
-        [] (int sq) { return !rules.isAttackedTo(sq); },
+        [&] (int sq) { return !rules.isAttackedTo(sq, rules._board.sideToMove); },
         // post -> add castling moves to quiet moves
-        [&] (int fromSq, int targetSq) 
+        [&] (int fromSq) 
         {
             if constexpr ( GenTraits<G>::Quiets )
             {
                 // TODO: check if we check is the King in check in case getting castling moves
                 uint64_t castlings = rules.getCastlingMoves();
-                return addTargetsAsMove(castlings, fromSq, moves, [](){ MoveEncoder::encodeCastling(rules._board, targetSq) }, [](){ return true; });
+                return addTargetsAsMove(castlings, fromSq, moves, [&](int targetSq){ return MoveEncoder::encodeCastling(rules._board, targetSq); }, [](){ return true; });
             }
         }
     );
@@ -266,7 +266,7 @@ template<Gen G>
     (
         rules._board,
         moves,
-        [&] (int fromSq) { return BishopMap::getMoves(static_cast<size_t>(fromSq),rules._board.bbUs()); },
+        [&] (int fromSq) { return Bishop::getMoves(static_cast<size_t>(fromSq), rules._board.bbUs(), rules._board.bbThem()); },
         [] (int) { return true; }
     );
 }
@@ -278,7 +278,7 @@ template<Gen G>
     (
         rules._board,
         moves,
-        [&] (int fromSq) { return RookMap::getMoves(static_cast<size_t>(fromSq), rules._board.bbUs()); },
+        [&] (int fromSq) { return Rook::getMoves(static_cast<size_t>(fromSq), rules._board.bbUs(), rules._board.bbThem()); },
         [] (int) { return true; }
     );
 }
@@ -290,7 +290,7 @@ template<Gen G>
     (
         rules._board,
         moves,
-        [&] (int fromSq) { return QueenMap::getMoves(static_cast<size_t>(fromSq), rules._board.bbUs()); },
+        [&] (int fromSq) { return Queen::getMoves(static_cast<size_t>(fromSq), rules._board.bbUs(), rules._board.bbThem()); },
         [] (int) { return true; }
     );
 }
@@ -304,22 +304,22 @@ template<Gen G>
         moves,
         [&] (int fromSq) 
         { 
-            return rules._board.sideToMove ? BlackPawnMap::getPushTargets(fromSq, rules._board.fullBoard()) :  WhitePawnMap::getPushTargets(fromSq, rules._board.fullBoard());
+            return static_cast<bool>(rules._board.sideToMove) ? BlackPawnMap::getPushTargets(fromSq, rules._board.fullBoard()) :  WhitePawnMap::getPushTargets(fromSq, rules._board.fullBoard());
         },
-        [] (int) { return true; }
+        [] (int) { return true; },
         // post -> add Dbl Pushes & Ep attacks
-        [&] (fromSq, targetSq)
+        [&] (int fromSq)
         {
             if constexpr ( GenTraits<G>::Quiets )
             {
-                return addTargetsAsMove(dblPushes, fromSq, moves, [](){ return return MoveType::DOUBLE_PUSH; }, [](){ return true; });
-                uint64_t dblPushes = rules._board.sideToMove ? BlackPawnMap::getDblPushTargets(fromSq, rules._board.fullBoard()) :  WhitePawnMap::getDblPushTargets(fromSq, rules._board.fullBoard());
+                uint64_t dblPushes = static_cast<bool>(rules._board.sideToMove) ? BlackPawnMap::getDblPushTargets(fromSq, rules._board.fullBoard()) :  WhitePawnMap::getDblPushTargets(fromSq, rules._board.fullBoard());
+                return addTargetsAsMove(dblPushes, fromSq, moves, [](){ return MoveType::DOUBLE_PUSH; }, [](){ return true; });
             }
 
             if constexpr ( GenTraits<G>::Captures )
             {
-                uint64_t epAttack = rules._board.sideToMove ? BlackPawnMap::getEpAttackTarget(fromSq, rules._board.enPassant) :  getEpAttackTarget(fromSq, rules._board.enPassant);
-                return addTargetsAsMove(epAttack, fromSq, moves, [](){ return return MoveType::EP_CAPTURE; }, [](){ return true; });
+                uint64_t epAttack = static_cast<bool>(rules._board.sideToMove) ? BlackPawnMap::getEpAttackTarget(fromSq, rules._board.enPassant) : WhitePawnMap::getEpAttackTarget(fromSq, rules._board.enPassant);
+                return addTargetsAsMove(epAttack, fromSq, moves, [](){ return MoveType::EP_CAPTURE; }, [](){ return true; });
             }
         }
     );

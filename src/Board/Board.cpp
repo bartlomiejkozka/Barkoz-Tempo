@@ -86,22 +86,22 @@ void Board::init()
 // Move make
 // ---------------------------------
 
-void Board::makeMove(const Move &m)
+void Board::makeMove(Move &m)
 {
     enPassant = -1;
     halfMoveClock++;
     ply++;
     
-    uint64_t newPoshHash = history[ply - 1].moveHash ^ (sideToMove ? PieceMap::blackSideToMove : 0);
+    uint64_t newPoshHash = history[ply - 1].moveHash ^ (static_cast<bool>(sideToMove) ? PieceMap::blackSideToMove : 0);
     PieceDescriptor captured = static_cast<PieceDescriptor>(0); // 0 - no capture
 
     const uint64_t originSq = minBitSet << m.OriginSq();
     const uint64_t targetSq = minBitSet << m.TargetSq();
 
     const size_t bb = getBitboard(originSq);
-    const size_t bbCaptured = m.isAnyCapture() ? getBitboard(targetSq) : 0;
+    const size_t bbCaptured = m.isAnyCapture() ? getBitboard(m.TargetSq()) : 0;
 
-    const size_t WM = sideToMove ? 0 : 1;   // is white to move -? when yes bbIdx = bbIdx - 1
+    const size_t WM = static_cast<bool>(sideToMove) ? 0 : 1;   // is white to move -? when yes bbIdx = bbIdx - 1
 
     updateOriginBirboard(originSq, targetSq, bb, newPoshHash);
 
@@ -119,7 +119,7 @@ void Board::makeMove(const Move &m)
             uint64_t mask = (targetSq << 1) | (targetSq >> 1);
             if ( bbThem(Piece::Pawn) & mask )
             {
-                enPassant = m.TargetSq() + (sideToMove ? 8 : -8 );  
+                enPassant = m.TargetSq() + (static_cast<bool>(sideToMove) ? 8 : -8 );  
             }
         }
     }
@@ -129,7 +129,7 @@ void Board::makeMove(const Move &m)
 
         if ( m.isEpCapture() )
         {
-            bitboards[bbCaptured] ^= minBitSet << ( m.TargetSq() + (sideToMove ? 8 : -8 ) );
+            bitboards[bbCaptured] ^= minBitSet << ( m.TargetSq() + (static_cast<bool>(sideToMove) ? 8 : -8 ) );
         }
         else
         {
@@ -155,24 +155,24 @@ void Board::makeMove(const Move &m)
 
         // For now asume we do promotion only to Queen
         bitboards[bb] ^= targetSq;
-        bitboards[PieceDescriptor::bQueen - WM] ^= targetSq;
-        newPoshHash ^= PieceMap::pieceMap[PieceDescriptor::bQueen - WM - align][targetSq];
+        bitboards[static_cast<size_t>(PieceDescriptor::bQueen) - WM] ^= targetSq;
+        newPoshHash ^= PieceMap::pieceMap[static_cast<size_t>(PieceDescriptor::bQueen) - WM - align][targetSq];
     }
-    else if ( m.isQueenCastle )
+    else if ( m.isQueenCastle() )
     {
-        newPoshHash ^= PieceMap::pieceMap[PieceDescriptor::bRook - WM - align][targetSq >> 2];
+        newPoshHash ^= PieceMap::pieceMap[static_cast<size_t>(PieceDescriptor::bRook) - WM - align][targetSq >> 2];
         setBbUs(Piece::Rook, targetSq << 3);
-        newPoshHash ^= PieceMap::pieceMap[PieceDescriptor::bRook - WM - align][targetSq << 3];
+        newPoshHash ^= PieceMap::pieceMap[static_cast<size_t>(PieceDescriptor::bRook) - WM - align][targetSq << 3];
 
-        castlingRights ^= sideToMove ? 0x01 : 0x04;
+        castlingRights ^= static_cast<bool>(sideToMove) ? 0x01 : 0x04;
     }
     else if ( m.isKingCastle() )
     {
-        newPoshHash ^= PieceMap::pieceMap[PieceDescriptor::bRook - WM - align][targetSq << 1];
+        newPoshHash ^= PieceMap::pieceMap[static_cast<size_t>(PieceDescriptor::bRook) - WM - align][targetSq << 1];
         setBbUs(Piece::Rook, targetSq >> 2);
-        newPoshHash ^= PieceMap::pieceMap[PieceDescriptor::bRook - WM - align][targetSq >> 2];
+        newPoshHash ^= PieceMap::pieceMap[static_cast<size_t>(PieceDescriptor::bRook) - WM - align][targetSq >> 2];
     
-        castlingRights ^= sideToMove ? 0x02 : 0x08;
+        castlingRights ^= static_cast<bool>(sideToMove) ? 0x02 : 0x08;
     }
 
     recomputeSideOccupancies();
@@ -182,7 +182,7 @@ void Board::makeMove(const Move &m)
     history[ply].castling      = castlingRights;
     history[ply].ep            = enPassant;
     history[ply].halfmove      = halfMoveClock;
-    history[ply].move          = static_cast<uint16_t>(m);
+    history[ply].move          = static_cast<uint16_t>(m.getPackedMove());
 }
 
 void Board::unmakeMove()
@@ -194,7 +194,7 @@ void Board::unmakeMove()
 // Move make Helpers
 // ---------------------------------
 
-const size_t Board::getBitboard(const uint64_t sq)
+const size_t Board::getBitboard(const uint64_t sq) const
 {
     for (int i = 2; i < bitboardCount; ++i)
     {
@@ -205,7 +205,7 @@ const size_t Board::getBitboard(const uint64_t sq)
     return 0;
 }
 
-void Board::updateOriginBirboard(const uint64_t originSq, const uint64_t targetSq, const size_t bbN, uint64_t &poshHash);
+void Board::updateOriginBirboard(const uint64_t originSq, const uint64_t targetSq, const size_t bbN, uint64_t &posHash)
 {
     const uint64_t fromToBB = originSq ^ targetSq;
     

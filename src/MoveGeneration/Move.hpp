@@ -96,6 +96,8 @@ public:
     static constexpr int OriginSQ = 12;
     static constexpr int TargetSQ = 6;
 
+    packedMove getPackedMove() { return packed_move; }
+
     //------------------------------------
     // Initializers
     //------------------------------------
