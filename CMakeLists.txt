@@ -63,7 +63,7 @@ add_executable(
 target_link_libraries(
 	moveUtility_test
 	GTest::gtest_main
-	MoveGenerator
+	MoveGeneration
 )
 
 include(GoogleTest)
