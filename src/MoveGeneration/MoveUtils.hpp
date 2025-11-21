@@ -6,6 +6,7 @@
 #include <cmath>
 
 #include "Board.hpp"
+#include "Shared/Std.h"
 
 /* 
 * Usage of inline static varaible is neccessary to avoid the linkage error.
@@ -84,7 +85,7 @@ struct MoveUtils {
                 int max = (i > j ? i : j);
                 if (i / 8 == j / 8)
                 {
-                    tab[i][j] = static_cast<uint64_t>((1ULL << (std::abs(static_cast<int>(i) - static_cast<int>(j)) - 1)) - 1) << (min + 1);
+                    tab[i][j] = static_cast<uint64_t>((1ULL << (ABS(static_cast<int>(i) - static_cast<int>(j)) - 1)) - 1) << (min + 1);
                 }
                 else if (i % 8 == j % 8)
                 {
@@ -93,7 +94,7 @@ struct MoveUtils {
                         tab[i][j] |= static_cast<uint64_t>(1) << it;
                     }
                 }
-                else if (std::abs(static_cast<int>(i)/8 - static_cast<int>(j)/8) == std::abs(static_cast<int>(i)%8 - static_cast<int>(j)%8))
+                else if (ABS(static_cast<int>(i)/8 - static_cast<int>(j)/8) == ABS(static_cast<int>(i)%8 - static_cast<int>(j)%8))
                 {
                     int diag = 1;
                     if (min % 8 > max % 8)

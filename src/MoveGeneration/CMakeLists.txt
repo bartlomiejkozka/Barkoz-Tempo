@@ -7,4 +7,5 @@ target_link_libraries(MoveGeneration
     PUBLIC Board
     PRIVATE Debug
     PUBLIC BitOperation
+    PRIVATE Shared
 )

@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.10)
 
 project(Barkoz-Tempo)
 
+
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
@@ -10,11 +11,12 @@ add_compile_definitions(_GLIBCXX_DEBUG=0)
 
 add_executable(Barkoz-Tempo src/main.cpp)
 
-# set_target_properties(Barkoz-Tempo PROPERTIES
-#   CMAKE_CXX_STANDARD 20
-#   CMAKE_CXX_STANDARD_REQUIRED ON  # compiler must use C++ specified version
-#   CMAKE_CXX_EXTENSIONS OFF        # compiler can use only ISO C++ version specifier (GNU extensions not used)
-# )
+if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+    add_compile_definitions(USING_GCC=1)
+else()
+    add_compile_definitions(USING_GCC=0)
+endif()
+
 
 set(MODULE_DIRS
 	src/BitOperation
@@ -39,6 +41,7 @@ target_link_libraries(Barkoz-Tempo
         Board
         MoveGeneration
 		PieceMap
+		# Shared
 )
 
 

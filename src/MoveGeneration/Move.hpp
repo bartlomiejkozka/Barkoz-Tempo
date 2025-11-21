@@ -45,6 +45,8 @@ private:
 public:
     //---------INITIALIZER--------
 
+    packedMove() = default;
+
     explicit packedMove(uint16_t packedMove) : _packed_move(packedMove) {}
 
     //---------BIT MASKS--------
@@ -101,6 +103,8 @@ public:
     //------------------------------------
     // Initializers
     //------------------------------------
+
+    Move() = default;
 
     explicit Move(int origin, int target, MoveType type)
         : packed_move( static_cast<uint16_t>((origin << OriginSQ) | (target << TargetSQ) | static_cast<uint16_t>(type)) ) {}
