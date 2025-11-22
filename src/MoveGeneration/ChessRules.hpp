@@ -128,13 +128,13 @@ public:
     // King checks
     // ---------------------------
 
-    [[nodiscard]] const uint64_t getCastlingMoves() const;
+    [[nodiscard]] uint64_t getCastlingMoves() const;
 
-    [[nodiscard]] const bool isCheck() const { return isAttackedTo(_board.bbUs(Piece::King), _board.sideToMove); }
+    [[nodiscard]] const bool isCheck() const { return isAttackedTo(std::countr_zero(_board.bbUs(Piece::King)), _board.sideToMove); }
 
     [[nodiscard]] const bool isDoubleCheck() const 
     {
-        uint64_t attackers = attacksTo(_board.bbUs(Piece::King), _board.sideToMove);
+        uint64_t attackers = attacksTo(std::countr_zero(_board.bbUs(Piece::King)), _board.sideToMove);
         pop_1st(attackers);
         return static_cast<bool>(attackers);
     }

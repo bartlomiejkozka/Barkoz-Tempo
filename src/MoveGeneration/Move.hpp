@@ -95,8 +95,8 @@ private:
     packedMove packed_move;
 
 public:
-    static constexpr int OriginSQ = 12;
-    static constexpr int TargetSQ = 6;
+    static constexpr int OriginSQ = 10;
+    static constexpr int TargetSQ = 4;
 
     packedMove getPackedMove() { return packed_move; }
 
@@ -179,10 +179,8 @@ public:
     // Getters
     //------------------------------------
 
-    static constexpr uint16_t OriginSqFlag = 0x3F;
-
-    int OriginSq() { return static_cast<uint16_t>(packed_move) & OriginSqFlag; }
-    int TargetSq() { return (static_cast<uint16_t>(packed_move) >> 6) & OriginSqFlag; }
+    int OriginSq() { return static_cast<uint16_t>(packed_move) >> 10; }
+    int TargetSq() { return (static_cast<uint16_t>(packed_move) >> 4) & 0x003F; }
 };
 
 #endif

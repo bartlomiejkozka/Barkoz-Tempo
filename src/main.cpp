@@ -20,10 +20,15 @@ int main()
     Move *ptr = moves.data();
     ptr = MoveGen::generateLegalMoves(rules, ptr);
 
-    std::cout << "ppp" << std::endl;
-    for (Move* p = moves.data(); p < ptr; ++p) 
+    board.makeMove(moves[0]);
+
+    std::array<Move, 256> moves2{};
+    Move *ptr2 = moves2.data();
+    ptr2 = MoveGen::generateLegalMoves(rules, ptr2);
+
+    for (Move* p = moves2.data(); p < ptr2; ++p) 
     {
-        std::cout << p->OriginSq() << "\n";
+        std::cout << p->OriginSq() << " -> " << p->TargetSq() << "\n";
     }
 
     return 0;

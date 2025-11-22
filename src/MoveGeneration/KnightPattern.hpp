@@ -14,21 +14,35 @@
 struct KnightPattern 
 {
     static constexpr uint8_t maxPosPosibilities = 8;
-    static constexpr uint64_t notAFile = 0x7F7F7F7F7F7F7F7F;
-    static constexpr uint64_t notABFile = 0x3F3F3F3F3F3F3F3F;
-    static constexpr uint64_t notHFile = 0xFEFEFEFEFEFEFEFE;
-    static constexpr uint64_t notGHFile = 0xFCFCFCFCFCFCFCFC;
+    static constexpr uint64_t notAFile =  0xFEFEFEFEFEFEFEFE;
+    static constexpr uint64_t notABFile = 0xFCFCFCFCFCFCFCFC;
+    static constexpr uint64_t notHFile =  0x7F7F7F7F7F7F7F7F;
+    static constexpr uint64_t notGHFile = 0x3F3F3F3F3F3F3F3F;
+    
+    static constexpr uint64_t notFRank =  0xFFFFFFFFFFFFFF00;
+    static constexpr uint64_t notF2Rank = 0xFFFFFFFFFFFF0000;
+    static constexpr uint64_t notLRank =  0x00FFFFFFFFFFFFFF;
+    static constexpr uint64_t notL2Rank = 0x0000FFFFFFFFFFFF;
 
 private:
     static constexpr std::array<int, maxPosPosibilities> relativeMoves = { 6, 15, 17, 10, -6, -15, -17, -10 };
-    static constexpr std::array<uint64_t, maxPosPosibilities> notBoardMaps = { notGHFile, notHFile, notAFile, notABFile, notABFile, notAFile, notHFile, notGHFile };
+    static constexpr std::array<uint64_t, maxPosPosibilities> notBoardMaps = { 
+        notABFile & notLRank,
+        notAFile & notL2Rank, 
+        notHFile & notL2Rank, 
+        notGHFile & notLRank, 
+        notGHFile & notFRank, 
+        notHFile & notF2Rank, 
+        notAFile & notF2Rank, 
+        notABFile & notFRank
+    };
 
 public:
     //---------------------
     // API function - Moves
     //---------------------
 
-    [[nodiscard]] static const uint64_t getMoves(const size_t originSq, const uint64_t bbUs) 
+    [[nodiscard]] static uint64_t getMoves(const size_t originSq, const uint64_t bbUs) 
     { 
         return MoveUtils::genStaticMoves<maxPosPosibilities>(relativeMoves, notBoardMaps)[originSq] & ~bbUs;
     }

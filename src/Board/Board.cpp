@@ -41,7 +41,7 @@ void Board::init()
     };
     static const std::array<uint64_t, 2> defaultPawnBitboards = {
         0xFFULL << 8,
-        0xFFULL << convertFromMinBitSetToMaxBitSet(16)
+        0xFFULL << (8*6)
     };
 
     static const std::array<const std::array<uint64_t,2>*, 14> initMap = {
@@ -61,8 +61,6 @@ void Board::init()
         &defaultKingBitboards          // bKing
     };
 
-    recomputeSideOccupancies();
-
     for (size_t i = 0; i < bitboards.size(); ++i)
     {
         if (initMap[i] == nullptr) {
@@ -73,6 +71,8 @@ void Board::init()
         const bool isWhite = (i % 2 == 0);
         bitboards[i] = (*initMap[i])[isWhite ? 0 : 1];
     }
+
+    recomputeSideOccupancies();
 
     // Logic Atributes Init
     sideToMove = pColor::White;
@@ -183,6 +183,8 @@ void Board::makeMove(Move &m)
     history[ply].ep            = enPassant;
     history[ply].halfmove      = halfMoveClock;
     history[ply].move          = static_cast<uint16_t>(m.getPackedMove());
+
+    sideToMove = static_cast<pColor>(~std::to_underlying(sideToMove));
 }
 
 void Board::unmakeMove()

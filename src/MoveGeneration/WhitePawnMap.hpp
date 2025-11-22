@@ -24,6 +24,7 @@ class WhitePawnMap {
 
     static constexpr uint64_t notAFile = 0x7F7F7F7F7F7F7F7F;
     static constexpr uint64_t notHFile = 0xFEFEFEFEFEFEFEFE;
+    static constexpr uint64_t notFirst2Ranks = 0xFFFFFFFFFFFFFF00;
 
     public:
     //--------------------
@@ -79,13 +80,14 @@ class WhitePawnMap {
     static constexpr std::array<uint64_t, Board::boardSize> attacksTo = [] constexpr
     {
         std::array<uint64_t, Board::boardSize> res{};
-        constexpr uint64_t oPieces = 0xFFFFFFFFFFFFFFFF;
 
         for (int i = 0; i < Board::boardSize; ++i)
         {
             uint64_t pos = 1ULL << i;
-            // res[i] = getAnyAttackTargets(std::countr_zero(pos), oPieces) >> 16;
-            res[i] = ( (bitBoardSet(std::countr_zero(pos)) & notHFile << 7 & oPieces) | (bitBoardSet(std::countr_zero(pos)) & notAFile << 9 & oPieces) ) >> 16;
+            if (pos & notFirst2Ranks)
+            {
+                res[i] = ((pos & notHFile) >> 7) | ((pos & notAFile) >> 9);
+            }
         }
 
         return res;

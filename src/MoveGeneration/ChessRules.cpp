@@ -22,7 +22,7 @@
 #include <utility>
 
 
-[[nodiscard]] const uint64_t ChessRules::getCastlingMoves() const
+[[nodiscard]] uint64_t ChessRules::getCastlingMoves() const
 {
     const size_t s = static_cast<size_t>(_board.sideToMove);
     
@@ -31,13 +31,13 @@
 
     uint64_t moves = 0;
     // king-side
-    if ( canK && (KBlockers[s] & _board.fullBoard())
+    if ( canK && !(KBlockers[s] & _board.fullBoard())
         && isPathSafe(KBlockers[s], static_cast<pColor>(s)) )
     {
         moves |= KDest[s];
     }
     // queen-side
-    if ( canQ && (QBlockers[s] && _board.fullBoard())
+    if ( canQ && !(QBlockers[s] && _board.fullBoard())
         && isPathSafe(QBlockers[s], static_cast<pColor>(s)) )
     {
         moves |= QDest[s];
@@ -49,39 +49,39 @@
 
 [[nodiscard]] uint64_t ChessRules::attacksTo(const int sq, const pColor attackedPColor) const
 {
-    const size_t attPColor = static_cast<size_t>(attackedPColor); 
+    const size_t attPColor = static_cast<size_t>(attackedPColor);
 
-    const uint64_t pawns = static_cast<bool>(attackedPColor) ? BlackPawnMap::attacksTo[sq] & _board.bitboards[static_cast<size_t>(PieceDescriptor::wPawn) + attPColor]
-        : WhitePawnMap::attacksTo[sq] & _board.bitboards[static_cast<size_t>(PieceDescriptor::wPawn) + attPColor];
+    const uint64_t pawns = static_cast<bool>(attackedPColor) ? 
+        WhitePawnMap::attacksTo[sq] & _board.bbThem(Piece::Pawn)
+        : BlackPawnMap::attacksTo[sq] & _board.bbThem(Piece::Pawn);
 
-    const uint64_t bishop = Bishop::getMoves(sq, _board.bitboards[static_cast<size_t>(PieceDescriptor::bBishop) - attPColor],  _board.bitboards[static_cast<size_t>(PieceDescriptor::bBishop) + attPColor]);
-    const uint64_t rook = Rook::getMoves(sq, _board.bitboards[static_cast<size_t>(PieceDescriptor::bRook) - attPColor],  _board.bitboards[static_cast<size_t>(PieceDescriptor::bRook) + attPColor]);
-    const uint64_t queen = Queen::getMoves(sq, _board.bitboards[static_cast<size_t>(PieceDescriptor::bQueen) - attPColor],  _board.bitboards[static_cast<size_t>(PieceDescriptor::bQueen) + attPColor]);
+    const uint64_t bishop = Bishop::getMoves(sq, _board.bbUs(),  _board.bbThem()) & _board.bbThem(Piece::Bishop);
+    const uint64_t rook = Rook::getMoves(sq, _board.bbUs(),  _board.bbThem()) & _board.bbThem(Piece::Rook);
+    const uint64_t queen = Queen::getMoves(sq, _board.bbUs(),  _board.bbThem()) & _board.bbThem(Piece::Queen);
 
     return pawns | bishop | rook | queen
-        | (KingPattern::attacksTo[sq] & _board.bitboards[static_cast<size_t>(PieceDescriptor::wKing) + attPColor])
-        | (KnightPattern::attacksTo[sq] & _board.bitboards[static_cast<size_t>(PieceDescriptor::wKnight) + attPColor]);
+        | (KingPattern::attacksTo[sq] & _board.bbThem(Piece::King))
+        | (KnightPattern::attacksTo[sq] & _board.bbThem(Piece::Knight));
 }
 
 [[nodiscard]] const bool ChessRules::isAttackedTo(const int sq, const pColor attackedPColor) const
 {
-    const size_t attPColor = static_cast<size_t>(attackedPColor); 
-
-    const uint64_t queen = Queen::getMoves(sq, _board.bitboards[static_cast<size_t>(PieceDescriptor::bQueen) - attPColor],  _board.bitboards[static_cast<size_t>(PieceDescriptor::bQueen) + attPColor]);
+    const uint64_t queen = Queen::getMoves(sq, _board.bbUs(),  _board.bbThem()) & _board.bbThem(Piece::Queen);
     if (queen) return true;
 
-    const uint64_t bishop = Bishop::getMoves(sq, _board.bitboards[static_cast<size_t>(PieceDescriptor::bBishop) - attPColor],  _board.bitboards[static_cast<size_t>(PieceDescriptor::bBishop) + attPColor]);
+    const uint64_t bishop = Bishop::getMoves(sq, _board.bbUs(),  _board.bbThem()) & _board.bbThem(Piece::Bishop);
     if (bishop) return true;
 
-    const uint64_t rook = Rook::getMoves(sq, _board.bitboards[static_cast<size_t>(PieceDescriptor::bRook) - attPColor],  _board.bitboards[static_cast<size_t>(PieceDescriptor::bRook) + attPColor]);
+    const uint64_t rook = Rook::getMoves(sq, _board.bbUs(),  _board.bbThem()) & _board.bbThem(Piece::Rook);
     if (rook) return true;
 
-    if (KnightPattern::attacksTo[sq] & _board.bitboards[static_cast<size_t>(PieceDescriptor::wKnight) + attPColor]) return true;    
+    if (KnightPattern::attacksTo[sq] & _board.bbThem(Piece::Knight)) return true;    
 
-    if (KingPattern::attacksTo[sq] & _board.bitboards[static_cast<size_t>(PieceDescriptor::wKing) + attPColor]) return true;
+    if (KingPattern::attacksTo[sq] & _board.bbThem(Piece::King)) return true;
 
-    const uint64_t pawns = static_cast<bool>(attackedPColor) ? BlackPawnMap::attacksTo[sq] & _board.bitboards[static_cast<size_t>(PieceDescriptor::wPawn) + attPColor]
-        : WhitePawnMap::attacksTo[sq] & _board.bitboards[static_cast<size_t>(PieceDescriptor::wPawn) + attPColor];
+    const uint64_t pawns = static_cast<bool>(attackedPColor) ? 
+        WhitePawnMap::attacksTo[sq] & _board.bbThem(Piece::Pawn)
+        : BlackPawnMap::attacksTo[sq] & _board.bbThem(Piece::Pawn);
     if (pawns) return true;
     
     return false;
@@ -108,7 +108,7 @@
 
 [[nodiscard]] std::pair<uint64_t, uint64_t> ChessRules::getEvasions() const
 {
-    std::pair<uint64_t, uint64_t> res = std::make_pair(attacksTo(_board.bbUs(Piece::King), _board.sideToMove), 0);  // only one attacker while signle check, in double check wwe should consider only King evasion
+    std::pair<uint64_t, uint64_t> res = std::make_pair(attacksTo(std::countr_zero(_board.bbUs(Piece::King)), _board.sideToMove), 0);  // only one attacker while signle check, in double check wwe should consider only King evasion
 
     uint64_t sliderAttackers = res.first & _board.bbThemSliders();
     int kingSq = count_1s(_board.bbUs(Piece::King));

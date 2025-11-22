@@ -6,6 +6,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <unordered_map>
+#include <utility>
 
 #include "BitOperation.hpp"
 #include "MoveGeneration/Move.hpp"
@@ -112,9 +113,9 @@ public:
     // getters
     // ---------------------------------
 
-    const uint64_t fullBoard() const 
+    uint64_t fullBoard() const 
     { 
-        return bitboards[static_cast<size_t>(PieceDescriptor::nWhite)] & bitboards[static_cast<size_t>(PieceDescriptor::nBlack)]; 
+        return bitboards[std::to_underlying(PieceDescriptor::nWhite)] | bitboards[std::to_underlying(PieceDescriptor::nBlack)]; 
     }
 
     //==================================

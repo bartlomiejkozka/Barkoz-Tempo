@@ -45,17 +45,16 @@ struct MoveUtils {
     static consteval std::array<uint64_t, Board::boardSize> genStaticMoves(const std::array<int, N> &relativeMoves, const std::array<uint64_t, N> &notBoardMaps)
     {
         std::array<uint64_t, Board::boardSize> moves = {};
-        for (size_t i = 0; i < Board::boardSize; ++i)
-        {
-            moves[i] = 1;
-        }
 
         for (size_t i = 0; i < Board::boardSize; ++i)
         {
-            moves[i] <<= i;
+            uint64_t fromSq = minBitSet << i;
             for (size_t j = 0; j < N; ++j)
             {
-                moves[i] |= (shift(moves[i], relativeMoves[j]) & notBoardMaps[j]);
+                if ( fromSq & notBoardMaps[j] )
+                {
+                    moves[i] |= shift(fromSq, relativeMoves[j]);
+                }
             }
         }
 

@@ -27,6 +27,7 @@ class BlackPawnMap {
     //----------------------------
     static constexpr uint64_t notAFile = 0x7F7F7F7F7F7F7F7F;
     static constexpr uint64_t notHFile = 0xFEFEFEFEFEFEFEFE;
+    static constexpr uint64_t notLast2Ranks = 0x00FFFFFFFFFFFFFF;
 
     public:
     //--------------------
@@ -83,13 +84,14 @@ class BlackPawnMap {
     static constexpr std::array<uint64_t, Board::boardSize> attacksTo = [] constexpr
     {
         std::array<uint64_t, Board::boardSize> res{};
-        constexpr uint64_t oPieces = 0xFFFFFFFFFFFFFFFF;
 
         for (int i = 0; i < Board::boardSize; ++i)
         {
             uint64_t pos = 1ULL << i;
-            // res[i] = getAnyAttackTargets(std::countr_zero(pos), oPieces) << 16;
-            res[i] = ( (bitBoardSet(std::countr_zero(pos)) & notHFile >> 7 & oPieces) | (bitBoardSet(std::countr_zero(pos)) & notAFile >> 9 & oPieces) ) >> 16;
+            if (pos & notLast2Ranks)
+            {
+                res[i] = ((pos & notAFile) << 7) | ((pos & notHFile) << 9);
+            }
         }
 
         return res;
