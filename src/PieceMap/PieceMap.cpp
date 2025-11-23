@@ -22,7 +22,7 @@ void PieceMap::init()
 
     pieceMap = [&] ()
     {
-        std::array<std::array<uint64_t, Board::boardSize>, pieceMapsCount> pieceMap;
+        std::array<std::array<uint64_t, Board::boardSize>, pieceMapsCount> map;
   
         for (size_t i = 0; i < pieceMapsCount; ++i)
         {
@@ -33,11 +33,11 @@ void PieceMap::init()
                 {
                     rd_num = dist(rng);
                 } while (!uniqueHashes.insert(rd_num).second);
-                pieceMap[i][j] = rd_num;
+                map[i][j] = rd_num;
             }
         }
 
-        return pieceMap;
+        return map;
     }();
 
     blackSideToMove = [&] ()
@@ -108,32 +108,32 @@ void PieceMap::init()
     // enPassantsMap = genHashMap<enPassantFilesCount>();
 }
 
-const uint64_t PieceMap::generatePosHash(const std::array<uint64_t, Board::boardSize>& bitBoards, Board &board)
+uint64_t PieceMap::generatePosHash(const Board &b)
 {
     uint64_t posHash = 0;
     for (size_t i = 2; i < Board::bitboardCount; ++i)
     {
-        uint64_t board = bitBoards[i];
+        uint64_t board = b.bitboards[i];
         while (board)   // till any bit is set
         {
-            uint8_t idx = std::countr_zero(board);
+            auto idx = static_cast<size_t>(std::countr_zero(board));
             posHash ^= pieceMap[i][idx];
             board &= (board - 1);
         }
     }
 
-    posHash ^= static_cast<bool>(board.sideToMove) ? blackSideToMove : 0;
+    posHash ^= static_cast<bool>(b.sideToMove) ? blackSideToMove : 0;
 
-    uint64_t cast = static_cast<uint64_t>(board.castlingRights);
+    auto cast = static_cast<uint64_t>(b.castlingRights);
     while (cast)
     {
         int idx = pop_1st(cast); // teraz OK, lvalue 64-bit
         posHash ^= castlingRightsMap[idx];
     }
 
-    if ( board.enPassant != -1 )
+    if ( b.enPassant != -1 )
     {
-        posHash ^= enPassantsMap[board.enPassant % 8];
+        posHash ^= enPassantsMap[b.enPassant % 8];
     }
 
     return posHash;

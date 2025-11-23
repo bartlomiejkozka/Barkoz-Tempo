@@ -7,6 +7,26 @@
 #include <array>
 #include <iostream>
 
+uint64_t Perft(int depth, ChessRules &rules)
+{
+    std::array<Move, 256> move_list;
+    int n_moves;
+    int i;
+    uint64_t nodes = 0;
+
+    if (depth == 0)
+        return 1ULL;
+
+    n_moves = MoveGen::generateLegalMoves(rules, move_list.data());
+    for (i = 0; i < n_moves; i++) 
+    {
+        rules._board.makeMove(move_list[i]);
+        nodes += Perft(depth - 1, rules);
+        rules._board.unmakeMove();
+    }
+    return nodes;
+}
+
 int main()
 {
     PieceMap::init();
@@ -16,20 +36,10 @@ int main()
 
     board.init();
 
-    std::array<Move, 256> moves{};
-    Move *ptr = moves.data();
-    ptr = MoveGen::generateLegalMoves(rules, ptr);
+    uint64_t nodes = Perft(3, rules);
 
-    board.makeMove(moves[0]);
+    std::cout << nodes << std::endl;
 
-    std::array<Move, 256> moves2{};
-    Move *ptr2 = moves2.data();
-    ptr2 = MoveGen::generateLegalMoves(rules, ptr2);
-
-    for (Move* p = moves2.data(); p < ptr2; ++p) 
-    {
-        std::cout << p->OriginSq() << " -> " << p->TargetSq() << "\n";
-    }
 
     return 0;
 }

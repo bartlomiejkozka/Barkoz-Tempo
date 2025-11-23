@@ -2,6 +2,7 @@
 #define MOVE_HPP
 
 #include <cstdint>
+#include <utility>
 
 // TODO:
 // - class Move for packing packed_move and have the move method and unmove with Bitboards change
@@ -98,7 +99,7 @@ public:
     static constexpr int OriginSQ = 10;
     static constexpr int TargetSQ = 4;
 
-    packedMove getPackedMove() { return packed_move; }
+    packedMove getPackedMove() const { return packed_move; }
 
     //------------------------------------
     // Initializers
@@ -106,11 +107,14 @@ public:
 
     Move() = default;
 
+    explicit Move(uint16_t packedMove)
+        : packed_move( packedMove ) {}
+
     explicit Move(int origin, int target, MoveType type)
-        : packed_move( static_cast<uint16_t>((origin << OriginSQ) | (target << TargetSQ) | static_cast<uint16_t>(type)) ) {}
+        : packed_move( static_cast<uint16_t>((origin << OriginSQ) | (target << TargetSQ) | std::to_underlying(type)) ) {}
 
     explicit Move(int origin, int target, uint16_t type)
-        : packed_move( static_cast<uint16_t>((origin << OriginSQ) | (target << TargetSQ) | static_cast<uint16_t>(type)) ) {}
+        : packed_move( static_cast<uint16_t>((origin << OriginSQ) | (target << TargetSQ) | type) ) {}
     
     //------------------------------------
     // Typed of move
@@ -124,7 +128,7 @@ public:
 
     [[nodiscard]] constexpr bool isDoublePawnPush() { return packed_move.getSpecials() == 1; }
 
-    [[nodiscard]] constexpr bool isQuiet() { return isClearQuiet() | isDoublePawnPush(); }
+    [[nodiscard]] constexpr bool isQuiet() { return isClearQuiet() || isDoublePawnPush(); }
 
     //--------------------
     // Castles

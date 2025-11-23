@@ -48,7 +48,7 @@ struct PieceMap
     // Generation
     // ------------------------
 
-    const uint64_t generatePosHash(const std::array<uint64_t, Board::boardSize>& bitBoards, Board &board);
+    static uint64_t generatePosHash(const Board &b);
 };
 
 #endif

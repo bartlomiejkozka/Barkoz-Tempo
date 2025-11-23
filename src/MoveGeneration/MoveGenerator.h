@@ -51,7 +51,7 @@ public:
     // Main API move generation.
     // -------------------------
 
-    [[nodiscard]] static Move* generateLegalMoves(ChessRules &rules, Move *moves);
+    [[nodiscard]] static int generateLegalMoves(ChessRules &rules, Move *moves);
 
     template<Gen GenMode>
     [[nodiscard]] static Move* generate(ChessRules &rules, Move *moves);

@@ -7,6 +7,8 @@
 #include <cstdint>
 #include <unordered_map>
 #include <utility>
+#include <optional>
+#include <functional>
 
 #include "BitOperation.hpp"
 #include "MoveGeneration/Move.hpp"
@@ -137,10 +139,10 @@ public:
     // ---------------------------------
 
     uint8_t halfMoveClock = 0;
-    int8_t enPassant = -1;         // enPassant Square, -1 - if no enPassant
+    int enPassant = -1;         // enPassant Square, -1 - if no enPassant
     uint8_t castlingRights = 0x0F; // 0b00001(white kingside)1(white queenside)1(black kingside)1(balck queenside)
 
-    std::array<Undo, MAXMoveHistory> history;   // MAXMoveHistory should be as big as the most depth search
+    std::array<Undo, MAXMoveHistory> shortMem;   // MAXMoveHistory should be as big as the most depth search
     size_t ply = 0;                             // half move idx of history array;
 
     std::vector<Undo> gameHistory;  // all game move history
@@ -156,8 +158,9 @@ public:
     // Move make Helpers
     // ---------------------------------
 
-    const size_t getBitboard(const uint64_t sq) const;
-    void updateOriginBirboard(const uint64_t originSq, const uint64_t targetSq, const size_t bbN, uint64_t &posHash);
+    size_t getBitboard(const uint64_t sq) const;
+    void updateOriginBirboard(const uint64_t originSq, const uint64_t targetSq, const size_t bbN, 
+        std::optional<std::reference_wrapper<uint64_t>> posHash = std::nullopt);
     void recomputeSideOccupancies();
 
     // ---------------------------------

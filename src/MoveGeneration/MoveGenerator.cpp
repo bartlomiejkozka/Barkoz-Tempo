@@ -8,8 +8,10 @@
 #include "MoveGenerator.h"
 #include "Board.hpp"
 
-[[nodiscard]] Move* MoveGen::generateLegalMoves(ChessRules &rules, Move *moves)
+[[nodiscard]] int MoveGen::generateLegalMoves(ChessRules &rules, Move *moves)
 {
+    Move const *startMove = moves;
+
     if ( !rules.isCheck() )
     {
         moves = generate<Gen::All>(rules, moves);
@@ -27,5 +29,5 @@
         }
     }
     
-    return moves;
+    return static_cast<int>(moves - startMove);
 }
