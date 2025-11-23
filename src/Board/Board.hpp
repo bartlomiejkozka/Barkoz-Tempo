@@ -166,7 +166,8 @@ public:
 
     uint64_t bbUs() const
     {
-        return bitboards[static_cast<size_t>(sideToMove)];
+        int idx = std::to_underlying(sideToMove);
+        return bitboards[idx];
     }
     uint64_t bbUsRQ() const
     {

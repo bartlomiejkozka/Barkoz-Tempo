@@ -184,7 +184,7 @@ void Board::makeMove(Move &m)
     history[ply].halfmove      = halfMoveClock;
     history[ply].move          = static_cast<uint16_t>(m.getPackedMove());
 
-    sideToMove = static_cast<pColor>(~std::to_underlying(sideToMove));
+    sideToMove = (sideToMove == pColor::White) ? pColor::Black : pColor::White;
 }
 
 void Board::unmakeMove()
@@ -215,7 +215,7 @@ void Board::updateOriginBirboard(const uint64_t originSq, const uint64_t targetS
 
     bitboards[bbN] ^= fromToBB;
 
-    posHash ^= PieceMap::pieceMap[bbN - align][targetSq];
+    posHash ^= PieceMap::pieceMap[bbN - align][std::countr_zero(targetSq)];
 }
 
 void Board::recomputeSideOccupancies() 
