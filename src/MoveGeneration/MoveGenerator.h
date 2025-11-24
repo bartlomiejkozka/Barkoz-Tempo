@@ -298,13 +298,15 @@ template<Gen G>
 template<Gen G>
 [[nodiscard]] Move* MoveGen::getPawnMoves(ChessRules &rules, Move *moves)
 {
+    // TODO: pawn promotion handling
     return generatePieceMoves<G, Piece::Pawn>
     (
         rules,
         moves,
         [&rules] (int fromSq) 
         { 
-            return static_cast<bool>(rules._board.sideToMove) ? BlackPawnMap::getPushTargets(fromSq, rules._board.fullBoard()) :  WhitePawnMap::getPushTargets(fromSq, rules._board.fullBoard());
+            return static_cast<bool>(rules._board.sideToMove) ? BlackPawnMap::getPushTargets(fromSq, rules._board.fullBoard()) | BlackPawnMap::getAnyAttackTargets(fromSq, rules._board.bbThem())
+                :  WhitePawnMap::getPushTargets(fromSq, rules._board.fullBoard()) | WhitePawnMap::getAnyAttackTargets(fromSq, rules._board.bbThem());
         },
         [] (int) { return true; },
         // post -> add Dbl Pushes & Ep attacks

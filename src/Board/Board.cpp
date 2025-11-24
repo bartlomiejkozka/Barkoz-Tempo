@@ -106,7 +106,7 @@ void Board::makeMove(Move &m)
     const uint64_t targetSq = minBitSet << m.TargetSq();
 
     const size_t bb = getBitboard(originSq);
-    const size_t bbCaptured = m.isAnyCapture() ? getBitboard(m.TargetSq()) : 0;
+    const size_t bbCaptured = m.isAnyCapture() ? getBitboard(targetSq) : 0;
 
     const size_t WM = static_cast<bool>(sideToMove) ? 0 : 1;   // is white to move -? when yes bbIdx = bbIdx - 1
 
