@@ -79,16 +79,26 @@ public:
     // Pins (x-rays)
     // --------------------
 
+    [[nodiscard]] uint64_t getNotPinnedTargets(uint64_t targets, int kingSq, int fromSq);
+
     // blockers: by default it is attacked pieces bitboard
     // use example to get pinners: xrayAttacks() & bbThem;
     template <uint64_t (*Attacks)(const int, const uint64_t, const uint64_t)>
-    [[nodiscard]] uint64_t xrayAttacks(int sq, uint64_t bbUs, uint64_t bbThem) const
+    [[nodiscard]] uint64_t xrayAttacks(int sq, uint64_t bbUs, uint64_t bbThem, uint64_t pinned = 0ULL) const
     {
-        uint64_t attacks = Attacks(sq, bbThem, bbUs);
-        uint64_t blockers = bbThem & attacks;
+        uint64_t attacks;
+        if (pinned)
+        {
+            attacks = Attacks(sq, bbThem^pinned/*when posiible capture pinnner*/, pinned) & pinned;
+        }
+        else
+        {
+            attacks = Attacks(sq, bbThem, bbUs);
+        }
+        uint64_t blockers = bbUs & attacks;
 
         // retuns the attacks behind the pin when there was a pinner
-        return attacks ^ Attacks(sq, bbUs, bbThem ^ blockers);
+        return Attacks(sq, bbUs, bbThem) ^ Attacks(sq, bbUs ^ blockers, bbThem);
     }
 
     template <uint64_t (*Attacks)(const int, const uint64_t, const uint64_t), Sliders slider>

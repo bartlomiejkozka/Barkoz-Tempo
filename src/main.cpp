@@ -22,16 +22,24 @@ int main()
 
     board.init();
 
-    std::string m  = "a2a4";
-    std::string m1 = "b7b5"; 
+    std::string m  = "d2d3";
+    std::string m1 = "c7c6"; 
+    std::string m2 = "e1d2";
+    std::string m3 = "d8a5";
     auto fromTo = std::make_pair(static_cast<int>(SimpleParser::parseMoveString(m).from), static_cast<int>(SimpleParser::parseMoveString(m).to));
     Move mv(fromTo.first, fromTo.second, 0);
-    // rules._board.makeMove(mv);
+    rules._board.makeMove(mv);
     fromTo = std::make_pair(static_cast<int>(SimpleParser::parseMoveString(m1).from), static_cast<int>(SimpleParser::parseMoveString(m1).to));
     Move mv1(fromTo.first, fromTo.second, 0);
-    // rules._board.makeMove(mv1);
+    rules._board.makeMove(mv1);
+    fromTo = std::make_pair(static_cast<int>(SimpleParser::parseMoveString(m2).from), static_cast<int>(SimpleParser::parseMoveString(m2).to));
+    Move mv2(fromTo.first, fromTo.second, 0);
+    rules._board.makeMove(mv2);
+    fromTo = std::make_pair(static_cast<int>(SimpleParser::parseMoveString(m3).from), static_cast<int>(SimpleParser::parseMoveString(m3).to));
+    Move mv3(fromTo.first, fromTo.second, 0);
+    rules._board.makeMove(mv3);
 
-    uint64_t nodes = PerftDivide(4, rules, perft_stats);
+    uint64_t nodes = PerftDivide(1, rules, perft_stats);
 
     perft_stats.print();
 

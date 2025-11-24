@@ -100,6 +100,26 @@
     return true;
 }
 
+[[nodiscard]] uint64_t ChessRules::getNotPinnedTargets(uint64_t targets, int kingSq, int fromSq)
+{
+    uint64_t legalTargets = 0;
+    while ( targets )
+    {
+        uint64_t targetSq = minBitSet << pop_1st(targets);
+        uint64_t pinner = xrayAttacks<Queen::getMoves>(kingSq, _board.bbUs()^bitBoardSet(fromSq)^targetSq, _board.bbThem(), targetSq);
+
+        uint64_t legalSquares = 0;
+        if (pinner) legalSquares = MoveUtils::inBetween[kingSq][std::countr_zero(pinner)];
+        
+        if ( (targetSq & legalSquares)  || (targetSq == pinner) )
+        {
+            legalTargets |= targetSq;
+        }
+    }
+    
+    return legalTargets;
+}
+
 [[nodiscard]] uint64_t ChessRules::getAllPins(int sq) const
 {
     return getPins<Bishop::getMoves, Sliders::Bishop>(sq)
@@ -111,7 +131,7 @@
     std::pair<uint64_t, uint64_t> res = std::make_pair(attacksTo(std::countr_zero(_board.bbUs(Piece::King)), _board.sideToMove), 0);  // only one attacker while signle check, in double check wwe should consider only King evasion
 
     uint64_t sliderAttackers = res.first & _board.bbThemSliders();
-    int kingSq = count_1s(_board.bbUs(Piece::King));
+    int kingSq = std::countr_zero(_board.bbUs(Piece::King));
     while (sliderAttackers)     // for the check King evasion -> when slider only one Path to cover the King to evate check
     {
         int attSq = pop_1st(sliderAttackers);
