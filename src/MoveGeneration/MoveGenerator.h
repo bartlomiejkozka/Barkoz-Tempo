@@ -154,6 +154,7 @@ template<Gen G, Piece P,
     if constexpr (GenTraits<G>::Captures || GenTraits<G>::Quiets)
     {
         pinned = rules.getAllPins(kingSq);
+        // if ( pinned ) rules._perft_stats.discovery_checks++;
     }
 
     while (piecesBB)

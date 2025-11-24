@@ -18,6 +18,8 @@
     }
     else
     {
+        // rules._perft_stats.checks++;
+
         if ( !rules.isDoubleCheck() )
         {
             moves = generate<Gen::Evasions>(rules, getKingMoves<Gen::All>(rules, moves));
@@ -25,9 +27,12 @@
         // Double Check -> only King evasion
         else
         {
+            // rules._perft_stats.double_checks++;
             moves = getKingMoves<Gen::All>(rules, moves);
         }
     }
     
+    if ( moves == startMove ) rules._perft_stats.check_mates++;
+
     return static_cast<int>(moves - startMove);
 }

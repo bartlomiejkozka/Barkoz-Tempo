@@ -8,4 +8,5 @@ target_link_libraries(MoveGeneration
     PRIVATE Debug
     PUBLIC BitOperation
     PRIVATE Shared
+    PUBLIC Perft
 )

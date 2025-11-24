@@ -18,6 +18,7 @@
 #include "Move.hpp"
 #include "BitOperation.hpp"
 #include "MoveUtils.hpp"
+#include "Perft/PerftStats.h"
 
 #define MAX_MOVES_NUMBER    (256)   // rael max is 218
 
@@ -52,8 +53,8 @@ public:
     // Initializators
     // --------------------
 
-    ChessRules(Board &board)
-        : _board{board} {}
+    ChessRules(Board &board, PerftStats &perft_stats)
+        : _board{board}, _perft_stats{perft_stats} {}
 
     // --------------------
     // Methods
@@ -143,6 +144,7 @@ public:
     [[nodiscard]] std::pair<uint64_t, uint64_t> getEvasions() const;
 
     Board &_board;
+    PerftStats &_perft_stats;
 };
 
 

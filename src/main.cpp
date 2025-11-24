@@ -3,62 +3,39 @@
 #include "MoveGeneration/Move.hpp"
 #include "MoveGeneration/MoveGenerator.h"
 #include "MoveGeneration/ChessRules.hpp"
+#include "MoveGeneration/Perft/PerftFunctions.h"
+#include "MoveParser.h"
+
 
 #include <array>
 #include <iostream>
+#include <utility>
 
-uint64_t Perft(int depth, ChessRules &rules)
-{
-    std::array<Move, 256> move_list;
-    int n_moves;
-    uint64_t nodes = 0;
-
-    if (depth == 0)
-        return 1ULL;
-
-    n_moves = MoveGen::generateLegalMoves(rules, move_list.data());
-    for (int i = 0; i < n_moves; i++) 
-    {
-        rules._board.makeMove(move_list[i]);
-        nodes += Perft(depth - 1, rules);
-        rules._board.unmakeMove();
-    }
-    return nodes;
-}
-
-uint64_t perft_divide(int depth, ChessRules &rules) {
-    std::array<Move, 256> moves;
-    int moveCount = MoveGen::generateLegalMoves(rules, moves.data());
-
-    uint64_t total = 0;
-
-    for (int i = 0; i < moveCount; i++)
-    {
-        rules._board.makeMove(moves[i]);
-        uint64_t nodes = Perft(depth - 1, rules);
-        rules._board.unmakeMove();
-
-        std::cout << moves[i].OriginSq() << " -> " << moves[i].TargetSq();
-        std::cout << ": " << nodes << "\n";
-
-        total += nodes;
-    }
-
-    return total;
-}
 
 int main()
 {
     PieceMap::init();
     
     Board board{};
-    ChessRules rules{board};
+    PerftStats perft_stats{};
+    ChessRules rules{board, perft_stats};
 
     board.init();
 
-    uint64_t nodes = perft_divide(3, rules);
+    std::string m  = "a2a4";
+    std::string m1 = "b7b5"; 
+    auto fromTo = std::make_pair(static_cast<int>(SimpleParser::parseMoveString(m).from), static_cast<int>(SimpleParser::parseMoveString(m).to));
+    Move mv(fromTo.first, fromTo.second, 0);
+    // rules._board.makeMove(mv);
+    fromTo = std::make_pair(static_cast<int>(SimpleParser::parseMoveString(m1).from), static_cast<int>(SimpleParser::parseMoveString(m1).to));
+    Move mv1(fromTo.first, fromTo.second, 0);
+    // rules._board.makeMove(mv1);
 
-    std::cout << "total: " << nodes << std::endl;
+    uint64_t nodes = PerftDivide(4, rules, perft_stats);
+
+    perft_stats.print();
+
+    std::cout << "total nodes: " << nodes << std::endl;
 
     return 0;
 }

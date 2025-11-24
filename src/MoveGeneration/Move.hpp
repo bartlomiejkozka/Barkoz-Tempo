@@ -133,6 +133,7 @@ public:
     //--------------------
     // Castles
     //--------------------
+    [[nodiscard]] constexpr bool isCastle() { return isKingCastle() || isQueenCastle(); }
 
     [[nodiscard]] constexpr bool isKingCastle() { return packed_move.getSpecials() == 2; }
 
