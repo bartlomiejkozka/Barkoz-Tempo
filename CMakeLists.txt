@@ -27,7 +27,8 @@ set(MODULE_DIRS
 	src/PieceMap
 	src/Shared
 	src/StateInfo
-	src/MoveParser
+	src/MoveGeneration/MoveParser
+	src/MoveGeneration/Perft
 )
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src)
