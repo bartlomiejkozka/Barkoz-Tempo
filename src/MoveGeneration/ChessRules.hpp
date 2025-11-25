@@ -71,7 +71,7 @@ public:
 
     [[nodiscard]] uint64_t attacksTo(const int sq, const pColor movePColor) const;
 
-    [[nodiscard]] const bool isAttackedTo(const int sq, const pColor movePColor) const;
+    [[nodiscard]] bool isAttackedTo(const int sq, const pColor movePColor, uint64_t bbUs = 0, uint64_t bbThem = 0) const;
 
     [[nodiscard]] const bool isPathSafe(uint64_t pathSq, const pColor movePColor) const;
 

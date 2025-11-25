@@ -31,6 +31,8 @@ public:
 
     [[nodiscard("PURE FUN")]] static uint64_t getMoves(const int originSq, const uint64_t bbUs, const uint64_t bbThem)
     {
+        // if (originSq < 0 || originSq > 63) return 0ULL;
+
         const uint64_t occ = (bbUs | bbThem) & occupanciesMask(originSq);
         
         const uint64_t attacks = BishopAttacks[originSq][MoveUtils::Slider::transform(occ, BishopMagics[originSq])];

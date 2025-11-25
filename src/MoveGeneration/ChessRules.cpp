@@ -64,15 +64,18 @@
         | (KnightPattern::attacksTo[sq] & _board.bbThem(Piece::Knight));
 }
 
-[[nodiscard]] const bool ChessRules::isAttackedTo(const int sq, const pColor attackedPColor) const
+[[nodiscard]] bool ChessRules::isAttackedTo(const int sq, const pColor attackedPColor, uint64_t bbUs, uint64_t bbThem) const
 {
-    const uint64_t queen = Queen::getMoves(sq, _board.bbUs(),  _board.bbThem()) & _board.bbThem(Piece::Queen);
+    if ( !bbUs ) bbUs = _board.bbUs();
+    if ( !bbThem) bbThem = _board.bbThem();
+
+    const uint64_t queen = Queen::getMoves(sq, bbUs, bbThem) & _board.bbThem(Piece::Queen);
     if (queen) return true;
 
-    const uint64_t bishop = Bishop::getMoves(sq, _board.bbUs(),  _board.bbThem()) & _board.bbThem(Piece::Bishop);
+    const uint64_t bishop = Bishop::getMoves(sq, bbUs, bbThem) & _board.bbThem(Piece::Bishop);
     if (bishop) return true;
 
-    const uint64_t rook = Rook::getMoves(sq, _board.bbUs(),  _board.bbThem()) & _board.bbThem(Piece::Rook);
+    const uint64_t rook = Rook::getMoves(sq, bbUs, bbThem) & _board.bbThem(Piece::Rook);
     if (rook) return true;
 
     if (KnightPattern::attacksTo[sq] & _board.bbThem(Piece::Knight)) return true;    
@@ -106,11 +109,13 @@
     while ( targets )
     {
         uint64_t targetSq = minBitSet << pop_1st(targets);
-        uint64_t pinner = xrayAttacks<Queen::getMoves>(kingSq, _board.bbUs()^bitBoardSet(fromSq)^targetSq, _board.bbThem(), targetSq);
+        // uint64_t pinner = xrayAttacks<Queen::getMoves>(kingSq, _board.bbUs()^bitBoardSet(fromSq)^targetSq, _board.bbThem(), targetSq);
+        uint64_t pinner = Queen::getMoves(kingSq, _board.bbUs()^bitBoardSet(fromSq), _board.bbThem()) 
+            & (_board.bbThem(Piece::Bishop) | _board.bbThem(Piece::Rook) | _board.bbThem(Piece::Queen));
 
         uint64_t legalSquares = 0;
         if (pinner) legalSquares = MoveUtils::inBetween[kingSq][std::countr_zero(pinner)];
-        
+
         if ( (targetSq & legalSquares)  || (targetSq == pinner) )
         {
             legalTargets |= targetSq;

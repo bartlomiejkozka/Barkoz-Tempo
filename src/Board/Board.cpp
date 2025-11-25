@@ -106,7 +106,8 @@ void Board::makeMove(Move &m)
     const uint64_t targetSq = minBitSet << m.TargetSq();
 
     const size_t bb = getBitboard(originSq);
-    const size_t bbCaptured = m.isAnyCapture() ? getBitboard(targetSq) : 0;
+    size_t bbCaptured = m.isAnyCapture() ? getBitboard(targetSq) : 0;
+    if ( m.isEpCapture() ) bbCaptured = getBitboard( bitBoardSet(m.TargetSq() + (static_cast<bool>(sideToMove) ? 8 : -8 )) );
 
     const size_t WM = static_cast<bool>(sideToMove) ? 0 : 1;   // is white to move -? when yes bbIdx = bbIdx - 1
 
@@ -222,8 +223,10 @@ void Board::unmakeMove()
         {
             bitboards[BBC] ^= (minBitSet << ( m.TargetSq() + (static_cast<bool>(prevSTM) ? 8 : -8 ) ));        
         }
-
-        bitboards[BBC] ^= targetSq;
+        else
+        {
+            bitboards[BBC] ^= targetSq;
+        }
     }
     else if ( m.isQueenCastle() )
     {
