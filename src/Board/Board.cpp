@@ -10,6 +10,7 @@
 #include "PieceMap.hpp"
 
 #include <utility>
+#include <sstream>  // dla std::istringstream
 
 
 // ---------------------------------
@@ -88,6 +89,87 @@ void Board::init()
     shortMem[ply].move          = 0;
     shortMem[ply].moveHash      = PieceMap::generatePosHash(*this);
 }
+
+void Board::loadFromFEN(const std::string& fen)
+{
+    // 1. Reset all bitboards
+    for (auto& bb : bitboards) bb = 0;
+
+    // 2. Split FEN into fields
+    std::istringstream iss(fen);
+    std::string boardPart, sidePart, castlingPart, enPassantPart, halfmovePart, fullmovePart;
+    iss >> boardPart >> sidePart >> castlingPart >> enPassantPart >> halfmovePart >> fullmovePart;
+
+    // 3. Parse piece placement
+    int rank = 7;  // starts from 8th rank
+    int file = 0;
+    for (char c : boardPart)
+    {
+        if (c == '/') { rank--; file = 0; continue; }
+        if (isdigit(c)) { file += c - '0'; continue; }
+
+        int square = rank * 8 + file;
+        bool isWhite = isupper(c);
+        char piece = tolower(c);
+
+        uint64_t mask = 1ULL << square;
+
+        switch(piece)
+        {
+            case 'p': bitboards[isWhite ? 2 : 3] |= mask; break;
+            case 'n': bitboards[isWhite ? 4 : 5] |= mask; break;
+            case 'b': bitboards[isWhite ? 6 : 7] |= mask; break;
+            case 'r': bitboards[isWhite ? 8 : 9] |= mask; break;
+            case 'q': bitboards[isWhite ? 10 : 11] |= mask; break;
+            case 'k': bitboards[isWhite ? 12 : 13] |= mask; break;
+        }
+
+        file++;
+    }
+
+    // 4. Side to move
+    sideToMove = (sidePart == "w") ? pColor::White : pColor::Black;
+
+    // 5. Castling rights
+    castlingRights = 0;
+    for (char c : castlingPart)
+    {
+        switch(c)
+        {
+            case 'K': castlingRights |= 0b1000; break; // white kingside
+            case 'Q': castlingRights |= 0b0100; break; // white queenside
+            case 'k': castlingRights |= 0b0010; break; // black kingside
+            case 'q': castlingRights |= 0b0001; break; // black queenside
+        }
+    }
+
+    // 6. En passant
+    if (enPassantPart == "-") enPassant = -1;
+    else
+    {
+        char f = enPassantPart[0];
+        char r = enPassantPart[1];
+        enPassant = (r - '1') * 8 + (f - 'a');
+    }
+
+    // 7. Halfmove clock
+    halfMoveClock = std::stoi(halfmovePart);
+
+    // 8. Fullmove number
+    ply = 0;
+
+    // 9. Recompute occupancies
+    recomputeSideOccupancies();
+
+    // 10. Initialize shortMem for current ply
+    shortMem[ply].capturedPiece = PieceDescriptor::nWhite; // placeholder
+    shortMem[ply].castling      = castlingRights;
+    shortMem[ply].ep            = static_cast<int8_t>(enPassant);
+    shortMem[ply].halfmove      = halfMoveClock;
+    shortMem[ply].move          = 0;
+    shortMem[ply].moveHash      = PieceMap::generatePosHash(*this);
+}
+
 
 // ---------------------------------
 // Move make

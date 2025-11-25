@@ -96,6 +96,8 @@ public:
     // ---------------------------------
 
     void init();
+    
+    void loadFromFEN(const std::string& fen);
 
     //==================================
     //==========Board Predefinitions====
