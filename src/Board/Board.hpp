@@ -9,6 +9,7 @@
 #include <utility>
 #include <optional>
 #include <functional>
+#include <string>
 
 #include "BitOperation.hpp"
 #include "MoveGeneration/Move.hpp"
