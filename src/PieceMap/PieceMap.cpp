@@ -117,7 +117,7 @@ uint64_t PieceMap::generatePosHash(const Board &b)
         while (board)   // till any bit is set
         {
             auto idx = static_cast<size_t>(std::countr_zero(board));
-            posHash ^= pieceMap[i][idx];
+            posHash ^= pieceMap[i-2][idx];
             board &= (board - 1);
         }
     }

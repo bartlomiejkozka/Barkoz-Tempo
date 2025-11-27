@@ -111,6 +111,12 @@ public:
 
     static constexpr size_t MAXMoveHistory = 256;
 
+    // Rook default positions for castling moves
+    static constexpr uint64_t WhiteRookQueenPos = 1;
+    static constexpr uint64_t BlackRookQueenPos = 0x0100000000000000;
+    static constexpr uint64_t WhiteRookKingPos  = 128;
+    static constexpr uint64_t BlackRookKingPos  = 0x8000000000000000;
+
     // e.g. in PieceMap indexing we have to subtract 2, becase Piece's bitboards start from third idx.
     static constexpr size_t align = 2;
     

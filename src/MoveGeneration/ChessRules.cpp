@@ -37,7 +37,7 @@
         moves |= KDest[s];
     }
     // queen-side
-    if ( canQ && !(QBlockers[s] & _board.fullBoard())
+    if ( canQ && !(QBlockersRook[s] & _board.fullBoard())
         && isPathSafe(QBlockers[s], static_cast<pColor>(s)) )
     {
         moves |= QDest[s];

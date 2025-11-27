@@ -41,7 +41,8 @@ public:
     static constexpr std::array<uint64_t,2> KRight   { /* W */ 1ull<<3, /* B */ 1ull<<1 };
     static constexpr std::array<uint64_t,2> QRight   { /* W */ 1ull<<2, /* B */ 1ull<<0 };
     static constexpr std::array<uint64_t,2> KBlockers{ /* W */ (1ull<<5)|(1ull<<6), /* B */ (1ull<<61)|(1ull<<62) };
-    static constexpr std::array<uint64_t,2> QBlockers{ /* W */ (1ull<<1)|(1ull<<2)|(1ull<<3), /* B */ (1ull<<57)|(1ull<<58)|(1ull<<59) };
+    static constexpr std::array<uint64_t,2> QBlockers{ /* W */ (1ull<<2)|(1ull<<3), /* B */ (1ull<<58)|(1ull<<59) };
+    static constexpr std::array<uint64_t,2> QBlockersRook{ /* W */ (1ull<<1)|(1ull<<2)|(1ull<<3), /* B */ (1ull<<57)|(1ull<<58)|(1ull<<59) };
     static constexpr std::array<uint64_t,2> KDest    { /* W */ (1ull<<6), /* B */ (1ull<<62) };
     static constexpr std::array<uint64_t,2> QDest    { /* W */ (1ull<<2), /* B */ (1ull<<58) };
     // ----------------------

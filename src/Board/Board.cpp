@@ -195,6 +195,18 @@ void Board::makeMove(Move &m)
 
     updateOriginBirboard(originSq, targetSq, bb, newPoshHash);
 
+    if ( bb == (std::to_underlying(PieceDescriptor::bKing)-WM) )
+    {
+        castlingRights ^= static_cast<bool>(sideToMove) ? 0x03 : 0x0c;
+    }
+    else if ( bb == (std::to_underlying(PieceDescriptor::bRook)-WM) )
+    {
+        if ( originSq == WhiteRookKingPos || originSq == BlackRookKingPos )
+            castlingRights ^= static_cast<bool>(sideToMove) ? 0x02 : 0x08;
+        else // Queen
+            castlingRights ^= static_cast<bool>(sideToMove) ? 0x01 : 0x04;
+    }
+
     if ( m.isQuiet() )
     {
         if ( auto piece = static_cast<PieceDescriptor>(bb); 
@@ -231,14 +243,14 @@ void Board::makeMove(Move &m)
     }
     else if ( m.isPromotion() )
     {
-        newPoshHash ^= PieceMap::pieceMap[bb - align][targetSq];
+        newPoshHash ^= PieceMap::pieceMap[bb - align][m.TargetSq()];
 
         // Promotion Capture
         if ( m.isAnyCapture() )
         {
             halfMoveClock = 0;
 
-            newPoshHash ^= PieceMap::pieceMap[bbCaptured - align][targetSq];
+            newPoshHash ^= PieceMap::pieceMap[bbCaptured - align][m.TargetSq()];
             bitboards[bbCaptured] ^= targetSq;
             captured = static_cast<PieceDescriptor>(bbCaptured);
         }
@@ -246,23 +258,25 @@ void Board::makeMove(Move &m)
         // For now asume we do promotion only to Queen
         bitboards[bb] ^= targetSq;
         bitboards[std::to_underlying(PieceDescriptor::bQueen) - WM] ^= targetSq;
-        newPoshHash ^= PieceMap::pieceMap[std::to_underlying(PieceDescriptor::bQueen) - WM - align][targetSq];
+        newPoshHash ^= PieceMap::pieceMap[std::to_underlying(PieceDescriptor::bQueen) - WM - align][m.TargetSq()];
     }
     else if ( m.isQueenCastle() )
     {
-        newPoshHash ^= PieceMap::pieceMap[std::to_underlying(PieceDescriptor::bRook) - WM - align][targetSq >> 2];
-        setBbUs(Piece::Rook, targetSq << 3);
-        newPoshHash ^= PieceMap::pieceMap[std::to_underlying(PieceDescriptor::bRook) - WM - align][targetSq << 3];
+        newPoshHash ^= PieceMap::pieceMap[std::to_underlying(PieceDescriptor::bRook) - WM - align][std::countr_zero(targetSq >> 2)];
+        setBbUs( Piece::Rook,  WM ? WhiteRookQueenPos : BlackRookQueenPos);
+        setBbUs(Piece::Rook, targetSq << 1);
+        newPoshHash ^= PieceMap::pieceMap[std::to_underlying(PieceDescriptor::bRook) - WM - align][std::countr_zero(targetSq << 3)];
 
-        castlingRights ^= static_cast<bool>(sideToMove) ? 0x01 : 0x04;
+        // castlingRights ^= static_cast<bool>(sideToMove) ? 0x02 : 0x0c;
     }
     else if ( m.isKingCastle() )
     {
-        newPoshHash ^= PieceMap::pieceMap[std::to_underlying(PieceDescriptor::bRook) - WM - align][targetSq << 1];
-        setBbUs(Piece::Rook, targetSq >> 2);
-        newPoshHash ^= PieceMap::pieceMap[std::to_underlying(PieceDescriptor::bRook) - WM - align][targetSq >> 2];
+        newPoshHash ^= PieceMap::pieceMap[std::to_underlying(PieceDescriptor::bRook) - WM - align][std::countr_zero(targetSq << 1)];
+        setBbUs( Piece::Rook,  WM ? WhiteRookKingPos : BlackRookKingPos);
+        setBbUs(Piece::Rook, targetSq >> 1);
+        newPoshHash ^= PieceMap::pieceMap[std::to_underlying(PieceDescriptor::bRook) - WM - align][std::countr_zero(targetSq >> 2)];
     
-        castlingRights ^= static_cast<bool>(sideToMove) ? 0x02 : 0x08;
+        // castlingRights ^= static_cast<bool>(sideToMove) ? 0x02 : 0x0c;
     }
 
     recomputeSideOccupancies();
@@ -285,8 +299,8 @@ void Board::unmakeMove()
     PieceDescriptor cPiece = shortMem[ply].capturedPiece;
     pColor prevSTM = (sideToMove == pColor::White) ? pColor::Black : pColor::White;
 
-    halfMoveClock = shortMem[ply].halfmove;
     ply--;
+    halfMoveClock = shortMem[ply].halfmove;
     castlingRights = shortMem[ply].castling;
     enPassant      = shortMem[ply].ep;
     
@@ -312,11 +326,13 @@ void Board::unmakeMove()
     }
     else if ( m.isQueenCastle() )
     {
-        setBbThem(Piece::Rook, targetSq >> 3);
+        setBbThem(Piece::Rook, targetSq << 1);
+        setBbThem(Piece::Rook, targetSq >> 2);
     }
     else if ( m.isKingCastle() )
     {
-        setBbThem(Piece::Rook, targetSq << 2);
+        setBbThem(Piece::Rook, targetSq >> 1);
+        setBbThem(Piece::Rook, targetSq << 1);
     }
 
     if (m.isPromotion())
