@@ -195,16 +195,28 @@ void Board::makeMove(Move &m)
 
     updateOriginBirboard(originSq, targetSq, bb, newPoshHash);
 
-    if ( bb == (std::to_underlying(PieceDescriptor::bKing)-WM) )
+    uint8_t clearMask = 0;
+    if (bb == (std::to_underlying(PieceDescriptor::bKing) - WM)) 
     {
-        castlingRights ^= static_cast<bool>(sideToMove) ? 0x03 : 0x0c;
+        clearMask |= static_cast<bool>(sideToMove) ? 0x03 : 0x0c;
     }
-    else if ( bb == (std::to_underlying(PieceDescriptor::bRook)-WM) )
+    if (bb == (std::to_underlying(PieceDescriptor::bRook) - WM)) 
     {
-        if ( originSq == WhiteRookKingPos || originSq == BlackRookKingPos )
-            castlingRights ^= static_cast<bool>(sideToMove) ? 0x02 : 0x08;
-        else // Queen
-            castlingRights ^= static_cast<bool>(sideToMove) ? 0x01 : 0x04;
+        if (originSq == WhiteRookKingPos || originSq == BlackRookKingPos)
+            clearMask |= static_cast<bool>(sideToMove) ? 0x02 : 0x08; 
+        else if (originSq == WhiteRookQueenPos || originSq == BlackRookQueenPos)
+            clearMask |= static_cast<bool>(sideToMove) ? 0x01 : 0x04;
+    }
+    if (bbCaptured && (bbCaptured == (std::to_underlying(PieceDescriptor::wRook) + WM))) 
+    {
+        if (targetSq == WhiteRookKingPos || targetSq == BlackRookKingPos)
+            clearMask |= static_cast<bool>(sideToMove) ? 0x08 : 0x02; 
+        else if (targetSq == WhiteRookQueenPos || targetSq == BlackRookQueenPos)
+            clearMask |= static_cast<bool>(sideToMove) ? 0x04 : 0x01;
+    }
+    if (clearMask) 
+    {
+        castlingRights &= static_cast<uint8_t>(~clearMask);
     }
 
     if ( m.isQuiet() )
@@ -257,8 +269,8 @@ void Board::makeMove(Move &m)
 
         // For now asume we do promotion only to Queen
         bitboards[bb] ^= targetSq;
-        bitboards[std::to_underlying(PieceDescriptor::bQueen) - WM] ^= targetSq;
-        newPoshHash ^= PieceMap::pieceMap[std::to_underlying(PieceDescriptor::bQueen) - WM - align][m.TargetSq()];
+        bitboards[std::to_underlying(mapPromotionType(m)) - WM] ^= targetSq;
+        newPoshHash ^= PieceMap::pieceMap[std::to_underlying(mapPromotionType(m)) - WM - align][m.TargetSq()];
     }
     else if ( m.isQueenCastle() )
     {
@@ -337,7 +349,8 @@ void Board::unmakeMove()
 
     if (m.isPromotion())
     {
-        bitboards[std::to_underlying(PieceDescriptor::bQueen) - WM] ^= targetSq;
+        bitboards[bb] ^= originSq;
+        bitboards[std::to_underlying(PieceDescriptor::bPawn) - WM] ^= originSq;
     }
 
     recomputeSideOccupancies();
@@ -389,4 +402,15 @@ void Board::recomputeSideOccupancies()
         bitboards[static_cast<size_t>(PieceDescriptor::bRook)]   |
         bitboards[static_cast<size_t>(PieceDescriptor::bQueen)]  |
         bitboards[static_cast<size_t>(PieceDescriptor::bKing)];
+}
+
+[[nodiscard]] PieceDescriptor Board::mapPromotionType(Move &m) const
+{
+    if      ( m.isKnighPromo()  || m.isKnightPromoCapture() ) return PieceDescriptor::bKnight;
+    else if ( m.isBishopPromo() || m.isBishopPromoCapture() ) return PieceDescriptor::bBishop;
+    else if ( m.isRokkPromo()   || m.isRookPromoCapture()   ) return PieceDescriptor::bRook;
+    else if ( m.isQueenPromo()  || m.isQueenPromoCapture()  ) return PieceDescriptor::bQueen;
+
+    std::unreachable();
+    return PieceDescriptor::nWhite;
 }

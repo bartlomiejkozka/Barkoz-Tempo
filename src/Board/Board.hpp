@@ -168,9 +168,13 @@ public:
     // ---------------------------------
 
     size_t getBitboard(const uint64_t sq) const;
+    
     void updateOriginBirboard(const uint64_t originSq, const uint64_t targetSq, const size_t bbN, 
         std::optional<std::reference_wrapper<uint64_t>> posHash = std::nullopt);
+    
     void recomputeSideOccupancies();
+
+    [[nodiscard]] PieceDescriptor mapPromotionType(Move &m) const;
 
     // ---------------------------------
     // Helpers

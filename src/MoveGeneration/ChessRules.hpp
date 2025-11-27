@@ -77,6 +77,12 @@ public:
     [[nodiscard]] const bool isPathSafe(uint64_t pathSq, const pColor movePColor) const;
 
     // --------------------
+    // Promotion helper
+    // --------------------
+
+    [[nodiscard]] bool isBeforeLastRnak(int originSq) const;
+
+    // --------------------
     // Pins (x-rays)
     // --------------------
 

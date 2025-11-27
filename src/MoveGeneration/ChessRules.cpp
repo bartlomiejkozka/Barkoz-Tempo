@@ -145,3 +145,8 @@
 
     return res;
 }
+
+[[nodiscard]] bool ChessRules::isBeforeLastRnak(int originSq) const
+{
+    return static_cast<bool>(_board.sideToMove) ? ( (originSq/8) == 1 ) : ( (originSq/8) == 7 );
+}

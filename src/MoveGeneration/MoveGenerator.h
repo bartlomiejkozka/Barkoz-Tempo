@@ -59,7 +59,7 @@ public:
 
 private:
     template<typename EncodeFn, typename AllowFn>
-    [[nodiscard]] static Move* addTargetsAsMove(uint64_t targets, int originSq, Move *moves, EncodeFn encode, AllowFn allow);
+    [[nodiscard]] static Move* addTargetsAsMove(uint64_t targets, int originSq, Move *moves, EncodeFn encode, AllowFn allow, bool isPromotion);
 
     template<Gen G, Piece P,
          typename GetMovesFn,     
@@ -123,15 +123,27 @@ template<Gen GenMode>
 // -------------------------
 
 template<typename EncodeFn, typename AllowFn>
-[[nodiscard]] Move* MoveGen::addTargetsAsMove(uint64_t targets, int originSq, Move *moves, EncodeFn encode, AllowFn allow)
-{
+[[nodiscard]] Move* MoveGen::addTargetsAsMove(uint64_t targets, int originSq, Move *moves, EncodeFn encode, AllowFn allow, bool isPromotion)
+{   
     while (targets)
     {
         int sq = pop_1st(targets);
         if ( allow(sq, originSq) )
         {
-            Move move = Move(originSq, sq, encode(sq));
-            *moves++ = move;
+            if ( isPromotion )
+            {
+                MoveType mtBase = (encode(sq) == MoveType::QUIET) ? MoveType::KN_PROM : MoveType::KN_PROM_CAP;
+                for (int i = 0; i < 4; ++i)
+                {
+                    MoveType mt = static_cast<MoveType>(static_cast<int>(mtBase) + i);
+                    *moves++ = Move(originSq, sq, mt);
+                }
+            }
+            else
+            {
+                Move move = Move(originSq, sq, encode(sq));
+                *moves++ = move;
+            }
         }
     }
 
@@ -152,36 +164,38 @@ template<Gen G, Piece P,
     const int kingSq = std::countr_zero(rules._board.bbUs(Piece::King));
     uint64_t pinned;
     std::pair<uint64_t, uint64_t> AttackerAndEvasionPath{0,0};
+    bool isPromotion = false;
 
-    if constexpr (GenTraits<G>::Captures || GenTraits<G>::Quiets)
-    {
-        pinned = rules.getAllPins(kingSq);
-        // if ( pinned ) rules._perft_stats.discovery_checks++;
-    }
+    pinned = rules.getAllPins(kingSq);
+    // if ( pinned ) rules._perft_stats.discovery_checks++;
 
     while (piecesBB)
     {
         int fromSq = pop_1st(piecesBB);
         uint64_t targets = getMoves(fromSq);
 
-        if constexpr (GenTraits<G>::Captures || GenTraits<G>::Quiets)
+        if constexpr ( P == Piece::Pawn )
         {
-            if ( (minBitSet << fromSq) & pinned )
-            {
-                targets = rules.getNotPinnedTargets(targets, kingSq, fromSq);
-            }
+            isPromotion = rules.isBeforeLastRnak(fromSq);
+        }
+
+        if ( (minBitSet << fromSq) & pinned )
+        {
+            targets = rules.getNotPinnedTargets(targets, kingSq, fromSq);
         }
 
         if constexpr (GenTraits<G>::Captures)
         {
             uint64_t captures = targets & rules._board.bbThem();
-            moves = addTargetsAsMove(captures, fromSq, moves, [](int){ return MoveType::CAPTURE; }, [&](int sq, int originSq){ return allow(sq, originSq); });
+            moves = addTargetsAsMove(captures, fromSq, moves, [](int){ return MoveType::CAPTURE; }, 
+                [&](int sq, int originSq){ return allow(sq, originSq); }, isPromotion);
         }
 
         if constexpr (GenTraits<G>::Quiets)
         {
             uint64_t quiets = targets & ~rules._board.bbThem();
-            moves = addTargetsAsMove(quiets, fromSq, moves, [](int){ return MoveType::QUIET; }, [&](int sq, int originSq){ return allow(sq, originSq); });
+            moves = addTargetsAsMove(quiets, fromSq, moves, [](int){ return MoveType::QUIET; }, 
+                [&](int sq, int originSq){ return allow(sq, originSq); }, isPromotion);
         }
 
         if constexpr (GenTraits<G>::Evasions)
@@ -200,7 +214,8 @@ template<Gen G, Piece P,
                 if (AttackerAndEvasionPath.second)
                 {
                     uint64_t evasions = targets & ~rules._board.bbThem() & AttackerAndEvasionPath.second;
-                    moves = addTargetsAsMove(evasions, fromSq, moves, [](int){ return MoveType::QUIET; }, [&](int sq, int originSq){ return allow(sq, originSq); });
+                    moves = addTargetsAsMove(evasions, fromSq, moves, [](int){ return MoveType::QUIET; }, 
+                        [&](int sq, int originSq){ return allow(sq, originSq); }, isPromotion);
                 }
             }
         }
@@ -235,9 +250,12 @@ template<Gen G>
         {
             if constexpr ( GenTraits<G>::Quiets )
             {
-                // TODO: check if we check is the King in check in case getting castling moves
-                uint64_t castlings = rules.getCastlingMoves();
-                return addTargetsAsMove(castlings, fromSq, moves, [&](int targetSq){ return MoveEncoder::encodeCastling(rules._board, targetSq); }, [](int, int){ return true; });
+                if ( !rules.isCheck() )
+                {
+                    uint64_t castlings = rules.getCastlingMoves();
+                    return addTargetsAsMove(castlings, fromSq, moves, [&](int targetSq){ return MoveEncoder::encodeCastling(rules._board, targetSq); }, 
+                        [](int, int){ return true; }, false);
+                }
             }
             return moves;
         }
@@ -301,9 +319,10 @@ template<Gen G>
         rules,
         moves,
         [&rules] (int fromSq) 
-        { 
-            return static_cast<bool>(rules._board.sideToMove) ? BlackPawnMap::getPushTargets(fromSq, rules._board.fullBoard()) | BlackPawnMap::getAnyAttackTargets(fromSq, rules._board.bbThem())
-                :  WhitePawnMap::getPushTargets(fromSq, rules._board.fullBoard()) | WhitePawnMap::getAnyAttackTargets(fromSq, rules._board.bbThem());
+        {   
+            return static_cast<bool>(rules._board.sideToMove) ?
+                       BlackPawnMap::getPushTargets(fromSq, rules._board.fullBoard()) | BlackPawnMap::getAnyAttackTargets(fromSq, rules._board.bbThem())
+                    :  WhitePawnMap::getPushTargets(fromSq, rules._board.fullBoard()) | WhitePawnMap::getAnyAttackTargets(fromSq, rules._board.bbThem());    
         },
         [] (int, int) { return true; },
         // post -> add Dbl Pushes & Ep attacks
@@ -316,7 +335,7 @@ template<Gen G>
                 {
                     dblPushes = rules.getNotPinnedTargets(dblPushes, kingSq, fromSq);
                 }
-                moves = addTargetsAsMove(dblPushes, fromSq, moves, [](int){ return MoveType::DOUBLE_PUSH; }, [](int, int){ return true; });
+                moves = addTargetsAsMove(dblPushes, fromSq, moves, [](int){ return MoveType::DOUBLE_PUSH; }, [](int, int){ return true; }, false);
             }
 
             if ( GenTraits<G>::Evasions )
@@ -329,7 +348,7 @@ template<Gen G>
                         dblPushes = rules.getNotPinnedTargets(dblPushes, kingSq, fromSq);
                     }
                     uint64_t evasions = dblPushes & ~rules._board.bbThem() & AttackerAndEvasionPath;
-                    moves = addTargetsAsMove(evasions, fromSq, moves, [](int){ return MoveType::QUIET; }, [](int, int){ return true; });
+                    moves = addTargetsAsMove(evasions, fromSq, moves, [](int){ return MoveType::QUIET; }, [](int, int){ return true; }, false);
                 }
             }
 
@@ -340,7 +359,7 @@ template<Gen G>
                 {
                     epAttack = rules.getNotPinnedTargets(epAttack, kingSq, fromSq);
                 }
-                moves = addTargetsAsMove(epAttack, fromSq, moves, [](int){ return MoveType::EP_CAPTURE; }, [](int, int){ return true; });
+                moves = addTargetsAsMove(epAttack, fromSq, moves, [](int){ return MoveType::EP_CAPTURE; }, [](int, int){ return true; }, false);
             }
 
             return moves;
