@@ -181,7 +181,7 @@ template<Gen G, Piece P,
 
         if ( (minBitSet << fromSq) & pinned )
         {
-            targets = rules.getNotPinnedTargets(targets, kingSq, fromSq);
+            targets = rules.getNotPinnedTargets(targets, kingSq, fromSq, P);
         }
 
         if constexpr (GenTraits<G>::Captures)
@@ -333,7 +333,7 @@ template<Gen G>
                 uint64_t dblPushes = static_cast<bool>(rules._board.sideToMove) ? BlackPawnMap::getDblPushTargets(fromSq, rules._board.fullBoard()) :  WhitePawnMap::getDblPushTargets(fromSq, rules._board.fullBoard());
                 if ( bitBoardSet(fromSq) & pinned )
                 {
-                    dblPushes = rules.getNotPinnedTargets(dblPushes, kingSq, fromSq);
+                    dblPushes = rules.getNotPinnedTargets(dblPushes, kingSq, fromSq, Piece::Pawn);
                 }
                 moves = addTargetsAsMove(dblPushes, fromSq, moves, [](int){ return MoveType::DOUBLE_PUSH; }, [](int, int){ return true; }, false);
             }
@@ -345,7 +345,7 @@ template<Gen G>
                     uint64_t dblPushes = static_cast<bool>(rules._board.sideToMove) ? BlackPawnMap::getDblPushTargets(fromSq, rules._board.fullBoard()) :  WhitePawnMap::getDblPushTargets(fromSq, rules._board.fullBoard());
                     if ( bitBoardSet(fromSq) & pinned )
                     {
-                        dblPushes = rules.getNotPinnedTargets(dblPushes, kingSq, fromSq);
+                        dblPushes = rules.getNotPinnedTargets(dblPushes, kingSq, fromSq, Piece::Pawn);
                     }
                     uint64_t evasions = dblPushes & ~rules._board.bbThem() & AttackerAndEvasionPath;
                     moves = addTargetsAsMove(evasions, fromSq, moves, [](int){ return MoveType::QUIET; }, [](int, int){ return true; }, false);
@@ -357,7 +357,7 @@ template<Gen G>
                 uint64_t epAttack = static_cast<bool>(rules._board.sideToMove) ? BlackPawnMap::getEpAttackTarget(fromSq, rules._board.enPassant) : WhitePawnMap::getEpAttackTarget(fromSq, rules._board.enPassant);
                 if ( bitBoardSet(fromSq) & pinned )
                 {
-                    epAttack = rules.getNotPinnedTargets(epAttack, kingSq, fromSq);
+                    epAttack = rules.getNotPinnedTargets(epAttack, kingSq, fromSq, Piece::Pawn);
                 }
                 moves = addTargetsAsMove(epAttack, fromSq, moves, [](int){ return MoveType::EP_CAPTURE; }, [](int, int){ return true; }, false);
             }

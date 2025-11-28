@@ -103,15 +103,24 @@
     return true;
 }
 
-[[nodiscard]] uint64_t ChessRules::getNotPinnedTargets(uint64_t targets, int kingSq, int fromSq)
+[[nodiscard]] uint64_t ChessRules::getNotPinnedTargets(uint64_t targets, int kingSq, int fromSq, [[maybe_unused]] Piece p)
 {
     uint64_t legalTargets = 0;
     while ( targets )
     {
         uint64_t targetSq = minBitSet << pop_1st(targets);
         // uint64_t pinner = xrayAttacks<Queen::getMoves>(kingSq, _board.bbUs()^bitBoardSet(fromSq)^targetSq, _board.bbThem(), targetSq);
-        uint64_t pinner = Queen::getMoves(kingSq, _board.bbUs()^bitBoardSet(fromSq), _board.bbThem()) 
-            & (_board.bbThem(Piece::Bishop) | _board.bbThem(Piece::Rook) | _board.bbThem(Piece::Queen));
+        uint64_t pinner = Queen::getMoves(kingSq, _board.bbUs()^bitBoardSet(fromSq), _board.bbThem()); 
+        pinner &= (_board.bbThem(Piece::Rook) | _board.bbThem(Piece::Bishop) | _board.bbThem(Piece::Queen));
+
+        uint64_t makeSureRightPinner = 0xffffffffffffffff;
+        if (p == Piece::Bishop) makeSureRightPinner = Bishop::getMoves(fromSq, _board.bbUs(), _board.bbThem()) & (_board.bbThem(Piece::Rook) | _board.bbThem(Piece::Bishop) | _board.bbThem(Piece::Queen));
+        if (p == Piece::Rook) makeSureRightPinner = Rook::getMoves(fromSq, _board.bbUs(), _board.bbThem()) & (_board.bbThem(Piece::Rook) | _board.bbThem(Piece::Bishop) | _board.bbThem(Piece::Queen));
+        if (p == Piece::Queen) makeSureRightPinner = Queen::getMoves(fromSq, _board.bbUs(), _board.bbThem()) & (_board.bbThem(Piece::Rook) | _board.bbThem(Piece::Bishop) | _board.bbThem(Piece::Queen));
+
+        pinner &= makeSureRightPinner;
+        // to not get the wrong pinner which is just next to King - which is possible case
+        pinner &= ~KingPattern::getMoves(kingSq, 0x0000000000000000);
 
         uint64_t legalSquares = 0;
         if (pinner) legalSquares = MoveUtils::inBetween[kingSq][std::countr_zero(pinner)];
@@ -148,5 +157,5 @@
 
 [[nodiscard]] bool ChessRules::isBeforeLastRnak(int originSq) const
 {
-    return static_cast<bool>(_board.sideToMove) ? ( (originSq/8) == 1 ) : ( (originSq/8) == 7 );
+    return static_cast<bool>(_board.sideToMove) ? ( (originSq/8) == 1 ) : ( (originSq/8) == 6 );
 }

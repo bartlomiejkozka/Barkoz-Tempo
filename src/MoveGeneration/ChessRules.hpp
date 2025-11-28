@@ -86,7 +86,7 @@ public:
     // Pins (x-rays)
     // --------------------
 
-    [[nodiscard]] uint64_t getNotPinnedTargets(uint64_t targets, int kingSq, int fromSq);
+    [[nodiscard]] uint64_t getNotPinnedTargets(uint64_t targets, int kingSq, int fromSq, [[maybe_unused]] Piece p);
 
     // blockers: by default it is attacked pieces bitboard
     // use example to get pinners: xrayAttacks() & bbThem;
