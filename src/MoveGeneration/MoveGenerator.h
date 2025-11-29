@@ -338,18 +338,18 @@ template<Gen G>
                 moves = addTargetsAsMove(dblPushes, fromSq, moves, [](int){ return MoveType::DOUBLE_PUSH; }, [](int, int){ return true; }, false);
             }
 
-            if ( GenTraits<G>::Evasions )
+            if constexpr ( GenTraits<G>::Evasions )
             {
                 if (AttackerAndEvasionPath)
                 {
                     uint64_t dblPushes = static_cast<bool>(rules._board.sideToMove) ? BlackPawnMap::getDblPushTargets(fromSq, rules._board.fullBoard()) :  WhitePawnMap::getDblPushTargets(fromSq, rules._board.fullBoard());
-                    if ( bitBoardSet(fromSq) & pinned )
-                    {
-                        dblPushes = rules.getNotPinnedTargets(dblPushes, kingSq, fromSq, Piece::Pawn);
-                    }
                     uint64_t evasions = dblPushes & ~rules._board.bbThem() & AttackerAndEvasionPath;
                     moves = addTargetsAsMove(evasions, fromSq, moves, [](int){ return MoveType::QUIET; }, [](int, int){ return true; }, false);
-                }
+
+                    uint64_t epAttack = static_cast<bool>(rules._board.sideToMove) ? BlackPawnMap::getEpAttackTarget(fromSq, rules._board.enPassant) : WhitePawnMap::getEpAttackTarget(fromSq, rules._board.enPassant);
+                    uint64_t evasionsEp = epAttack & ~rules._board.bbThem() & AttackerAndEvasionPath;
+                    moves = addTargetsAsMove(evasionsEp, fromSq, moves, [](int){ return MoveType::EP_CAPTURE; }, [](int, int){ return true; }, false);
+                    }
             }
 
             if constexpr ( GenTraits<G>::Captures )
@@ -358,6 +358,16 @@ template<Gen G>
                 if ( bitBoardSet(fromSq) & pinned )
                 {
                     epAttack = rules.getNotPinnedTargets(epAttack, kingSq, fromSq, Piece::Pawn);
+                }
+                // Check if Pawn making enPassant move not reveal the King (is not pinned without the strciked opposite pawn?)
+                else if (epAttack)
+                {
+                    uint64_t striked = static_cast<bool>(rules._board.sideToMove) ? (epAttack << 8) : (epAttack >> 8);
+                    uint64_t pinner = Rook::getMoves(kingSq, rules._board.bbUs()^bitBoardSet(fromSq), rules._board.bbThem()^striked) & (rules._board.bbThem(Piece::Rook) | rules._board.bbThem(Piece::Queen));
+                    if ( pinner )
+                    {
+                        epAttack = 0;
+                    }
                 }
                 moves = addTargetsAsMove(epAttack, fromSq, moves, [](int){ return MoveType::EP_CAPTURE; }, [](int, int){ return true; }, false);
             }

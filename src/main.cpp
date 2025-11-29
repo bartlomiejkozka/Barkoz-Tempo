@@ -22,9 +22,9 @@ int main()
 
     board.init();
 
-    board.loadFromFEN("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 0");
+    board.loadFromFEN("8/2p5/3p4/KP5r/1R3p1k/8/4P1P1/8 w - - 0 1 ");
 
-    std::string m  = "d2e3";
+    std::string m  = "g2g4";
     std::string m1 = "a6e2";
     std::string m2 = "e1d2";
     std::string m3 = "g7h6";
@@ -32,7 +32,7 @@ int main()
     std::string m5 = "g7g5";
 
     auto fromTo = std::make_pair(static_cast<int>(SimpleParser::parseMoveString(m).from), static_cast<int>(SimpleParser::parseMoveString(m).to));
-    Move mv(fromTo.first, fromTo.second, MoveType::QUIET);
+    Move mv(fromTo.first, fromTo.second, MoveType::DOUBLE_PUSH);
     // rules._board.makeMove(mv);
     fromTo = std::make_pair(static_cast<int>(SimpleParser::parseMoveString(m1).from), static_cast<int>(SimpleParser::parseMoveString(m1).to));
     Move mv1(fromTo.first, fromTo.second, MoveType::CAPTURE);
