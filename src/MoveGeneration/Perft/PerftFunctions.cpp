@@ -31,7 +31,7 @@ uint64_t Perft(int depth, ChessRules &rules, PerftStats &stats)
     }
 
     // bool fuck = false;
-    // if ((rules._board.shortMem[rules._board.ply].move >> 10) == 36)
+    // if ((rules._board.shortMem[rules._board.ply].move >> 10) == 50)
     // {
     //     fuck = true;
     // }

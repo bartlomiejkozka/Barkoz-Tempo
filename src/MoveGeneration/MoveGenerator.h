@@ -208,7 +208,9 @@ template<Gen G, Piece P,
                 if (uint64_t capture = targets & rules._board.bbThem() & AttackerAndEvasionPath.first; 
                     capture)
                 {
-                    *moves++ = Move(fromSq, std::countr_zero(capture), MoveType::CAPTURE);
+                    // *moves++ = Move(fromSq, std::countr_zero(capture), MoveType::CAPTURE);
+                    moves = addTargetsAsMove(capture, fromSq, moves, [](int){ return MoveType::CAPTURE; }, 
+                        [&](int sq, int originSq){ return allow(sq, originSq); }, isPromotion);
                 }
                 // covers King
                 if (AttackerAndEvasionPath.second)
@@ -223,7 +225,7 @@ template<Gen G, Piece P,
         // optional post-processing hook (e.g., castling, pawn double push)
         if constexpr ( !std::is_same_v<PostFn, std::nullptr_t>)
         {
-            moves = post(fromSq, moves, pinned, kingSq, AttackerAndEvasionPath.second);
+            moves = post(fromSq, moves, pinned, kingSq, AttackerAndEvasionPath);
         }
     }
 
@@ -246,7 +248,7 @@ template<Gen G>
         [&rules] (int fromSq) { return KingPattern::getMoves(static_cast<size_t>(fromSq), rules._board.bbUs()); },
         [&rules] (int sq, int fromSq) { return !rules.isAttackedTo(sq, rules._board.sideToMove, rules._board.bbUs()^bitBoardSet(fromSq)); },
         // post -> add castling moves to quiet moves
-        [&rules] (int fromSq, Move *moves, uint64_t, int, uint64_t) 
+        [&rules] (int fromSq, Move *moves, uint64_t, int, std::pair<uint64_t, uint64_t>) 
         {
             if constexpr ( GenTraits<G>::Quiets )
             {
@@ -326,7 +328,7 @@ template<Gen G>
         },
         [] (int, int) { return true; },
         // post -> add Dbl Pushes & Ep attacks
-        [&rules] (int fromSq, Move *moves, uint64_t pinned, int kingSq, uint64_t AttackerAndEvasionPath)
+        [&rules] (int fromSq, Move *moves, uint64_t pinned, int kingSq, std::pair<uint64_t, uint64_t> AttackerAndEvasionPath)
         {
             if constexpr ( GenTraits<G>::Quiets )
             {
@@ -340,16 +342,24 @@ template<Gen G>
 
             if constexpr ( GenTraits<G>::Evasions )
             {
-                if (AttackerAndEvasionPath)
+                if (AttackerAndEvasionPath.second)
                 {
                     uint64_t dblPushes = static_cast<bool>(rules._board.sideToMove) ? BlackPawnMap::getDblPushTargets(fromSq, rules._board.fullBoard()) :  WhitePawnMap::getDblPushTargets(fromSq, rules._board.fullBoard());
-                    uint64_t evasions = dblPushes & ~rules._board.bbThem() & AttackerAndEvasionPath;
-                    moves = addTargetsAsMove(evasions, fromSq, moves, [](int){ return MoveType::QUIET; }, [](int, int){ return true; }, false);
-
-                    uint64_t epAttack = static_cast<bool>(rules._board.sideToMove) ? BlackPawnMap::getEpAttackTarget(fromSq, rules._board.enPassant) : WhitePawnMap::getEpAttackTarget(fromSq, rules._board.enPassant);
-                    uint64_t evasionsEp = epAttack & ~rules._board.bbThem() & AttackerAndEvasionPath;
-                    moves = addTargetsAsMove(evasionsEp, fromSq, moves, [](int){ return MoveType::EP_CAPTURE; }, [](int, int){ return true; }, false);
+                    if ( bitBoardSet(fromSq) & pinned )
+                    {
+                        dblPushes = rules.getNotPinnedTargets(dblPushes, kingSq, fromSq, Piece::Pawn);
                     }
+                    uint64_t evasions = dblPushes & ~rules._board.bbThem() & AttackerAndEvasionPath.second;
+                    moves = addTargetsAsMove(evasions, fromSq, moves, [](int){ return MoveType::DOUBLE_PUSH; }, [](int, int){ return true; }, false);
+                }
+                uint64_t epAttack = static_cast<bool>(rules._board.sideToMove) ? BlackPawnMap::getEpAttackTarget(fromSq, rules._board.enPassant) : WhitePawnMap::getEpAttackTarget(fromSq, rules._board.enPassant);
+                if ( bitBoardSet(fromSq) & pinned )
+                {
+                    epAttack = rules.getNotPinnedTargets(epAttack, kingSq, fromSq, Piece::Pawn);
+                }
+                uint64_t epAttackSq = static_cast<bool>(rules._board.sideToMove) ? (AttackerAndEvasionPath.first >> 8) : (AttackerAndEvasionPath.first << 8); 
+                uint64_t evasionsEp = epAttack & ~rules._board.bbThem() & (AttackerAndEvasionPath.second | epAttackSq);
+                moves = addTargetsAsMove(evasionsEp, fromSq, moves, [](int){ return MoveType::EP_CAPTURE; }, [](int, int){ return true; }, false);
             }
 
             if constexpr ( GenTraits<G>::Captures )
@@ -363,7 +373,7 @@ template<Gen G>
                 else if (epAttack)
                 {
                     uint64_t striked = static_cast<bool>(rules._board.sideToMove) ? (epAttack << 8) : (epAttack >> 8);
-                    uint64_t pinner = Rook::getMoves(kingSq, rules._board.bbUs()^bitBoardSet(fromSq), rules._board.bbThem()^striked) & (rules._board.bbThem(Piece::Rook) | rules._board.bbThem(Piece::Queen));
+                    uint64_t pinner = Rook::getMoves(kingSq, rules._board.bbUs()^bitBoardSet(fromSq)^epAttack, rules._board.bbThem()^striked) & (rules._board.bbThem(Piece::Rook) | rules._board.bbThem(Piece::Queen));
                     if ( pinner )
                     {
                         epAttack = 0;

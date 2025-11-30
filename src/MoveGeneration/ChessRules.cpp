@@ -105,12 +105,13 @@
 
 [[nodiscard]] uint64_t ChessRules::getNotPinnedTargets(uint64_t targets, int kingSq, int fromSq, [[maybe_unused]] Piece p)
 {
+    //TODO: review and correct/simplify this function, is variable "makeSureRightPinner" necessary?
     uint64_t legalTargets = 0;
     while ( targets )
     {
         uint64_t targetSq = minBitSet << pop_1st(targets);
         // uint64_t pinner = xrayAttacks<Queen::getMoves>(kingSq, _board.bbUs()^bitBoardSet(fromSq)^targetSq, _board.bbThem(), targetSq);
-        uint64_t pinner = Queen::getMoves(kingSq, _board.bbUs()^bitBoardSet(fromSq), _board.bbThem()); 
+        uint64_t pinner = Queen::getMoves(kingSq, _board.bbUs()^bitBoardSet(fromSq), _board.bbThem()) ^ Queen::getMoves(kingSq, _board.bbUs(), _board.bbThem()); 
         pinner &= (_board.bbThem(Piece::Rook) | _board.bbThem(Piece::Bishop) | _board.bbThem(Piece::Queen));
 
         uint64_t makeSureRightPinner = 0xffffffffffffffff;

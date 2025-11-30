@@ -202,16 +202,16 @@ void Board::makeMove(Move &m)
     }
     if (bb == (std::to_underlying(PieceDescriptor::bRook) - WM)) 
     {
-        if (originSq == WhiteRookKingPos || originSq == BlackRookKingPos)
+        if (((originSq == WhiteRookKingPos) && (sideToMove == pColor::White)) || ((originSq == BlackRookKingPos) && (sideToMove == pColor::Black)))
             clearMask |= static_cast<bool>(sideToMove) ? 0x02 : 0x08; 
-        else if (originSq == WhiteRookQueenPos || originSq == BlackRookQueenPos)
+        else if (((originSq == WhiteRookQueenPos) && (sideToMove == pColor::White)) || ((originSq == BlackRookQueenPos) && (sideToMove == pColor::Black)))
             clearMask |= static_cast<bool>(sideToMove) ? 0x01 : 0x04;
     }
     if (bbCaptured && (bbCaptured == (std::to_underlying(PieceDescriptor::wRook) + WM))) 
     {
-        if (targetSq == WhiteRookKingPos || targetSq == BlackRookKingPos)
+        if (((targetSq == WhiteRookKingPos) && (sideToMove == pColor::Black)) || ((targetSq == BlackRookKingPos) && (sideToMove == pColor::White)))
             clearMask |= static_cast<bool>(sideToMove) ? 0x08 : 0x02; 
-        else if (targetSq == WhiteRookQueenPos || targetSq == BlackRookQueenPos)
+        else if (((targetSq == WhiteRookQueenPos) && (sideToMove == pColor::Black)) || ((targetSq == BlackRookQueenPos) && (sideToMove == pColor::White)))
             clearMask |= static_cast<bool>(sideToMove) ? 0x04 : 0x01;
     }
     if (clearMask) 
