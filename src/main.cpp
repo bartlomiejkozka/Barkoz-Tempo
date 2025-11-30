@@ -22,7 +22,7 @@ int main()
 
     board.init();
 
-    board.loadFromFEN("r3k2r/Pppp1ppp/1b3nbN/nP6/BBP1P3/q4N2/Pp1P2PP/R2Q1RK1 w kq - 0 1");
+    board.loadFromFEN("r4rk1/1pp1qppp/p1np1n2/2b1p1B1/2B1P1b1/P1NP1N2/1PP1QPPP/R4RK1 w - - 0 10");
 
     std::string m  = "c4c5";
     std::string m1 = "e8e7";
@@ -50,7 +50,7 @@ int main()
     Move mv5(fromTo.first, fromTo.second, 0);
     // rules._board.makeMove(mv5);
 
-    uint64_t nodes = PerftDivide(6, rules, perft_stats);
+    uint64_t nodes = PerftDivide(5, rules, perft_stats);
 
     perft_stats.print();
 

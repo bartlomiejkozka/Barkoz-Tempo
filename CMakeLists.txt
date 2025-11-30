@@ -29,6 +29,8 @@ set(MODULE_DIRS
 	src/StateInfo
 	src/MoveGeneration/MoveParser
 	src/MoveGeneration/Perft
+	src/Search
+	src/Evaluation
 )
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src)
@@ -44,6 +46,7 @@ target_link_libraries(Barkoz-Tempo
         MoveGeneration
 		PieceMap
 		MoveParser
+		Search
 )
 
 
