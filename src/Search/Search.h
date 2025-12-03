@@ -8,9 +8,9 @@
 #ifndef SEARCH_H
 #define SEARCH_H
 
-#include "Evaluation.h"
 #include "MoveGeneration/ChessRules.hpp"
 
-[[nodiscard]] int negaMax(int depth, ChessRules &rules, int alpha, int beta, Evaluation &eval);
+
+[[nodiscard]] int negaMax(int depth, ChessRules &rules, int alpha, int beta);
 
 #endif

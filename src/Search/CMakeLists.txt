@@ -3,6 +3,6 @@ add_library(Search
 )
 
 target_link_libraries(Search
-    PUBLIC Evaluation
+    PRIVATE Evaluation
     PUBLIC MoveGeneration
 )

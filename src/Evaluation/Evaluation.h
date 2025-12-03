@@ -10,9 +10,8 @@
 
 #include "MoveGeneration/ChessRules.hpp"
 
-class Evaluation
+struct Evaluation
 {
-public:
     // --------------------
     // Weights
     // --------------------
@@ -24,23 +23,13 @@ public:
     static constexpr int KnightWt  = 3;
     static constexpr int PawnWt    = 1;
 
-    // --------------------
-    // Initializer
-    // --------------------
-
-    explicit Evaluation(ChessRules &rules)
-        : _rules{rules} {}
+    static constexpr int MobilityWt = 1;
 
     // --------------------
     // Evaluator
     // --------------------
     
-    [[nodiscard]] int evaluate() const;
-
-    [[nodiscard]] int Pdiff(Piece piece) const;
-
-
-    ChessRules &_rules;
+    [[nodiscard]] static int evaluate(ChessRules &rules);
 };
 
 #endif

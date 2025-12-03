@@ -7,20 +7,20 @@
 
 #include "Evaluation.h"
 #include "BitOperation.hpp"
-#include "Board.hpp"
+#include "MoveGeneration/ChessRules.hpp"
 #include "MoveGeneration/MoveGenerator.h"
 
 #include <utility>
 
 
-[[nodiscard]] int Evaluation::Pdiff(Piece piece) const
+[[nodiscard]] int Evaluation::evaluate(ChessRules &rules)
 {
-    return count_1s(_rules._board.bitboards[std::to_underlying(piece)])
-        - count_1s(_rules._board.bitboards[std::to_underlying(piece) + 1]);
-}
+    auto Pdiff = [&rules] (Piece piece)
+    {
+        return count_1s(rules._board.bitboards[std::to_underlying(piece)])
+            - count_1s(rules._board.bitboards[std::to_underlying(piece) + 1]);
+    };
 
-[[nodiscard]] int Evaluation::evaluate() const
-{
     int materialScore = 
         KingWt   * Pdiff(Piece::King) +
         QueenWt  * Pdiff(Piece::Queen) +
@@ -29,7 +29,18 @@
         BishopWt * Pdiff(Piece::Bishop) +
         PawnWt   * Pdiff(Piece::Pawn);
 
-    // int mobilityScore = 
+    auto getMobilityFor = [&rules](pColor color) {
+        rules._board.sideToMove = color;
+        return MoveGen::generateLegalMoves(rules, nullptr);
+    };
 
-    return materialScore;
+    const pColor originalSide = rules._board.sideToMove;
+    int whiteMobility = getMobilityFor(pColor::White);
+    int blackMobility = getMobilityFor(pColor::Black);
+    rules._board.sideToMove = originalSide;
+    
+    int mobilityScore = MobilityWt * (whiteMobility - blackMobility);
+
+    return (materialScore + mobilityScore)
+        * (static_cast<bool>(rules._board.sideToMove) ? -1 : 1);
 }

@@ -7,7 +7,6 @@ target_include_directories(Evaluation
 )
 
 target_link_libraries(Evaluation
-    PUBLIC BitOperation
+    PRIVATE BitOperation
     PUBLIC MoveGeneration
-    PUBLIC Board
 )

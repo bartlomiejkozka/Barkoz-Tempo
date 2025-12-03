@@ -11,21 +11,21 @@
 #include "MoveGeneration/MoveGenerator.h"
 
 
-[[nodiscard]] int negaMax(int depth, ChessRules &rules, int alpha, int beta, Evaluation &eval)
+[[nodiscard]] int negaMax(int depth, ChessRules &rules, int alpha, int beta)
 {
     if (depth == 0 /*|| rules._board.is_game_over()*/)
-        return eval.evaluate();
+        return Evaluation::evaluate(rules);
 
     std::array<Move, 256> moves;
     int moveCount = MoveGen::generateLegalMoves(rules, moves.data());
 
-    int maxScore = -1000000; // oo
+    int maxScore = -1000000;
 
     for (int i = 0; i < moveCount; ++i)
     {
         rules._board.makeMove(moves[i]);
 
-        int score = -negaMax(depth - 1, rules, -beta, -alpha, eval);
+        int score = -negaMax(depth - 1, rules, -beta, -alpha);
 
         rules._board.unmakeMove();
 
