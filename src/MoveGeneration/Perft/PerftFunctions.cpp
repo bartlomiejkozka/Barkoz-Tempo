@@ -30,11 +30,6 @@ uint64_t Perft(int depth, ChessRules &rules, PerftStats &stats)
         return 1;
     }
 
-    // bool fuck = false;
-    // if ((rules._board.shortMem[rules._board.ply].move >> 10) == 50)
-    // {
-    //     fuck = true;
-    // }
 
     std::array<Move, 256> move_list;
     int n_moves = MoveGen::generateLegalMoves(rules, move_list.data());
@@ -52,11 +47,6 @@ uint64_t Perft(int depth, ChessRules &rules, PerftStats &stats)
         nodes += Perft(depth - 1, rules, stats);
 
         rules._board.unmakeMove();
-
-        // if (fuck)
-        // {
-        //     std::cout << SimpleParser::moveToString(move_list[i].OriginSq(), move_list[i].TargetSq()) << std::endl;
-        // }
     }
 
     return nodes;

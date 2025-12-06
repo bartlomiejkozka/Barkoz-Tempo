@@ -5,7 +5,8 @@
 #include "MoveGeneration/ChessRules.hpp"
 #include "MoveGeneration/Perft/PerftFunctions.h"
 #include "MoveParser.h"
-
+#include "Search/Search.h"
+#include "Evaluation/Evaluation.h"
 
 #include <array>
 #include <iostream>
@@ -21,8 +22,9 @@ int main()
     ChessRules rules{board, perft_stats};
 
     board.init();
+    Evaluation::init(rules);
 
-    board.loadFromFEN("r4rk1/1pp1qppp/p1np1n2/2b1p1B1/2B1P1b1/P1NP1N2/1PP1QPPP/R4RK1 w - - 0 10");
+    // board.loadFromFEN("r4rk1/1pp1qppp/p1np1n2/2b1p1B1/2B1P1b1/P1NP1N2/1PP1QPPP/R4RK1 w - - 0 10");
 
     std::string m  = "c4c5";
     std::string m1 = "e8e7";
@@ -50,11 +52,11 @@ int main()
     Move mv5(fromTo.first, fromTo.second, 0);
     // rules._board.makeMove(mv5);
 
-    uint64_t nodes = PerftDivide(5, rules, perft_stats);
+    // uint64_t nodes = PerftDivide(5, rules, perft_stats);
+    // perft_stats.print();
+    // std::cout << "total nodes: " << nodes << std::endl;
 
-    perft_stats.print();
-
-    std::cout << "total nodes: " << nodes << std::endl;
+    SearchDivideMinimax(7, rules);
 
     return 0;
 }

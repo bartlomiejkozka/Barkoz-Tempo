@@ -278,8 +278,6 @@ void Board::makeMove(Move &m)
         setBbUs( Piece::Rook,  WM ? WhiteRookQueenPos : BlackRookQueenPos);
         setBbUs(Piece::Rook, targetSq << 1);
         newPoshHash ^= PieceMap::pieceMap[std::to_underlying(PieceDescriptor::bRook) - WM - align][std::countr_zero(targetSq << 3)];
-
-        // castlingRights ^= static_cast<bool>(sideToMove) ? 0x02 : 0x0c;
     }
     else if ( m.isKingCastle() )
     {
@@ -287,8 +285,6 @@ void Board::makeMove(Move &m)
         setBbUs( Piece::Rook,  WM ? WhiteRookKingPos : BlackRookKingPos);
         setBbUs(Piece::Rook, targetSq >> 1);
         newPoshHash ^= PieceMap::pieceMap[std::to_underlying(PieceDescriptor::bRook) - WM - align][std::countr_zero(targetSq >> 2)];
-    
-        // castlingRights ^= static_cast<bool>(sideToMove) ? 0x02 : 0x0c;
     }
 
     recomputeSideOccupancies();

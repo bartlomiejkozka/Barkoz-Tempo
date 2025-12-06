@@ -31,7 +31,8 @@
 
     auto getMobilityFor = [&rules](pColor color) {
         rules._board.sideToMove = color;
-        return MoveGen::generateLegalMoves(rules, nullptr);
+        std::array<Move, 256> dummyMoves;
+        return MoveGen::generateLegalMoves(rules, dummyMoves.data());
     };
 
     const pColor originalSide = rules._board.sideToMove;
@@ -41,6 +42,12 @@
     
     int mobilityScore = MobilityWt * (whiteMobility - blackMobility);
 
-    return (materialScore + mobilityScore)
-        * (static_cast<bool>(rules._board.sideToMove) ? -1 : 1);
+    return (materialScore + mobilityScore);
+        // * (static_cast<bool>(rules._board.sideToMove) ? -1 : 1);
+}
+
+void Evaluation::init(ChessRules &rules)
+{
+    rules._board.currentScore = evaluate(rules);
+    rules._board.shortMem[rules._board.ply].score = rules._board.currentScore;
 }

@@ -16,14 +16,20 @@ struct Evaluation
     // Weights
     // --------------------
 
-    static constexpr int KingWt    = 200;
-    static constexpr int QueenWt   = 9;
-    static constexpr int RookWt    = 5;
-    static constexpr int BishopWt  = 3;
-    static constexpr int KnightWt  = 3;
-    static constexpr int PawnWt    = 1;
+    static constexpr int KingWt    = 20000;
+    static constexpr int QueenWt   = 900;
+    static constexpr int RookWt    = 500;
+    static constexpr int BishopWt  = 300;
+    static constexpr int KnightWt  = 300;
+    static constexpr int PawnWt    = 100;
 
-    static constexpr int MobilityWt = 1;
+    static constexpr int MobilityWt = 10;
+
+    // --------------------
+    // Initialization           have to be called just after Board::init()
+    // --------------------
+
+    static void init(ChessRules &rules);
 
     // --------------------
     // Evaluator

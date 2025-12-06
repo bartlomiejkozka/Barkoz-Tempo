@@ -66,6 +66,7 @@ struct Undo
     PieceDescriptor capturedPiece; // type+color of captured piece, 0 if none
     uint16_t move;                 // packedMove
     uint64_t moveHash;
+    int score;
 };
 
 // TODO:
@@ -155,6 +156,12 @@ public:
     size_t ply = 0;                             // half move idx of history array;
 
     std::vector<Undo> gameHistory;  // all game move history
+
+    // ---------------------------------
+    // Score
+    // ---------------------------------
+
+    int currentScore;   // have to be init to base position (now in Evaluation class)
 
     // ---------------------------------
     // Move make

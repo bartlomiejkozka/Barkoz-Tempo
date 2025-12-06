@@ -13,4 +13,8 @@
 
 [[nodiscard]] int negaMax(int depth, ChessRules &rules, int alpha, int beta);
 
+[[nodiscard]] int minMax(ChessRules &rules, int depth, int alpha, int beta, bool isMaxTurn);
+
+void SearchDivideMinimax(int depth, ChessRules &rules);
+
 #endif

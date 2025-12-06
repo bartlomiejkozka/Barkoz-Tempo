@@ -5,4 +5,5 @@ add_library(Search
 target_link_libraries(Search
     PRIVATE Evaluation
     PUBLIC MoveGeneration
+    PRIVATE MoveParser
 )
