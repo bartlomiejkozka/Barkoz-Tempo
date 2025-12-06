@@ -5,8 +5,8 @@
 #include "MoveGeneration/ChessRules.hpp"
 #include "MoveGeneration/Perft/PerftFunctions.h"
 #include "MoveParser.h"
-#include "Search/Search.h"
-#include "Evaluation/Evaluation.h"
+#include "Engine/TranspositionTable.h"
+#include "Engine/Search.h"
 
 #include <array>
 #include <iostream>
@@ -22,7 +22,10 @@ int main()
     ChessRules rules{board, perft_stats};
 
     board.init();
-    Evaluation::init(rules);
+    // Evaluation::init(rules);
+
+    auto TT = TranspositionTable();
+    auto Engine = Search(TT);
 
     // board.loadFromFEN("r4rk1/1pp1qppp/p1np1n2/2b1p1B1/2B1P1b1/P1NP1N2/1PP1QPPP/R4RK1 w - - 0 10");
 
@@ -56,7 +59,7 @@ int main()
     // perft_stats.print();
     // std::cout << "total nodes: " << nodes << std::endl;
 
-    SearchDivideMinimax(7, rules);
+    Engine.searchPosition(rules, 8);
 
     return 0;
 }

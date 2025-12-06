@@ -82,12 +82,14 @@ void Board::init()
     halfMoveClock = 0;
     ply = 0;
 
+    zobristKey = PieceMap::generatePosHash(*this);
+
     shortMem[ply].capturedPiece = PieceDescriptor::nWhite; // 0
     shortMem[ply].castling      = castlingRights;
     shortMem[ply].ep            = static_cast<int8_t>(enPassant);
     shortMem[ply].halfmove      = halfMoveClock;
     shortMem[ply].move          = 0;
-    shortMem[ply].moveHash      = PieceMap::generatePosHash(*this);
+    shortMem[ply].moveHash      = zobristKey;
 }
 
 void Board::loadFromFEN(const std::string& fen)
@@ -181,7 +183,7 @@ void Board::makeMove(Move &m)
     halfMoveClock++;
     ply++;
     
-    uint64_t newPoshHash = shortMem[ply - 1].moveHash ^ (static_cast<bool>(sideToMove) ? PieceMap::blackSideToMove : 0);
+    uint64_t newPoshHash = zobristKey ^ (static_cast<bool>(sideToMove) ? PieceMap::blackSideToMove : 0);
     auto captured = static_cast<PieceDescriptor>(0); // 0 - no capture
 
     const uint64_t originSq = minBitSet << m.OriginSq();
@@ -289,7 +291,9 @@ void Board::makeMove(Move &m)
 
     recomputeSideOccupancies();
 
-    shortMem[ply].moveHash      = newPoshHash;
+    zobristKey = newPoshHash;
+
+    shortMem[ply].moveHash      = zobristKey;
     shortMem[ply].capturedPiece = captured;
     shortMem[ply].castling      = castlingRights;
     shortMem[ply].ep            = static_cast<int8_t>(enPassant);
@@ -308,9 +312,10 @@ void Board::unmakeMove()
     pColor prevSTM = (sideToMove == pColor::White) ? pColor::Black : pColor::White;
 
     ply--;
-    halfMoveClock = shortMem[ply].halfmove;
+    halfMoveClock  = shortMem[ply].halfmove;
     castlingRights = shortMem[ply].castling;
     enPassant      = shortMem[ply].ep;
+    zobristKey     = shortMem[ply].moveHash;
     
     const uint64_t originSq = minBitSet << m.OriginSq();
     const uint64_t targetSq = minBitSet << m.TargetSq();

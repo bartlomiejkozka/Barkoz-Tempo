@@ -9,6 +9,8 @@
 #define EVALUATION_H
 
 #include "MoveGeneration/ChessRules.hpp"
+#include "Board.hpp"
+
 
 struct Evaluation
 {
@@ -36,6 +38,12 @@ struct Evaluation
     // --------------------
     
     [[nodiscard]] static int evaluate(ChessRules &rules);
+
+    // --------------------
+    // Helpers
+    // --------------------
+
+    [[nodiscard]] static int getPieceValue(PieceDescriptor piece);
 };
 
 #endif

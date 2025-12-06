@@ -140,8 +140,9 @@ public:
         It is also the LSF (Least siginificant file) representation thus the first iteration of bitboard bits is by ranks in these ranks by files.
     */
     std::array<uint64_t, bitboardCount> bitboards = {}; //indexed by PieceDescriptor enum
-    uint64_t zobristHash = 0;
+
     pColor sideToMove = pColor::White;
+
     std::unordered_map<uint64_t, uint8_t> repetitions = {}; // hash -> count
 
     // ---------------------------------
@@ -156,6 +157,12 @@ public:
     size_t ply = 0;                             // half move idx of history array;
 
     std::vector<Undo> gameHistory;  // all game move history
+
+    // ---------------------------------
+    // Hash for TT idx
+    // ---------------------------------
+
+    uint64_t zobristKey;
 
     // ---------------------------------
     // Score

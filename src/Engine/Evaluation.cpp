@@ -51,3 +51,33 @@ void Evaluation::init(ChessRules &rules)
     rules._board.currentScore = evaluate(rules);
     rules._board.shortMem[rules._board.ply].score = rules._board.currentScore;
 }
+
+[[nodiscard]] int Evaluation::getPieceValue(PieceDescriptor piece)
+{
+    switch (piece)
+    {
+        case PieceDescriptor::wPawn:
+        case PieceDescriptor::bPawn:
+            return PawnWt;
+        case PieceDescriptor::wKnight:
+        case PieceDescriptor::bKnight:
+            return KnightWt;
+        case PieceDescriptor::wBishop:
+        case PieceDescriptor::bBishop:
+            return BishopWt;
+        case PieceDescriptor::wRook:
+        case PieceDescriptor::bRook:
+            return RookWt;
+        case PieceDescriptor::wQueen:
+        case PieceDescriptor::bQueen:
+            return QueenWt;
+        case PieceDescriptor::wKing:
+        case PieceDescriptor::bKing:
+            return KingWt;
+        default:
+        {
+            std::unreachable();
+            return 0;
+        }
+    }
+}
