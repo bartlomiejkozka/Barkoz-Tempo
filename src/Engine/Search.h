@@ -12,12 +12,26 @@
 #include "TranspositionTable.h"
 #include "MoveGeneration/Move.hpp"
 
+#include <atomic>
+#include <chrono>
+
 class Search
 {
 private:
     TranspositionTable &_TT;
+    std::chrono::steady_clock::time_point startTime;
+    int allocatedTime;
+    uint64_t nodes;         // nodes counter
+
+    void orderMoves(std::array<Move, 256> &moves, int count, Move hashMove, ChessRules& rules);
+
+    [[nodiscard]] int minMax(ChessRules &rules, int depth, int alpha, int beta, bool isMaxTurn);
+
+    void checkTime();
 
 public:
+    std::atomic<bool> stopRequest = false;
+
     // ---------------------
     // Initizaliztion
     // ---------------------
@@ -29,13 +43,9 @@ public:
     // Methods
     // ---------------------
 
+    Move searchPosition(ChessRules &rules, int maxDepth, int timeInMillis);
+
     void clear() { _TT.clear(); }
-
-    void orderMoves(std::array<Move, 256> &moves, int count, Move hashMove, ChessRules& rules);
-
-    [[nodiscard]] int minMax(ChessRules &rules, int depth, int alpha, int beta, bool isMaxTurn);
-
-    Move searchPosition(ChessRules &rules, int maxDepth);
 
     void SearchDivideMinimax(int depth, ChessRules &rules);
 };

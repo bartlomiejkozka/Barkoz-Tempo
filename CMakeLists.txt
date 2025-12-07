@@ -30,6 +30,7 @@ set(MODULE_DIRS
 	src/MoveGeneration/MoveParser
 	src/MoveGeneration/Perft
 	src/Engine
+	src/Uci
 )
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src)
@@ -46,6 +47,7 @@ target_link_libraries(Barkoz-Tempo
 		PieceMap
 		MoveParser
 		Engine
+		Uci
 )
 
 

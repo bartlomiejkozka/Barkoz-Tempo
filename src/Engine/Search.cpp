@@ -81,10 +81,19 @@ void Search::orderMoves(std::array<Move, 256> &moves, int count, Move hashMove, 
     }
 }
 
-// TODO: make current Pos. score calcualtion incremental, not calculatingevery time !!!!!!!!!!!!!!!!!!!!!!!!!!
-
 [[nodiscard]] int Search::minMax(ChessRules &rules, int depth, int alpha, int beta, bool isMaxTurn)
 {
+    nodes++;
+
+    if ((nodes & 2047) == 0) {
+        checkTime();
+    }
+
+    if (stopRequest) 
+    {
+        return 0;   // it does not matter what we return here
+    }
+
     using TTEntry = TranspositionTable::Entry;
     
     TTEntry ttEntry = _TT.probe(rules._board.zobristKey);
@@ -181,9 +190,14 @@ void Search::orderMoves(std::array<Move, 256> &moves, int count, Move hashMove, 
     }
 }
 
-Move Search::searchPosition(ChessRules &rules, int maxDepth) 
+Move Search::searchPosition(ChessRules &rules, int maxDepth, int timeInMillis) 
 {
     Move bestRootMove = Move{0};
+
+    stopRequest = false;
+    nodes = 0;
+    startTime = std::chrono::steady_clock::now();
+    allocatedTime = timeInMillis;
 
     bool isMaxTurn = (rules._board.sideToMove == pColor::White);
 
@@ -191,6 +205,11 @@ Move Search::searchPosition(ChessRules &rules, int maxDepth)
     {
         int score = minMax(rules, depth, -INF, INF, isMaxTurn);
         
+        if (stopRequest)
+        {
+            break;
+        }
+
         using Entry = TranspositionTable::Entry;
         Entry ttEntry = _TT.probe(rules._board.zobristKey);
 
@@ -263,5 +282,21 @@ void Search::SearchDivideMinimax(int depth, ChessRules &rules)
     if (foundAny) {
         std::cout << "Best Move: " << SimpleParser::moveToString(bestMove.OriginSq(), bestMove.TargetSq()) 
                   << " (Score: " << bestScore << ")\n";
+    }
+}
+
+void Search::checkTime() 
+{
+    if (stopRequest) return;
+
+    if (allocatedTime > 0)
+    {
+        auto now = std::chrono::steady_clock::now();
+        auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(now - startTime).count();
+        
+        if (elapsed >= allocatedTime) 
+        {
+            stopRequest = true;
+        }
     }
 }

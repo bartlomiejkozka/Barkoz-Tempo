@@ -106,11 +106,3 @@ std::string SimpleParser::moveToString(uint16_t from, uint16_t to, char promotio
 
     return s;
 }
-
-MoveType SimpleParser::promotionStringToType(char promotion)
-{
-    switch (promotion)
-    {
-        case 'q': return MoveType::
-    }
-}

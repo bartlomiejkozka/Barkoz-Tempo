@@ -29,6 +29,41 @@ public:
     static std::string moveToString(uint16_t from, uint16_t to, char promotion = '\0');
 
     static MoveType promotionStringToType(char promotion);
+
+    template<bool isCapture>
+    static MoveType promotionStringToType(char promotion)
+    {
+        if constexpr (isCapture)
+        {
+            switch (promotion)
+            {
+                case 'q': return MoveType::Q_PROM_CAP;
+                case 'r': return MoveType::R_PROM_CAP;
+                case 'b': return MoveType::B_PROM_CAP;
+                case 'n': return MoveType::KN_PROM_CAP;
+                default:
+                {
+                    std::unreachable();
+                    return MoveType::QUIET;
+                }
+            }
+        }
+        else
+        {
+            switch (promotion)
+            {
+                case 'q': return MoveType::Q_PROM;
+                case 'r': return MoveType::R_PROM;
+                case 'b': return MoveType::B_PROM;
+                case 'n': return MoveType::KN_PROM;
+                default:
+                {
+                    std::unreachable();
+                    return MoveType::QUIET;
+                }
+            }
+        }
+    }
 };
 
 #endif // SIMPLEPARSER_HPP
