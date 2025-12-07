@@ -29,6 +29,8 @@ public:
     // Methods
     // ---------------------
 
+    void clear() { _TT.clear(); }
+
     void orderMoves(std::array<Move, 256> &moves, int count, Move hashMove, ChessRules& rules);
 
     [[nodiscard]] int minMax(ChessRules &rules, int depth, int alpha, int beta, bool isMaxTurn);

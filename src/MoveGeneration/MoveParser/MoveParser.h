@@ -1,6 +1,8 @@
 #ifndef SIMPLEPARSER_HPP
 #define SIMPLEPARSER_HPP
 
+#include "MoveGeneration/Move.hpp"
+
 #include <cstdint>
 #include <string>
 #include <optional>
@@ -25,6 +27,8 @@ public:
 
     // Convert structured move to UCI string
     static std::string moveToString(uint16_t from, uint16_t to, char promotion = '\0');
+
+    static MoveType promotionStringToType(char promotion);
 };
 
 #endif // SIMPLEPARSER_HPP

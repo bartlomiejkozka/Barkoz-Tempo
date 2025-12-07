@@ -269,7 +269,6 @@ void Board::makeMove(Move &m)
             captured = static_cast<PieceDescriptor>(bbCaptured);
         }
 
-        // For now asume we do promotion only to Queen
         bitboards[bb] ^= targetSq;
         bitboards[std::to_underlying(mapPromotionType(m)) - WM] ^= targetSq;
         newPoshHash ^= PieceMap::pieceMap[std::to_underlying(mapPromotionType(m)) - WM - align][m.TargetSq()];

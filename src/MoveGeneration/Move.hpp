@@ -186,6 +186,7 @@ public:
 
     int OriginSq() { return static_cast<uint16_t>(packed_move) >> 10; }
     int TargetSq() { return (static_cast<uint16_t>(packed_move) >> 4) & 0x003F; }
+    MoveType getType()  { return static_cast<MoveType>(packed_move & 0x000f); }
 };
 
 #endif
