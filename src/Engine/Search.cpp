@@ -13,6 +13,7 @@
 #include "TranspositionTable.h"
 #include "Board.hpp"
 #include "BitOperation.hpp"
+#include "MoveParser.h"
 
 #include <limits>
 
@@ -245,6 +246,11 @@ Move Search::searchPosition(ChessRules &rules, int maxDepth, int timeInMillis)
     }
 
     std::string moveStr = SimpleParser::moveToString(bestRootMove.OriginSq(), bestRootMove.TargetSq());
+    if (char promChar = SimpleParser::promotionTypeToChar(bestRootMove.getType()); 
+        promChar != '\0')
+    { 
+        moveStr += promChar;
+    }
     std::cout << "bestmove " << moveStr << std::endl;
 
     return bestRootMove;

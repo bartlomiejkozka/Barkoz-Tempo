@@ -64,6 +64,27 @@ public:
             }
         }
     }
+
+    static char promotionTypeToChar(MoveType type)
+    {
+        switch (type)
+        {
+            case MoveType::Q_PROM:
+            case MoveType::Q_PROM_CAP:
+                return 'q';
+            case MoveType::R_PROM:
+            case MoveType::R_PROM_CAP:
+                return 'r';
+            case MoveType::B_PROM:
+            case MoveType::B_PROM_CAP:
+                return 'b';
+            case MoveType::KN_PROM:
+            case MoveType::KN_PROM_CAP:
+                return 'n';
+            default:
+                return '\0';
+        }
+    }
 };
 
 #endif // SIMPLEPARSER_HPP
