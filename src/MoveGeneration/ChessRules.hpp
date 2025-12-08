@@ -72,7 +72,7 @@ public:
 
     [[nodiscard]] uint64_t attacksTo(const int sq, const pColor movePColor) const;
 
-    [[nodiscard]] bool isAttackedTo(const int sq, const pColor movePColor, uint64_t bbUs = 0, uint64_t bbThem = 0) const;
+    [[nodiscard]] bool isAttackedTo(const int sq, const pColor movePColor, uint64_t bbUs, uint64_t bbThem) const;
 
     [[nodiscard]] const bool isPathSafe(uint64_t pathSq, const pColor movePColor) const;
 
@@ -148,7 +148,16 @@ public:
 
     [[nodiscard]] uint64_t getCastlingMoves() const;
 
-    [[nodiscard]] const bool isCheck() const { return isAttackedTo(std::countr_zero(_board.bbUs(Piece::King)), _board.sideToMove); }
+    [[nodiscard]] const bool isCheck() const 
+    {
+        // IN CASE OF EVALUATION FUNCTION, when get here we must check if King was not striked in minMax makemoves fun to not pass 0 to isAttackedTo -> Segmentation Error
+        if (_board.bbUs(Piece::King) == 0)
+        {
+            return false;
+        }
+
+        return isAttackedTo(std::countr_zero(_board.bbUs(Piece::King)), _board.sideToMove, _board.bbUs(), _board.bbThem());
+    }
 
     [[nodiscard]] const bool isDoubleCheck() const 
     {

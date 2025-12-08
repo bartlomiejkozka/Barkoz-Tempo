@@ -76,7 +76,7 @@ void Evaluation::init(ChessRules &rules)
             return KingWt;
         default:
         {
-            std::unreachable();
+            //std::unreachable();
             return 0;
         }
     }

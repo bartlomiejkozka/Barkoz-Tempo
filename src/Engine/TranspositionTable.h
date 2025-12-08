@@ -90,6 +90,11 @@ public:
 
         if (replace) 
         {
+            if (static_cast<uint16_t>(move.getPackedMove()) == 0)
+            {
+                move = entry.move;
+            }
+
             entry.key = key;
             entry.depth = depth;
             entry.score = score;

@@ -5,7 +5,8 @@
 //
 // Convert "a1" -> 0 .. "h8" -> 63
 //
-std::optional<uint16_t> SimpleParser::squareFromString(const std::string &sqstr) {
+std::optional<uint16_t> SimpleParser::squareFromString(const std::string &sqstr) 
+{
     if (sqstr.size() != 2)
         return std::nullopt;
 
@@ -27,7 +28,8 @@ std::optional<uint16_t> SimpleParser::squareFromString(const std::string &sqstr)
 //
 // Convert 0..63 -> "a1".."h8"
 //
-std::string SimpleParser::squareToString(uint16_t sq) {
+std::string SimpleParser::squareToString(uint16_t sq) 
+{
     if (sq >= 64)
         return {};
 
@@ -45,7 +47,8 @@ std::string SimpleParser::squareToString(uint16_t sq) {
 // Parse UCI move "a2a4" or "e7e8q"
 // Returns MoveParts.valid = true on success
 //
-SimpleParser::MoveParts SimpleParser::parseMoveString(const std::string &moveStr) {
+SimpleParser::MoveParts SimpleParser::parseMoveString(const std::string &moveStr) 
+{
     MoveParts out;
     std::string s = moveStr;
 
@@ -86,7 +89,8 @@ SimpleParser::MoveParts SimpleParser::parseMoveString(const std::string &moveStr
 //
 // Convert structured move into UCI "a2a4" or "e7e8q"
 //
-std::string SimpleParser::moveToString(uint16_t from, uint16_t to, char promotion) {
+std::string SimpleParser::moveToString(uint16_t from, uint16_t to, char promotion) 
+{
     if (from >= 64 || to >= 64)
         return {};
 
@@ -96,7 +100,8 @@ std::string SimpleParser::moveToString(uint16_t from, uint16_t to, char promotio
     s += squareToString(from);
     s += squareToString(to);
 
-    if (promotion != '\0') {
+    if (promotion != '\0') 
+    {
         char p = static_cast<char>(std::tolower(static_cast<unsigned char>(promotion)));
         if (p == 'q' || p == 'r' || p == 'b' || p == 'n')
             s.push_back(p);

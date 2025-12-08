@@ -89,36 +89,40 @@ void UCI::parsePosition(std::istringstream& ss)
             int to = parsedMove.to;
             char promotion = parsedMove.promotion;
 
-            MoveType moveType;
+            MoveType moveType = MoveType::QUIET;
             std::array<Move, 256> moves;
-            MoveGen::generateLegalMoves(rules, moves.data());
+            int movesCount = MoveGen::generateLegalMoves(rules, moves.data());
             bool moveFound = false;
 
-            for (auto move : moves)
+            for (int i = 0; i < movesCount; ++i)
             {
-                if (move.OriginSq() == from && move.TargetSq() == to)
+                if (moves[i].OriginSq() == from && moves[i].TargetSq() == to)
                 {
                     if (promotion != '\0')
                     {
                         MoveType promCap = SimpleParser::promotionStringToType<true>(promotion);
                         MoveType prom = SimpleParser::promotionStringToType<false>(promotion);
                         
-                        if (move.getType() == promCap || move.getType() == prom)
+                        if (moves[i].getType() == promCap || moves[i].getType() == prom)
                         {
-                            moveType = move.getType();
+                            moveType = moves[i].getType();
                             moveFound = true;
                             break;
                         }
                     }
                     else
                     {
-                        moveType = move.getType();
+                        moveType = moves[i].getType();
                         moveFound = true;
                         break;
                     }
                 }
             }
-            if (!moveFound) std::unreachable();
+            if (!moveFound) 
+            {
+                std::cerr << "Blad: Otrzymano nielegalny ruch UCI: " << token << std::endl;
+                break;
+            }
 
             Move mv = Move{from, to, moveType};
             rules._board.makeMove(mv);
@@ -147,7 +151,8 @@ void UCI::parseGo(std::istringstream& ss)
     
     if (movetime != -1) 
     {
-        timeForMove = movetime;
+        timeForMove = movetime - 50;
+        if (timeForMove < 10) timeForMove = 10;
     } 
     else if (wtime > 0 || btime > 0)
     {

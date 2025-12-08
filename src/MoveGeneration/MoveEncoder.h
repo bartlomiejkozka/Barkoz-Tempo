@@ -31,7 +31,7 @@ struct MoveEncoder
         {
         }
 
-        std::unreachable();
+        // std::unreachable();
         return MoveType::QUIET; //  this is not valid response !!!
     }
 };

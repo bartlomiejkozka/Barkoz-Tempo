@@ -115,6 +115,25 @@ void Search::orderMoves(std::array<Move, 256> &moves, int count, Move hashMove, 
     std::array<Move, 256> moves;
     int moveCount = MoveGen::generateLegalMoves(rules, moves.data());
 
+    if (moveCount == 0)
+    {
+        // Mate
+        if (rules.isCheck()) 
+        {
+            const int MATE_SCORE = 100000; 
+
+            if (isMaxTurn) 
+                return -MATE_SCORE - depth;
+            else 
+                return MATE_SCORE + depth;
+        }
+        // Pat
+        else 
+        {
+            return 0;
+        }
+    }
+
     // order Moves
     orderMoves(moves, moveCount, hashMove, rules);
 
@@ -219,10 +238,10 @@ Move Search::searchPosition(ChessRules &rules, int maxDepth, int timeInMillis)
         }
 
         std::string moveStr = SimpleParser::moveToString(bestRootMove.OriginSq(), bestRootMove.TargetSq());
-        std::cout << "info depth " << depth 
-                  << " score " << ttEntry.score 
-                  << " pv " << moveStr
-                  << std::endl;
+        std::cout << " info depth " << depth;
+        std::cout << " score cp " << ttEntry.score;
+        std::cout << " nodes " << nodes;
+        std::cout << " pv " << moveStr << std::endl;
     }
 
     std::string moveStr = SimpleParser::moveToString(bestRootMove.OriginSq(), bestRootMove.TargetSq());

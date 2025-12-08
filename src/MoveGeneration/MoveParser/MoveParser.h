@@ -43,7 +43,7 @@ public:
                 case 'n': return MoveType::KN_PROM_CAP;
                 default:
                 {
-                    std::unreachable();
+                    // std::unreachable();
                     return MoveType::QUIET;
                 }
             }
@@ -58,7 +58,7 @@ public:
                 case 'n': return MoveType::KN_PROM;
                 default:
                 {
-                    std::unreachable();
+                    // std::unreachable();
                     return MoveType::QUIET;
                 }
             }

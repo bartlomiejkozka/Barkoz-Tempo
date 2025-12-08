@@ -246,7 +246,7 @@ template<Gen G>
         rules,
         moves,
         [&rules] (int fromSq) { return KingPattern::getMoves(static_cast<size_t>(fromSq), rules._board.bbUs()); },
-        [&rules] (int sq, int fromSq) { return !rules.isAttackedTo(sq, rules._board.sideToMove, rules._board.bbUs()^bitBoardSet(fromSq)); },
+        [&rules] (int sq, int fromSq) { return !rules.isAttackedTo(sq, rules._board.sideToMove, rules._board.bbUs()^bitBoardSet(fromSq), rules._board.bbThem()); },
         // post -> add castling moves to quiet moves
         [&rules] (int fromSq, Move *moves, uint64_t, int, std::pair<uint64_t, uint64_t>) 
         {

@@ -66,9 +66,6 @@
 
 [[nodiscard]] bool ChessRules::isAttackedTo(const int sq, const pColor attackedPColor, uint64_t bbUs, uint64_t bbThem) const
 {
-    if ( !bbUs ) bbUs = _board.bbUs();
-    if ( !bbThem) bbThem = _board.bbThem();
-
     const uint64_t queen = Queen::getMoves(sq, bbUs, bbThem) & _board.bbThem(Piece::Queen);
     if (queen) return true;
 
@@ -90,12 +87,12 @@
     return false;
 }
 
-[[nodiscard]] const bool ChessRules:: isPathSafe(uint64_t pathSq, const pColor movePColor) const
+[[nodiscard]] const bool ChessRules::isPathSafe(uint64_t pathSq, const pColor movePColor) const
 {
     while (pathSq)
     {
         int sq = pop_1st(pathSq);
-        if (isAttackedTo(sq, movePColor))
+        if (isAttackedTo(sq, movePColor, _board.bbUs(), _board.bbThem()))
         {
             return false;
         }
@@ -137,6 +134,9 @@
 
 [[nodiscard]] uint64_t ChessRules::getAllPins(int sq) const
 {
+    // TEMP RES FOR SEG-ERR same depth and pos as in another file
+    if (sq == 64) return 0;
+
     return getPins<Bishop::getMoves, Sliders::Bishop>(sq)
         | getPins<Rook::getMoves, Sliders::Rook>(sq);
 }

@@ -190,8 +190,26 @@ void Board::makeMove(Move &m)
     const uint64_t targetSq = minBitSet << m.TargetSq();
 
     const size_t bb = getBitboard(originSq);
+    if (bb == 0)
+    {
+        // temp resolution for bag:
+        // position: position fen 1kb1r3/1p1q2pp/r4p2/p7/7P/b1P2N2/P2B1PP1/2RK3R w - - 1 39
+        // depth: 7
+        // action: bb = 0
+        return;
+    }
+
     size_t bbCaptured = m.isAnyCapture() ? getBitboard(targetSq) : 0;
     if ( m.isEpCapture() ) bbCaptured = getBitboard( bitBoardSet(m.TargetSq() + (static_cast<bool>(sideToMove) ? 8 : -8 )) );
+
+    if (m.isCapture() && bbCaptured == 0)
+    {
+        // temp resolution for bag:
+        // position: position fen 2r1k1nr/1p3pp1/p1p1p3/b3nq1p/3P4/Q3PP2/1K2N2P/1R3BR1 b k - 7 26
+        // depth: 8
+        // action: bbCapture = 0 while ep Capture is move 
+        return;
+    }
 
     const size_t WM = static_cast<bool>(sideToMove) ? 0 : 1;   // is white to move -? when yes bbIdx = bbIdx - 1
 
@@ -368,6 +386,7 @@ size_t Board::getBitboard(const uint64_t sq) const
         if ( sq & bitboards[i] ) return i;
     }
 
+    // here returning 0 could lead to acessing some array out of index -> Segmention fault !!!
     // std::unreachable();
     return 0;
 }
@@ -411,6 +430,6 @@ void Board::recomputeSideOccupancies()
     else if ( m.isRokkPromo()   || m.isRookPromoCapture()   ) return PieceDescriptor::bRook;
     else if ( m.isQueenPromo()  || m.isQueenPromoCapture()  ) return PieceDescriptor::bQueen;
 
-    std::unreachable();
+    //std::unreachable();
     return PieceDescriptor::nWhite;
 }
