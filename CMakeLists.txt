@@ -77,3 +77,8 @@ target_link_libraries(
 
 include(GoogleTest)
 gtest_discover_tests(moveUtility_test)
+
+# functional_tests - pytests - perft
+
+add_subdirectory(extern/pybind11)
+add_subdirectory(tests/functional_tests/perft/cpp_bindings)
