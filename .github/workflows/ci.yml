@@ -25,7 +25,7 @@ jobs:
         run: mkdir build
 
       - name: CMake configuration
-        run: cmake ..
+        run: cmake -DBUILD_PYTHON_BINDINGS=ON ..
         working-directory: build
 
       - name: Build
