@@ -90,11 +90,6 @@ void Search::orderMoves(std::array<Move, 256> &moves, int count, Move hashMove, 
         checkTime();
     }
 
-    if (stopRequest) 
-    {
-        return 0;   // it does not matter what we return here
-    }
-
     using TTEntry = TranspositionTable::Entry;
     
     TTEntry ttEntry = _TT.probe(rules._board.zobristKey);
@@ -152,6 +147,8 @@ void Search::orderMoves(std::array<Move, 256> &moves, int count, Move hashMove, 
 
             rules._board.unmakeMove();
 
+            if (stopRequest) return 0;
+
             if (score > maxScore)
             {
                 maxScore = score;
@@ -186,6 +183,8 @@ void Search::orderMoves(std::array<Move, 256> &moves, int count, Move hashMove, 
             int score = minMax(rules, depth - 1, alpha, beta, true);
 
             rules._board.unmakeMove();
+
+            if (stopRequest) return 0;
 
             if (score < minScore)
             {
@@ -235,7 +234,25 @@ Move Search::searchPosition(ChessRules &rules, int maxDepth, int timeInMillis)
 
         if (ttEntry.isValid()) 
         {
-            bestRootMove = ttEntry.move;
+            std::array<Move, 256> legalMoves;
+            int count = MoveGen::generateLegalMoves(rules, legalMoves.data());
+            
+            bool isLegal = false;
+            for(int i=0; i<count; ++i) 
+            {
+                if (legalMoves[i].OriginSq() == ttEntry.move.OriginSq() &&
+                    legalMoves[i].TargetSq() == ttEntry.move.TargetSq()) 
+                {
+                    bestRootMove = legalMoves[i]; 
+                    isLegal = true;
+                    break;
+                }
+            }
+
+            if (!isLegal && bestRootMove.getPackedMove() == 0 && count > 0) 
+            {
+                bestRootMove = legalMoves[0];
+            }
         }
 
         std::string moveStr = SimpleParser::moveToString(bestRootMove.OriginSq(), bestRootMove.TargetSq());

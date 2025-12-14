@@ -61,7 +61,7 @@ class WhitePawnMap {
 
     [[nodiscard("PURE FUN")]] static constexpr uint64_t getEpAttackTarget(const int originSq, const int ep) 
     { 
-        if (0 == ep) return 0ULL;
+        if (-1 == ep) return 0ULL;
         return getAnyAttackTargets(originSq, bitBoardSet(ep));
     }
 

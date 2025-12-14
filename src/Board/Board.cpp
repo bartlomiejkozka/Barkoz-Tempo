@@ -163,13 +163,15 @@ void Board::loadFromFEN(const std::string& fen)
     // 9. Recompute occupancies
     recomputeSideOccupancies();
 
+    zobristKey = PieceMap::generatePosHash(*this);
+
     // 10. Initialize shortMem for current ply
     shortMem[ply].capturedPiece = PieceDescriptor::nWhite; // placeholder
     shortMem[ply].castling      = castlingRights;
     shortMem[ply].ep            = static_cast<int8_t>(enPassant);
     shortMem[ply].halfmove      = halfMoveClock;
     shortMem[ply].move          = 0;
-    shortMem[ply].moveHash      = PieceMap::generatePosHash(*this);
+    shortMem[ply].moveHash      = zobristKey;
 }
 
 
@@ -179,37 +181,37 @@ void Board::loadFromFEN(const std::string& fen)
 
 void Board::makeMove(Move &m)
 {
-    enPassant = -1;
-    halfMoveClock++;
-    ply++;
-    
-    uint64_t newPoshHash = zobristKey ^ (static_cast<bool>(sideToMove) ? PieceMap::blackSideToMove : 0);
-    auto captured = static_cast<PieceDescriptor>(0); // 0 - no capture
-
+    // SAFETY CHECK, originSq sometimes not occur in any bitboard TODO
     const uint64_t originSq = minBitSet << m.OriginSq();
     const uint64_t targetSq = minBitSet << m.TargetSq();
 
     const size_t bb = getBitboard(originSq);
     if (bb == 0)
     {
-        // temp resolution for bag:
-        // position: position fen 1kb1r3/1p1q2pp/r4p2/p7/7P/b1P2N2/P2B1PP1/2RK3R w - - 1 39
-        // depth: 7
-        // action: bb = 0
-        return;
+        throw std::runtime_error("makeMove CRITICAL: Attempting to move non-existent piece (bb=0). Previous unmakeMove likely failed.");
     }
 
     size_t bbCaptured = m.isAnyCapture() ? getBitboard(targetSq) : 0;
     if ( m.isEpCapture() ) bbCaptured = getBitboard( bitBoardSet(m.TargetSq() + (static_cast<bool>(sideToMove) ? 8 : -8 )) );
 
-    if (m.isCapture() && bbCaptured == 0)
+    if (m.isAnyCapture() && bbCaptured == 0)
     {
-        // temp resolution for bag:
-        // position: position fen 2r1k1nr/1p3pp1/p1p1p3/b3nq1p/3P4/Q3PP2/1K2N2P/1R3BR1 b k - 7 26
-        // depth: 8
-        // action: bbCapture = 0 while ep Capture is move 
-        return;
+        throw std::runtime_error("makeMove CRITICAL: Capture move on empty square (ghost capture).");
     }
+
+    int oldEnPassant = enPassant;
+    auto oldCastlingRights = static_cast<uint64_t>(castlingRights);
+    enPassant = -1;
+
+    halfMoveClock++;
+    ply++;
+    
+    // Position Hash Update features (EP, MoveC, Castling)
+    uint64_t newPoshHash = zobristKey ^ (static_cast<bool>(sideToMove) ? PieceMap::blackSideToMove : 0);
+    if (oldEnPassant != -1) newPoshHash ^= PieceMap::enPassantsMap[oldEnPassant % 8];
+    while (oldCastlingRights) newPoshHash ^= PieceMap::castlingRightsMap[pop_1st(oldCastlingRights)];
+
+    auto captured = static_cast<PieceDescriptor>(0); // 0 - no capture
 
     const size_t WM = static_cast<bool>(sideToMove) ? 0 : 1;   // is white to move -? when yes bbIdx = bbIdx - 1
 
@@ -307,6 +309,10 @@ void Board::makeMove(Move &m)
     }
 
     recomputeSideOccupancies();
+
+    if (enPassant != -1) newPoshHash ^= PieceMap::enPassantsMap[enPassant % 8];
+    uint64_t currCastlingRights = castlingRights;
+    while (currCastlingRights) newPoshHash ^= PieceMap::castlingRightsMap[pop_1st(currCastlingRights)];
 
     zobristKey = newPoshHash;
 
