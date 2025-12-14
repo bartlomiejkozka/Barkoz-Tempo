@@ -94,6 +94,8 @@ void Board::init()
 
 void Board::loadFromFEN(const std::string& fen)
 {
+    if (fen.empty()) return;
+
     // 1. Reset all bitboards
     for (auto& bb : bitboards) bb = 0;
 

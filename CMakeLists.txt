@@ -2,6 +2,14 @@ cmake_minimum_required(VERSION 3.10)
 
 project(Barkoz-Tempo)
 
+option(BUILD_PYTHON_BINDINGS "Build Python bindings for testing" OFF)
+
+if(BUILD_PYTHON_BINDINGS)
+    set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+    message(STATUS "Building in test mode (Python bindings enabled, PIC ON)")
+else()
+    message(STATUS "Building in engine mode (Max performance, PIC OFF)")
+endif()
 
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -77,3 +85,10 @@ target_link_libraries(
 
 include(GoogleTest)
 gtest_discover_tests(moveUtility_test)
+
+# functional_tests - pytests - perft
+
+if(BUILD_PYTHON_BINDINGS)
+	add_subdirectory(extern/pybind11)
+	add_subdirectory(tests/functional_tests/perft/cpp_bindings)
+endif()
