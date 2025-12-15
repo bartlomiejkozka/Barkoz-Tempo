@@ -132,10 +132,10 @@ template<typename EncodeFn, typename AllowFn>
         {
             if ( isPromotion )
             {
-                MoveType mtBase = (encode(sq) == MoveType::QUIET) ? MoveType::KN_PROM : MoveType::KN_PROM_CAP;
+                MoveType mtBase = (encode(sq) == MoveType::QUIET) ? MoveType::Q_PROM : MoveType::Q_PROM_CAP;
                 for (int i = 0; i < 4; ++i)
                 {
-                    MoveType mt = static_cast<MoveType>(static_cast<int>(mtBase) + i);
+                    MoveType mt = static_cast<MoveType>(static_cast<int>(mtBase) - i);
                     *moves++ = Move(originSq, sq, mt);
                 }
             }

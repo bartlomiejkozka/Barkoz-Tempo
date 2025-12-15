@@ -25,7 +25,7 @@ struct Evaluation
     static constexpr int KnightWt  = 300;
     static constexpr int PawnWt    = 100;
 
-    static constexpr int MobilityWt = 10;
+    static constexpr int MobilityWt = 2;
 
     // --------------------
     // Initialization           have to be called just after Board::init()
