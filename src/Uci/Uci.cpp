@@ -136,6 +136,7 @@ void UCI::parseGo(std::istringstream& ss)
     int depth = -1;
     int wtime = 0, btime = 0, winc = 0, binc = 0;
     int movetime = -1;
+    int movestogo = -1;
 
     while (ss >> token) 
     {
@@ -145,6 +146,7 @@ void UCI::parseGo(std::istringstream& ss)
         else if (token == "binc") ss >> binc;
         else if (token == "depth") ss >> depth;
         else if (token == "movetime") ss >> movetime;
+        else if (token == "movestogo") ss >> movestogo;
     }
 
     int timeForMove = 0;
@@ -161,7 +163,15 @@ void UCI::parseGo(std::istringstream& ss)
         int myTime = isWhiteToMove ? wtime : btime;
         int myInc  = isWhiteToMove ? winc  : binc;
 
-        timeForMove = (myTime / 30) + myInc - 50;
+        if (movestogo != -1)
+        {
+            int movesLeft = (movestogo > 30) ? 30 : (movestogo + 1);  // add 1 for safety 
+            timeForMove = (myTime / movesLeft) + myInc - 50;
+        }
+        else
+        {
+            timeForMove = (myTime / 30) + myInc - 50;
+        }
         
         if (timeForMove < 50) timeForMove = 50;
     }

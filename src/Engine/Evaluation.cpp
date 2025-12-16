@@ -15,70 +15,84 @@
 #include <array>
 
 
+// ------- PST ----------
 namespace 
 {
+    // distninct Piece Count
+    constexpr int pDistinct = 6;
+
+    constexpr int PawnPhase = 0;
+    constexpr int KnightPhase = 1;
+    constexpr int BishopPhase = 1;
+    constexpr int RookPhase = 2;
+    constexpr int QueenPhase = 4;
+    constexpr int TotalPhase = (4*KnightPhase) + (4*BishopPhase) +
+                               (4*RookPhase) + (2*QueenPhase);
+
+    constexpr std::array<int, pDistinct> PhaseTab =
+    {
+        PawnPhase, KnightPhase, BishopPhase,
+        RookPhase, QueenPhase, 0 // 0 - King
+    };
+
+    constexpr std::array<int, pDistinct> WeightTab =
+    {
+        Evaluation::PawnWt, Evaluation::KnightWt, Evaluation::BishopWt,
+        Evaluation::RookWt, Evaluation::QueenWt, Evaluation::KingWt
+    };
+
+    int getPSTEval(int opening, int endgame, int phase)
+    {
+        return ( (opening * (256 - phase)) + (endgame * phase) ) / 256;
+    }
+
     struct ScorePair { int mg; int eg; };
     inline ScorePair getPstScore(int pieceType, int sq, int color);
-    constexpr int PhaseInc[6] = { 0, 1, 1, 2, 4, 0 }; // Pawn, Knight, Bishop, Rook, Queen, King
-    constexpr int TotalPhase = 24;
 }
 
 
 [[nodiscard]] int Evaluation::evaluate(ChessRules &rules)
 {
-    auto Pdiff = [&rules] (Piece piece)
+    // auto Pdiff = [&rules] (size_t piece)
+    // {
+    //     return count_1s(rules._board.bitboards[piece])
+    //         - count_1s(rules._board.bitboards[piece + 1]);
+    // };
+
+    int materialScore = 0;
+    int positionalScore = 0;
+
+    int currentPhase = TotalPhase;
+    std::array<int, 2> mg{};
+    std::array<int, 2> eg{};
+
+    for (int i = 0; i < pDistinct; ++i) 
     {
-        return count_1s(rules._board.bitboards[std::to_underlying(piece)])
-            - count_1s(rules._board.bitboards[std::to_underlying(piece) + 1]);
-    };
+        auto bbIdx = static_cast<size_t>((2 * i) + 2);
+        // materialScore += WeightTab[i] * Pdiff(bbIdx);
 
-    int materialScore = 
-        KingWt   * Pdiff(Piece::King) +
-        QueenWt  * Pdiff(Piece::Queen) +
-        RookWt   * Pdiff(Piece::Rook) +
-        KnightWt * Pdiff(Piece::Knight) +
-        BishopWt * Pdiff(Piece::Bishop) +
-        PawnWt   * Pdiff(Piece::Pawn);
-
-
-    // PST - Tapered Eval
-    int mgPst[2] = {0, 0}; // [0]=White, [1]=Black
-    int egPst[2] = {0, 0};
-    int gamePhase = 0;
-
-    for (int pType = 0; pType <= 5; ++pType) 
-    {
-        int phaseVal = PhaseInc[pType];
-
-        for (int color = 0; color < 2; ++color) 
+        std::array<int, 2> piecesCount{};
+        for (int color = 0; color < 2; ++color)
         {
-            PieceDescriptor pieceIndex = static_cast<PieceDescriptor>(2 * pType + color + 2);
-            uint64_t bb = rules._board.bitboards[std::to_underlying(pieceIndex)];
-
-            if (phaseVal > 0) gamePhase += std::popcount(bb) * phaseVal;
+            uint64_t bb = rules._board.bitboards[bbIdx + color];
 
             while (bb) 
             {
-                int sq = std::countr_zero(bb);
-                
-                ScorePair pst = getPstScore(pType, sq, color);
-                
-                mgPst[color] += pst.mg;
-                egPst[color] += pst.eg;
-
-                bb &= (bb - 1);
+                int sq = pop_1st(bb);
+                ScorePair pst = getPstScore(i, sq, color);
+                mg[color] += pst.mg;
+                eg[color] += pst.eg;
+                currentPhase -= PhaseTab[i];
+                piecesCount[color]++;
             }
         }
+        materialScore += WeightTab[i] * (piecesCount[0] - piecesCount[1]);
     }
 
-    int mgScorePos = mgPst[0] - mgPst[1];
-    int egScorePos = egPst[0] - egPst[1];
-
-    int mgPhase = gamePhase;
-    if (mgPhase > TotalPhase) mgPhase = TotalPhase;
-    int egPhase = TotalPhase - mgPhase;
-
-    int positionalScore = (mgScorePos * mgPhase + egScorePos * egPhase) / TotalPhase;
+    currentPhase = (currentPhase * 256 + (TotalPhase / 2)) / TotalPhase;
+    int opening = mg[0] - mg[1];
+    int endgame = eg[0] - eg[1];
+    positionalScore = getPSTEval(opening, endgame, currentPhase);
 
 
     auto getMobilityFor = [&rules](pColor color) {
@@ -95,7 +109,6 @@ namespace
     int mobilityScore = MobilityWt * (whiteMobility - blackMobility);
 
     return (materialScore + mobilityScore + positionalScore);
-        // * (static_cast<bool>(rules._board.sideToMove) ? -1 : 1);
 }
 
 void Evaluation::init(ChessRules &rules)
@@ -143,8 +156,8 @@ namespace
         98, 134,  61,  95,  68, 126, 34, -11,
         -6,   7,  26,  31,  65,  56, 25, -20,
         -14,  13,   6,  21,  23,  12, 17, -23,
-        -27,  -2,  -5,  12,  17,   6, 10, -25,
-        -26,  -4,  -4, -10,   3,   3, 33, -12,
+        -27,  -2,  -5,  25,  25,   6, 10, -25,  // modified
+        -26,  -4,  -4,  0,   3,   3, 33, -12,   // modified
         -35,  -1, -20, -23, -15,  24, 38, -22,
         0,   0,   0,   0,   0,   0,  0,   0,
     };
@@ -154,7 +167,7 @@ namespace
         178, 173, 158, 134, 147, 132, 165, 187,
         94, 100,  85,  67,  56,  53,  82,  84,
         32,  24,  13,   5,  -2,   4,  17,  17,
-        13,   9,  -3,  -7,  -7,  -8,   3,  -1,
+        13,   9,  -3,  0,  0,  -8,   3,  -1,    // modified
         4,   7,  -6,   1,   0,  -5,  -1,  -8,
         13,   8,   8,  10,  13,   0,   2,  -7,
         0,   0,   0,   0,   0,   0,   0,   0,
@@ -237,7 +250,7 @@ namespace
         -27, -27, -16, -16,  -1,  17,  -2,   1,
         -9, -26,  -9, -10,  -2,  -4,   3,  -3,
         -14,   2, -11,  -2,  -5,   2,  14,   5,
-        -35,  -8,  11,   2,   8,  15,  -3,   1,
+        -35,  -8,  11,   2,   3,  8,  -3,   1,  // modified
         -1, -18,  -9,  10, -15, -25, -31, -50,
     };
     constexpr std::array<int, 64> egQueenTable = 
@@ -274,11 +287,6 @@ namespace
         -27, -11,   4,  13,  14,   4,  -5, -17,
         -53, -34, -21, -11, -28, -14, -24, -43
     };
-
-    // constexpr int PhaseInc[6] = { 0, 1, 1, 2, 4, 0 }; // Pawn, Knight, Bishop, Rook, Queen, King
-    // constexpr int TotalPhase = 24;
-
-    // struct ScorePair { int mg; int eg; };
 
     inline ScorePair getPstScore(int pieceType, int sq, int color) 
     {
