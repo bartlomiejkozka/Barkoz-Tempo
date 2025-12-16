@@ -1,7 +1,22 @@
-# TODO:
-# - create attacksTo, attacksFrom to get isCheck, legal moves
-# - Define all chess rules required in order to generate legal moves
-# - Do legal moves generation and Perft tests
+[HIGH-PRIO]
+1. Implement Opening books
+2. Amend/Improve PST (The current implementation does not perform better then without ~ 1400 elo)
 
-# TODO[Low priority]:
-# - Label all sources with cpy rights
+
+[MED-PRIO]
+
+
+[LOW-PRIO]
+
+
+------------------- BUGS -------------------
+[HIGH-PRIO]
+1. Review why engine disconnects always just after 120th move
+2. Review why engine make illegal moves - always "a1a1" which idicate thaht engine returns 0 as bestmvoe
+    (probably lack of any legal move in position)
+
+
+[MED-PRIO]
+
+
+[LOW-PRIO]
