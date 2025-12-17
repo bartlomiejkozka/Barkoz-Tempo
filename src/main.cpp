@@ -7,6 +7,7 @@
 #include "MoveParser.h"
 #include "Engine/TranspositionTable.h"
 #include "Engine/Search.h"
+#include "Engine/Evaluation.h"
 #include "Uci/Uci.h"
 
 #include <array>
@@ -20,6 +21,7 @@ int main()
     PerftStats perft_stats{};
     ChessRules rules{board, perft_stats};
     board.init();
+    Evaluation::init();
 
     auto TT = TranspositionTable();
     auto searchEngine = Search(TT);

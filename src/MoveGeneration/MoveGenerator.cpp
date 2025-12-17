@@ -8,17 +8,16 @@
 #include "MoveGenerator.h"
 #include "Board.hpp"
 
-[[nodiscard]] int MoveGen::generateLegalMoves(ChessRules &rules, Move *moves)
+[[nodiscard]] int MoveGen::generateLegalMoves(ChessRules &rules, Move *moves, int *outMobilityScore, const int *mobilityWeights)
 {
     Move const *startMove = moves;
 
     if ( !rules.isCheck() )
     {
-        moves = generate<Gen::All>(rules, moves);
+        moves = generate<Gen::All>(rules, moves, outMobilityScore, mobilityWeights);
     }
     else
     {
-        // rules._perft_stats.checks++;
 
         if ( !rules.isDoubleCheck() )
         {
@@ -27,7 +26,6 @@
         // Double Check -> only King evasion
         else
         {
-            // rules._perft_stats.double_checks++;
             moves = getKingMoves<Gen::All>(rules, moves);
         }
     }

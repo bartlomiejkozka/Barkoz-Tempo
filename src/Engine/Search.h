@@ -25,6 +25,8 @@ private:
 
     void orderMoves(std::array<Move, 256> &moves, int count, Move hashMove, ChessRules& rules);
 
+    [[nodiscard]] int quiescence(ChessRules &rules, int alpha, int beta, bool isMaxTurn);
+
     [[nodiscard]] int minMax(ChessRules &rules, int depth, int alpha, int beta, bool isMaxTurn);
 
     void checkTime();

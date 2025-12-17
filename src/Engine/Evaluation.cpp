@@ -9,6 +9,7 @@
 #include "BitOperation.hpp"
 #include "MoveGeneration/ChessRules.hpp"
 #include "MoveGeneration/MoveGenerator.h"
+#include "Board.hpp"
 
 #include <utility>
 #include <bit>
@@ -35,10 +36,15 @@ namespace
         RookPhase, QueenPhase, 0 // 0 - King
     };
 
-    constexpr std::array<int, pDistinct> WeightTab =
+    constexpr std::array<int, pDistinct> mgMaterialWeightTab =
     {
-        Evaluation::PawnWt, Evaluation::KnightWt, Evaluation::BishopWt,
-        Evaluation::RookWt, Evaluation::QueenWt, Evaluation::KingWt
+        Evaluation::PawnWt, Evaluation::KnightWt+40, Evaluation::BishopWt+70,
+        Evaluation::RookWt-30, Evaluation::QueenWt+100, 0 /*Evaluation::KingWt*/
+    };
+    constexpr std::array<int, pDistinct> egMaterialWeightTab =
+    {
+        Evaluation::PawnWt, Evaluation::KnightWt-20, Evaluation::BishopWt-10,
+        Evaluation::RookWt+10, Evaluation::QueenWt, 0 /*Evaluation::KingWt*/
     };
 
     int getPSTEval(int opening, int endgame, int phase)
@@ -46,21 +52,16 @@ namespace
         return ( (opening * (256 - phase)) + (endgame * phase) ) / 256;
     }
 
-    struct ScorePair { int mg; int eg; };
-    inline ScorePair getPstScore(int pieceType, int sq, int color);
+    std::array<std::array<int, Board::boardSize>, Board::bitboardCount-2> mgTab{};
+    std::array<std::array<int, Board::boardSize>, Board::bitboardCount-2> egTab{};
+
+    void initPST();
 }
 
 
 [[nodiscard]] int Evaluation::evaluate(ChessRules &rules)
 {
-    // auto Pdiff = [&rules] (size_t piece)
-    // {
-    //     return count_1s(rules._board.bitboards[piece])
-    //         - count_1s(rules._board.bitboards[piece + 1]);
-    // };
-
-    int materialScore = 0;
-    int positionalScore = 0;
+    int positionalAndMaterialScore = 0;
 
     int currentPhase = TotalPhase;
     std::array<int, 2> mg{};
@@ -69,7 +70,6 @@ namespace
     for (int i = 0; i < pDistinct; ++i) 
     {
         auto bbIdx = static_cast<size_t>((2 * i) + 2);
-        // materialScore += WeightTab[i] * Pdiff(bbIdx);
 
         std::array<int, 2> piecesCount{};
         for (int color = 0; color < 2; ++color)
@@ -79,26 +79,26 @@ namespace
             while (bb) 
             {
                 int sq = pop_1st(bb);
-                ScorePair pst = getPstScore(i, sq, color);
-                mg[color] += pst.mg;
-                eg[color] += pst.eg;
+                mg[color] += mgTab[bbIdx-2][sq];
+                eg[color] += egTab[bbIdx-2][sq];
                 currentPhase -= PhaseTab[i];
                 piecesCount[color]++;
             }
         }
-        materialScore += WeightTab[i] * (piecesCount[0] - piecesCount[1]);
     }
 
     currentPhase = (currentPhase * 256 + (TotalPhase / 2)) / TotalPhase;
     int opening = mg[0] - mg[1];
     int endgame = eg[0] - eg[1];
-    positionalScore = getPSTEval(opening, endgame, currentPhase);
+    positionalAndMaterialScore = getPSTEval(opening, endgame, currentPhase);
 
 
     auto getMobilityFor = [&rules](pColor color) {
         rules._board.sideToMove = color;
         std::array<Move, 256> dummyMoves;
-        return MoveGen::generateLegalMoves(rules, dummyMoves.data());
+        int mobilityScore = 0;
+        MoveGen::generateLegalMoves(rules, dummyMoves.data(), &mobilityScore, Evaluation::MobilityWeights.data());
+        return mobilityScore;
     };
 
     const pColor originalSide = rules._board.sideToMove;
@@ -106,15 +106,14 @@ namespace
     int blackMobility = getMobilityFor(pColor::Black);
     rules._board.sideToMove = originalSide;
     
-    int mobilityScore = MobilityWt * (whiteMobility - blackMobility);
+    int mobilityScore = whiteMobility - blackMobility;
 
-    return (materialScore + mobilityScore + positionalScore);
+    return (positionalAndMaterialScore + mobilityScore);
 }
 
-void Evaluation::init(ChessRules &rules)
+void Evaluation::init()
 {
-    rules._board.currentScore = evaluate(rules);
-    rules._board.shortMem[rules._board.ply].score = rules._board.currentScore;
+    initPST();
 }
 
 [[nodiscard]] int Evaluation::getPieceValue(PieceDescriptor piece)
@@ -148,16 +147,18 @@ void Evaluation::init(ChessRules &rules)
 }
 
 
+// ------- PST ----------
 namespace 
 {
     constexpr std::array<int, 64> mgPawnTable = 
     {
+        // all initial position - third, fourth rank +20pkt in two middle pawns
         0,   0,   0,   0,   0,   0,  0,   0,
         98, 134,  61,  95,  68, 126, 34, -11,
-        -6,   7,  26,  31,  65,  56, 25, -20,
-        -14,  13,   6,  21,  23,  12, 17, -23,
-        -27,  -2,  -5,  25,  25,   6, 10, -25,  // modified
-        -26,  -4,  -4,  0,   3,   3, 33, -12,   // modified
+        -6,   7,  26,  71,  95,  56, 25, -20,
+        -14,  13,   6,  61,  63,  12, 17, -23,
+        -27,  -2,  -5,  12,  17,   6, 10, -25,
+        -26,  -4,  -4, -10,   3,   3, 33, -12,
         -35,  -1, -20, -23, -15,  24, 38, -22,
         0,   0,   0,   0,   0,   0,  0,   0,
     };
@@ -167,7 +168,7 @@ namespace
         178, 173, 158, 134, 147, 132, 165, 187,
         94, 100,  85,  67,  56,  53,  82,  84,
         32,  24,  13,   5,  -2,   4,  17,  17,
-        13,   9,  -3,  0,  0,  -8,   3,  -1,    // modified
+        13,   9,  -3,  -7,  -7,  -8,   3,  -1,
         4,   7,  -6,   1,   0,  -5,  -1,  -8,
         13,   8,   8,  10,  13,   0,   2,  -7,
         0,   0,   0,   0,   0,   0,   0,   0,
@@ -198,12 +199,14 @@ namespace
 
     constexpr std::array<int, 64> mgBishopTable = 
     {
+        // modified right bishop initial diagonal all squares -70pkt - right bishop
+        // modified right bishop initial diagonal all squares -30pkt - left bishop
         -29,   4, -82, -37, -25, -42,   7,  -8,
-        -26,  16, -18, -13,  30,  59,  18, -47,
-        -16,  37,  43,  40,  35,  50,  37,  -2,
-        -4,   5,  19,  50,  37,  37,   7,  -2,
-        -6,  13,  13,  26,  34,  12,  10,   4,
-        0,  15,  15,  15,  14,  27,  18,  10,
+        -26,  16, -18, -43,  -40,  59,  18, -47,
+        -16,  37,  43,  -30,  5,  50,  37,  -2,
+        -4,   5,  -51,  50,  37,  7,   7,  -2,
+        -6,  -57,  13,  26,  34,  12,  -20,   4,
+        -70,  15,  15,  15,  14,  27,  18,  -20,
         4,  15,  16,   0,   7,  21,  33,   1,
         -33,  -3, -14, -21, -13, -12, -39, -21,
     };
@@ -245,12 +248,12 @@ namespace
     constexpr std::array<int, 64> mgQueenTable = 
     {
         -28,   0,  29,  12,  59,  44,  43,  45,
-        -24, -39,  -5,   1, -16,  57,  28,  54,
-        -13, -17,   7,   8,  29,  56,  47,  57,
-        -27, -27, -16, -16,  -1,  17,  -2,   1,
-        -9, -26,  -9, -10,  -2,  -4,   3,  -3,
+        -24, -39,  -5,   1, -36,  57,  28,  54, // to -36
+        -13, -17,   7,   8,  29,  -4,  47,  57, // modified pre-pre-last value from 56 to -4
+        -27, -27, -16, -16,  -1,  17,  -49,   1, // modified pre-last value from -2 to -49
+        -9, -26,  -9, -10,  -2,  -4,   3,  -70, // modified last value from -3 to -70
         -14,   2, -11,  -2,  -5,   2,  14,   5,
-        -35,  -8,  11,   2,   3,  8,  -3,   1,  // modified
+        -35,  -8,  11,   2,   8,  15,  -3,   1,
         -1, -18,  -9,  10, -15, -25, -31, -50,
     };
     constexpr std::array<int, 64> egQueenTable = 
@@ -288,18 +291,31 @@ namespace
         -53, -34, -21, -11, -28, -14, -24, -43
     };
 
-    inline ScorePair getPstScore(int pieceType, int sq, int color) 
+    constexpr std::array<const int*, pDistinct> mgPstTab =
     {
-        int finalSq = (color == 0) ? sq : (sq ^ 56);
-        switch (pieceType) 
+        mgPawnTable.data(), mgKnightTable.data(), mgBishopTable.data(),
+        mgRookTable.data(), mgQueenTable.data(), mgKingTable.data()
+    };
+    constexpr std::array<const int*, pDistinct> egPstTab =
+    {
+        egPawnTable.data(), egKnightTable.data(), egBishopTable.data(),
+        egRookTable.data(), egQueenTable.data(), egKingTable.data()
+    };
+
+    // by XORing square value number by 56 which is 111000 in binary, we get fliped PST tables
+    void initPST()
+    {
+        for (int p = 0, bbIdx = 0; bbIdx < Board::bitboardCount-2; bbIdx += 2, ++p)
         {
-            case 0: return { mgPawnTable[finalSq],   egPawnTable[finalSq] };
-            case 1: return { mgKnightTable[finalSq], egKnightTable[finalSq] };
-            case 2: return { mgBishopTable[finalSq], egBishopTable[finalSq] };
-            case 3: return { mgRookTable[finalSq],   egRookTable[finalSq] };
-            case 4: return { mgQueenTable[finalSq],  egQueenTable[finalSq] };
-            case 5: return { mgKingTable[finalSq],   egKingTable[finalSq] };
-            default: return {0, 0};
+            for (int sq = 0; sq < Board::boardSize; ++sq)
+            {
+                // for white we have to flip PST tables because of our board repr. (A1=0, h8=63)
+                mgTab[bbIdx][sq] = (mgPstTab[p][sq^56]/3) + mgMaterialWeightTab[p];
+                egTab[bbIdx][sq] = (egPstTab[p][sq^56]/3) + egMaterialWeightTab[p];
+
+                mgTab[bbIdx+1][sq] = (mgPstTab[p][sq]/3) + mgMaterialWeightTab[p];
+                egTab[bbIdx+1][sq] = (egPstTab[p][sq]/3) + egMaterialWeightTab[p];
+            }
         }
     }
 }

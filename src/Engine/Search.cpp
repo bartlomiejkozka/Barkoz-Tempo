@@ -82,6 +82,51 @@ void Search::orderMoves(std::array<Move, 256> &moves, int count, Move hashMove, 
     }
 }
 
+int Search::quiescence(ChessRules &rules, int alpha, int beta, bool isMaxTurn)
+{
+    int stand_pat = Evaluation::evaluate(rules);
+
+    if (isMaxTurn)
+    {
+        if (stand_pat >= beta) return beta;
+        if (stand_pat > alpha) alpha = stand_pat;
+    }
+    else
+    {
+        if (stand_pat <= alpha) return alpha;
+        if (stand_pat < beta) beta = stand_pat;
+    }
+
+    // for now only fighting captures check
+    std::array<Move, 256> captures;
+    Move *endPtr = MoveGen::generate<Gen::Captures>(rules, captures.data());
+    auto count = static_cast<int>(endPtr - captures.data());
+
+    orderMoves(captures, count, Move{0}, rules);
+
+    for (int i = 0; i < count; ++i)
+    {
+        rules._board.makeMove(captures[i]);
+        
+        int score = quiescence(rules, alpha, beta, !isMaxTurn);
+        
+        rules._board.unmakeMove();
+
+        if (isMaxTurn)
+        {
+            if (score >= beta) return beta;
+            if (score > alpha) alpha = score;
+        }
+        else
+        {
+            if (score <= alpha) return alpha;
+            if (score < beta) beta = score;
+        }
+    }
+
+    return isMaxTurn ? alpha : beta;
+}
+
 [[nodiscard]] int Search::minMax(ChessRules &rules, int depth, int alpha, int beta, bool isMaxTurn)
 {
     nodes++;
@@ -105,7 +150,7 @@ void Search::orderMoves(std::array<Move, 256> &moves, int count, Move hashMove, 
 
     if (depth == 0)
     {
-        return Evaluation::evaluate(rules);
+        return quiescence(rules, alpha, beta, isMaxTurn);
     }
 
     std::array<Move, 256> moves;

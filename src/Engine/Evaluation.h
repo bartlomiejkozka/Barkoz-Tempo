@@ -25,13 +25,17 @@ struct Evaluation
     static constexpr int KnightWt  = 300;
     static constexpr int PawnWt    = 100;
 
-    static constexpr int MobilityWt = 2;
+    // static constexpr int MobilityWt = 1;
+
+
+    // King=0, Pawn=0, Knight=4, Bishop=3, Rook=2, Queen=1 -> match piece generation order as in Movegeneration genereate function
+    static constexpr std::array<int, 6> MobilityWeights = { 0, 4, 0, 3, 2, 1 };
 
     // --------------------
     // Initialization           have to be called just after Board::init()
     // --------------------
 
-    static void init(ChessRules &rules);
+    static void init();
 
     // --------------------
     // Evaluator

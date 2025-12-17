@@ -52,10 +52,10 @@ public:
     // Main API move generation.
     // -------------------------
 
-    [[nodiscard]] static int generateLegalMoves(ChessRules &rules, Move *moves);
+    [[nodiscard]] static int generateLegalMoves(ChessRules &rules, Move *moves, int *outMobilityScore = nullptr, const int *mobilityWeights = nullptr);
 
     template<Gen GenMode>
-    [[nodiscard]] static Move* generate(ChessRules &rules, Move *moves);
+    [[nodiscard]] static Move* generate(ChessRules &rules, Move *moves, int *outMobilityScore = nullptr, const int *mobilityWeights = nullptr);
 
 private:
     template<typename EncodeFn, typename AllowFn>
@@ -102,7 +102,7 @@ private:
 // ------------------------------
 
 template<Gen GenMode>
-[[nodiscard]] Move* MoveGen::generate(ChessRules &rules, Move *moves)
+[[nodiscard]] Move* MoveGen::generate(ChessRules &rules, Move *moves, int *outMobilityScore, const int *mobilityWeights)
 {
     std::array<Move*(*)(ChessRules&, Move*), 6> getMoves = 
     { 
@@ -110,9 +110,17 @@ template<Gen GenMode>
         getBishopMoves<GenMode>, getRookMoves<GenMode>, getQueenMoves<GenMode> 
     };
 
-    for (auto &getMove : getMoves)
+for (int i = 0; i < 6; ++i)
     {
-        moves = getMove(rules, moves);
+        Move* startPtr = moves;
+        
+        moves = getMoves[i](rules, moves);
+
+        if (outMobilityScore != nullptr && mobilityWeights != nullptr)
+        {
+            auto count = static_cast<int>(moves - startPtr);
+            *outMobilityScore += count * mobilityWeights[i];
+        }
     }
 
     return moves;
