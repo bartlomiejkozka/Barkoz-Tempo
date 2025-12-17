@@ -7,10 +7,10 @@ Barkoz Tempo is a chess engine under development.
 
 ### Current Status
 
-The estimated ELO rating of the engine is currently around **1400**.
+The estimated ELO rating of the engine is currently around **1600**.
 
 Ranking is estimated by performing tournaments with other chess engines. \
-(For now performing against StockFish with limitedElo to 1320-1500)
+(For now performing against StockFish with limitedElo to 1320-1600)
 
 ### Development Roadmap
 
@@ -23,9 +23,11 @@ Ranking is estimated by performing tournaments with other chess engines. \
 - **Board Representation** <br>
 The board is represented using **bitboards**. Each piece type for each color has its own 64-bit integer, which allows for efficient move generation and board state updates.
 - **Board Evaluation** <br> 
-The evaluation function calculates a score based on two main factors: **material balance** and **piece mobility** (the number of legal moves available for each side).
+    - **Material Balance**: The raw value of pieces on the board.
+    - **Piece-Square Tables (PST)**: Pre-calculated tables that evaluate the positional quality of a piece's location (e.g., encouraging central control or penalizing bad positioning).
+    - **Piece Mobility**: The number of legal moves available for each side, rewarding active play.
 - **Best Move Search** <br> 
-The engine uses **Iterative Deepening** combined with an **Alpha-Beta pruning** algorithm. This allows the engine to manage its time effectively and provide a good move even if the search is interrupted before completion.
+The engine uses **Iterative Deepening** combined with an **Alpha-Beta** pruning algorithm. To mitigate the "horizon effect," a **Quiescence Search** is performed at leaf nodes. This extends the search by examining only capture moves until a "quiet" position is reached, ensuring tactical sequences are fully resolved before evaluation.
 - **Move Ordering** <br> 
 To improve search efficiency, moves are sorted using several techniques. The primary heuristic is **MVV-LVA (Most Valuable Victim - Least Valuable Attacker)**. Additionally, the best move found in the previous iteration of iterative deepening is always searched first.
 - **UCI (Universal Chess Interface)** <br>

@@ -82,7 +82,7 @@ void Search::orderMoves(std::array<Move, 256> &moves, int count, Move hashMove, 
     }
 }
 
-int Search::quiescence(ChessRules &rules, int alpha, int beta, bool isMaxTurn)
+[[nodiscard]] int Search::quiescence(ChessRules &rules, int alpha, int beta, bool isMaxTurn)
 {
     int stand_pat = Evaluation::evaluate(rules);
 
