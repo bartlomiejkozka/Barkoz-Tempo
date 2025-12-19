@@ -24,7 +24,7 @@ Ranking is estimated by performing tournaments with other chess engines. \
 The board is represented using **bitboards**. Each piece type for each color has its own 64-bit integer, which allows for efficient move generation and board state updates.
 - **Board Evaluation** <br> 
     - **Material Balance**: The raw value of pieces on the board.
-    - **Piece-Square Tables (PST)**: Pre-calculated tables that evaluate the positional quality of a piece's location (e.g., encouraging central control or penalizing bad positioning).
+    - **Piece-Square Tables (PST) with Tapered Evaluation**: Pre-calculated tables that evaluate the positional quality of a piece's location. The engine utilizes Tapered Evaluation, interpolating linearly between two distinct sets of tables (Middlegame and Endgame) based on the current game phase.
     - **Piece Mobility**: The number of legal moves available for each side, rewarding active play.
 - **Best Move Search** <br> 
 The engine uses **Iterative Deepening** combined with an **Alpha-Beta** pruning algorithm. To mitigate the "horizon effect," a **Quiescence Search** is performed at leaf nodes. This extends the search by examining only capture moves until a "quiet" position is reached, ensuring tactical sequences are fully resolved before evaluation.
