@@ -18,7 +18,6 @@
 class Search
 {
 private:
-    TranspositionTable &_TT;
     std::chrono::steady_clock::time_point startTime;
     int allocatedTime;
     uint64_t nodes;         // nodes counter
@@ -32,6 +31,8 @@ private:
     void checkTime();
 
 public:
+    TranspositionTable &_TT;
+
     std::atomic<bool> stopRequest = false;
 
     // ---------------------

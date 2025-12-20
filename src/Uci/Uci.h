@@ -26,6 +26,8 @@ public:
     ChessRules &rules;
     Search &searchEngine;
     std::thread searchThread;
+    
+    int moveOverhead = 0;
 
     // -----------------------
     // Initialization
@@ -37,6 +39,8 @@ public:
     void loop();
 
 private:
+    void parseSetOption(std::istringstream& ss);
+
     void parsePosition(std::istringstream& ss);
 
     void parseGo(std::istringstream& ss);

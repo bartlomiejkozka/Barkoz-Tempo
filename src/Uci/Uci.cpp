@@ -27,11 +27,23 @@ void UCI::loop()
         {
             std::cout << "id name Barkoz-Tempo" << std::endl;
             std::cout << "id author BartlomiejKozka" << std::endl;
+            std::cout << "option name Move Overhead type spin default 0 min 0 max 5000" << std::endl;
+            std::cout << "option name Threads type spin default 1 min 1 max 4" << std::endl;            // not implemented
+            std::cout << "option name Hash type spin default 16 min 1 max 1024" << std::endl;
+            std::cout << "option name SyzygyPath type string default <empty>" << std::endl;             // not implemented
+            std::cout << "option name UCI_ShowWDL type check default false" << std::endl;               // not implemented
+            
+            std::cout << "option name Ponder type check default false" << std::endl;                    // not implemented
+            std::cout << "option name UCI_Chess960 type check default false" << std::endl;              // not implemented
             std::cout << "uciok" << std::endl;
         }
         else if (token == "isready") 
         {
             std::cout << "readyok" << std::endl;
+        }
+        else if (token == "setoption")
+        {
+            parseSetOption(ss);
         }
         else if (token == "ucinewgame")
         {
@@ -56,6 +68,48 @@ void UCI::loop()
             if (searchThread.joinable()) searchThread.join();
             break;
         }
+    }
+}
+
+void UCI::parseSetOption(std::istringstream& ss)
+{
+    std::string token, name, value;
+    
+    ss >> token;
+    
+    while (ss >> token && token != "value") {
+        if (!name.empty()) name += " ";
+        name += token;
+    }
+
+    if (name == "SyzygyPath") 
+    {
+        std::getline(ss, value); 
+        if (!value.empty() && value[0] == ' ') 
+        {
+            value.erase(0, 1);
+        }
+        return; 
+    }
+
+    ss >> value;
+
+    if (name == "Move Overhead") 
+    {
+        try {
+            moveOverhead = std::stoi(value);
+        } catch (...) {
+            // ignore
+        }
+    }
+    else if (name == "Threads" || name == "UCI_ShowWDL" || 
+                name == "Ponder" || name == "UCI_Chess960")
+    {
+        // ignore, for now only 1 thread for search
+    }
+    else if (name == "Hash") 
+    {
+        searchEngine._TT.resize(std::stoi(value));
     }
 }
 
@@ -153,7 +207,7 @@ void UCI::parseGo(std::istringstream& ss)
     
     if (movetime != -1) 
     {
-        timeForMove = movetime - 50;
+        timeForMove = movetime - moveOverhead - 10; 
         if (timeForMove < 10) timeForMove = 10;
     } 
     else if (wtime > 0 || btime > 0)
@@ -163,26 +217,25 @@ void UCI::parseGo(std::istringstream& ss)
         int myTime = isWhiteToMove ? wtime : btime;
         int myInc  = isWhiteToMove ? winc  : binc;
 
+        myTime = myTime - moveOverhead;
+        if (myTime < 0) myTime = 0;
+
         if (movestogo != -1)
         {
-            int movesLeft = (movestogo > 30) ? 30 : (movestogo + 1);  // add 1 for safety 
-            timeForMove = (myTime / movesLeft) + myInc - 50;
+            int movesLeft = (movestogo > 30) ? 30 : (movestogo + 1); 
+            timeForMove = (myTime / movesLeft) + myInc;
         }
         else
         {
-            timeForMove = (myTime / 30) + myInc - 50;
+            timeForMove = (myTime / 30) + myInc;
         }
         
+        timeForMove -= 50; 
         if (timeForMove < 50) timeForMove = 50;
     }
 
-    // set default depth, when time and depth not passed
     if (depth == -1 && timeForMove == 0) depth = 6;
-
-    // if we play for time, depth should be INF
     if (timeForMove > 0 && depth == -1) depth = 64;
-
-    // search thread handling
 
     if (searchThread.joinable()) searchThread.join();
 
