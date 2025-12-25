@@ -1,19 +1,20 @@
 [HIGH-PRIO]
 1. Implement Opening books
-2. Amend/Improve PST (The current implementation does not perform better then without ~ 1400 elo)
+2. Review and fix the repetition moves in winning position (Currently observe 3fold repetition in winning positions)
 
 
 [MED-PRIO]
-
+1. Amend/Improve PST (The current implementation does not perform better then without ~ 1400 elo)
+2. Improve move ordering function (add more best moves at the beginning, e.g. first 10 best moves from previous iteration (for now, only the best one is added))
 
 [LOW-PRIO]
 
 
 ------------------- BUGS -------------------
 [HIGH-PRIO]
-1. Review why engine disconnects always just after 120th move
-2. Review why engine make illegal moves - always "a1a1" which idicate thaht engine returns 0 as bestmvoe
-    (probably lack of any legal move in position)
+1. Review why engine disconnects just after 120th move ??? Occurs in every game ???
+2. Review why engine make illegal moves - always "a1a1" which indicate that engine returns 0 as bestmove    Is it valid still ???
+    (probably lack of any legal move in position) 
 
 
 [MED-PRIO]

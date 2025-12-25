@@ -110,7 +110,7 @@ template<Gen GenMode>
         getBishopMoves<GenMode>, getRookMoves<GenMode>, getQueenMoves<GenMode> 
     };
 
-for (int i = 0; i < 6; ++i)
+    for (int i = 0; i < 6; ++i)
     {
         Move* startPtr = moves;
         
