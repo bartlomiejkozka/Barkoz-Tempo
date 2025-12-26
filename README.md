@@ -7,10 +7,9 @@ Barkoz Tempo is a chess engine under development.
 
 ### Current Status
 
-The estimated ELO rating of the engine is currently over **1800**.
+The estimated ELO rating of the engine is currently over **1700**.
 
-Ranking is estimated by performing tournaments with other chess engines. \
-(For now performing against StockFish with limitedElo to 1320-2000)
+Ranking is estimated by performing games with other chess engines on lichess platform.
 
 ### Development Roadmap
 
