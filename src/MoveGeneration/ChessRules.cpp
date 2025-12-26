@@ -160,3 +160,25 @@
 {
     return static_cast<bool>(_board.sideToMove) ? ( (originSq/8) == 1 ) : ( (originSq/8) == 6 );
 }
+
+// ---------------------------
+// Position Repetition
+// ---------------------------
+
+bool ChessRules::isRepetition() const
+{
+    int start = _board.ply - _board.halfMoveClock;
+
+    if (start < 0) start = 0;
+
+    for (int i = _board.ply - 2; i >= start; i -= 2) 
+    {
+        if (i < 0) break; 
+
+        if (_board.history[i] == _board.zobristKey)
+        {
+            return true;
+        }
+    }
+    return false;
+}

@@ -135,6 +135,8 @@ void Search::orderMoves(std::array<Move, 256> &moves, int count, Move hashMove, 
         checkTime();
     }
 
+    if ( rules.isRepetition() ) return 0;   // when 2fold repetition
+
     using TTEntry = TranspositionTable::Entry;
     
     TTEntry ttEntry = _TT.probe(rules._board.zobristKey);

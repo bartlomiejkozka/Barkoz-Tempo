@@ -120,6 +120,8 @@ public:
 
     // e.g. in PieceMap indexing we have to subtract 2, becase Piece's bitboards start from third idx.
     static constexpr size_t align = 2;
+
+    static constexpr size_t maxGameMoves = 512; // game moves + depth moves + max moves in one position
     
     // ---------------------------------
     // getters
@@ -143,7 +145,7 @@ public:
 
     pColor sideToMove = pColor::White;
 
-    std::unordered_map<uint64_t, uint8_t> repetitions = {}; // hash -> count
+    std::array<uint64_t, maxGameMoves> history; // array of all game position hashes
 
     // ---------------------------------
     // irreversible game attributes
@@ -155,8 +157,6 @@ public:
 
     std::array<Undo, MAXMoveHistory> shortMem;   // MAXMoveHistory should be as big as the most depth search
     size_t ply = 0;                             // half move idx of history array;
-
-    std::vector<Undo> gameHistory;  // all game move history
 
     // ---------------------------------
     // Hash for TT idx

@@ -84,6 +84,8 @@ void Board::init()
 
     zobristKey = PieceMap::generatePosHash(*this);
 
+    history[ply] = zobristKey;
+
     shortMem[ply].capturedPiece = PieceDescriptor::nWhite; // 0
     shortMem[ply].castling      = castlingRights;
     shortMem[ply].ep            = static_cast<int8_t>(enPassant);
@@ -166,6 +168,8 @@ void Board::loadFromFEN(const std::string& fen)
     recomputeSideOccupancies();
 
     zobristKey = PieceMap::generatePosHash(*this);
+
+    history[ply] = zobristKey;
 
     // 10. Initialize shortMem for current ply
     shortMem[ply].capturedPiece = PieceDescriptor::nWhite; // placeholder
@@ -317,6 +321,8 @@ void Board::makeMove(Move &m)
     while (currCastlingRights) newPoshHash ^= PieceMap::castlingRightsMap[pop_1st(currCastlingRights)];
 
     zobristKey = newPoshHash;
+
+    history[ply] = zobristKey;
 
     shortMem[ply].moveHash      = zobristKey;
     shortMem[ply].capturedPiece = captured;

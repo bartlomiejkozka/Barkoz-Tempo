@@ -169,6 +169,12 @@ public:
     // return: first: King atackers, second: Evasion paths -> e.g. inBetween Rook -> King square
     [[nodiscard]] std::pair<uint64_t, uint64_t> getEvasions() const;
 
+    // ---------------------------
+    // Position Repetition
+    // ---------------------------
+
+    bool isRepetition() const;
+
     Board &_board;
     PerftStats &_perft_stats;
 };
